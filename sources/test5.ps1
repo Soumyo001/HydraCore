@@ -224,7 +224,6 @@ function Invoke-BSOD {
 # Invoke-BSOD
 
 # Monitor jobs (optional)
-Write-Host "Press Ctrl+C to stop stress jobs and exit."
 try {
     while ($true) {
         Start-Sleep -Seconds 5

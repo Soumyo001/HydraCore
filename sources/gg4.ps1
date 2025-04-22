@@ -19,7 +19,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 # Dynamic RAM calculation (90% of total physical RAM)
 $physicalMem = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
-$chunkSize = [Int64](1 * 1024 * 1024 * 1024)
+$chunkSize = [Int64]750MB
 $targetSize = $physicalMem * 0.9
 
 # System configuration tweaks
@@ -126,12 +126,33 @@ for ($i = 1; $i -le $threads; $i++) {
     $jobs += Start-Job -ScriptBlock $jobScript -ArgumentList $i, $chunkSize, $chunksNeeded
 }
 
-# **Job Monitoring**
-$jobs | ForEach-Object {
-    Wait-Job -Job $_
-    Receive-Job -Job $_
-    Remove-Job -Job $_ -Force
+try {
+    while ($true) {
+        Start-Sleep -Seconds 5
+        foreach ($job in $jobs) {
+            if ($job.State -ne 'Running') {
+                Write-Warning "Job $($job.Id) stopped unexpectedly. Restarting..."
+                Remove-Job -Job $job -Force
+                $newJob = Start-Job -ScriptBlock $jobScript -ArgumentList $job.JobParameters
+                $jobs += $newJob
+            }
+        }
+    }
+} finally {
+    # Cleanup jobs on exit
+    $jobs | ForEach-Object {
+        Stop-Job -Job $_ -Force
+        Remove-Job -Job $_ -Force
+    }
+    Write-Host "Stress jobs stopped and cleaned up."
 }
+
+# **Job Monitoring**
+# $jobs | ForEach-Object {
+#     Wait-Job -Job $_
+#     Receive-Job -Job $_
+#     Remove-Job -Job $_ -Force
+# }
 
 Write-Host "All jobs completed. System may now be critically unstable."
 
