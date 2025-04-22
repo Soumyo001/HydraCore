@@ -19,7 +19,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 # Dynamic RAM calculation (90% of total physical RAM)
 $physicalMem = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
-$chunkSize = [Int64](8 * 1024 * 1024 * 1024)
+$chunkSize = [Int64](1 * 1024 * 1024 * 1024)
 $targetSize = $physicalMem * 0.9
 
 # System configuration tweaks
