@@ -26,6 +26,7 @@ Invoke-Expression "bcdedit /set disabledynamictick yes"
 Invoke-Expression "bcdedit /set nointegritychecks yes"
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Value 1 -Force
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "CrashDumpEnabled" -Value 0 -Force
+Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Force 
 
 # Disable thermal throttling (admin required)
 powercfg /setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMAX 100
@@ -204,11 +205,17 @@ $jobScript = {
     }
 }
 
-# Start stress jobs for each CPU core
-for ($i = 1; $i -le $threads; $i++) {
+
+function Start-StressJob {
+    param($index)
     $job = Start-Job -ScriptBlock $jobScript -ArgumentList $i, $minChunkSize, $maxChunkSize, $targetSize
     $job | Add-Member -NotePropertyName RetryCount -NotePropertyValue 0
     $jobs.Add($job)
+}
+
+# Start stress jobs for each CPU core
+for ($i = 1; $i -le $threads; $i++) {
+    Start-StressJob -index $i
 }
 
 Write-Host "Started $threads stress jobs with high priority."
