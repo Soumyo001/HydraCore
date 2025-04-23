@@ -168,7 +168,7 @@ $jobScript = {
         while ($allocated -lt $targetSize) {
             # Increase chunk size progressively but cap at maxChunkSize
             if ($chunkSize -lt $maxChunkSize) {
-                $chunkSize = [math]::Min($chunkSize + $increaseChunkSize, $maxChunkSize)
+                $chunkSize = $chunkSize + $increaseChunkSize
             }
             try {
                 $chunk = New-Object byte[] $chunkSize

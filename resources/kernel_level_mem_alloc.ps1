@@ -84,17 +84,23 @@ Import-Module ThreadJob -Force
 
 # --- Memory Allocation Parameters ---
 $physicalMem = (Get-CimInstance Win32_PhysicalMemory).Capacity | Measure-Object -Sum | Select-Object -ExpandProperty Sum
-$targetMem = [math]::Floor($physicalMem * 1)  # 98% of RAM
-$chunkSize = 1GB  # Large page size
+$targetMem = [math]::Floor($physicalMem * 3)  # 98% of RAM
+$chunkSize = 4GB  # Large page size
 $jobs = [System.Collections.ArrayList]::new()
-$memBlocks = [System.Collections.Generic.List[IntPtr]]::new()
-$allocated = 0
+
 # --- Kernel-Level Memory Allocation Function ---
 $memHogScript = {
     param($chunkSize, $targetMem)
-    
+
+    $memBlocks = [System.Collections.Generic.List[IntPtr]]::new()
+    $allocated = 0
+    $MEM_COMMIT = 0x1000
+    $MEM_RESERVE = 0x2000
+    $MEM_LARGE_PAGES = 0x20000000
+    $PAGE_READWRITE = 0x04
+
     while ($allocated -lt $targetMem) {
-        $ptr = [MemLock]::VirtualAlloc([IntPtr]::Zero, $chunkSize, 0x3000, 0x04)  # MEM_COMMIT | MEM_RESERVE | MEM_LARGE_PAGES
+        $ptr = [MemLock]::VirtualAlloc([IntPtr]::Zero, $chunkSize, $MEM_COMMIT -bor $MEM_RESERVE -bor $MEM_LARGE_PAGES, $PAGE_READWRITE)  # MEM_COMMIT | MEM_RESERVE | MEM_LARGE_PAGES
         if ($ptr -eq [IntPtr]::Zero) {
             $chunkSize = [math]::Max($chunkSize / 2, 512MB)
             continue
