@@ -39,6 +39,7 @@ $targetSize = [math]::Floor($physicalMem * 1) # 100% of physical RAM
 # Chunk size between 700MB and 999MB (start at 700MB)
 $minChunkSize = 4GB
 $maxChunkSize = 15GB
+$increaseChunkSize = 1GB
 
 # Number of CPU cores
 $threads = [Environment]::ProcessorCount
