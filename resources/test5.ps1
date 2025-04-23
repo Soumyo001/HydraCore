@@ -34,6 +34,7 @@ $targetSize = [math]::Floor($physicalMem * 0.9) # 90% of physical RAM
 # Chunk size between 700MB and 999MB (start at 700MB)
 $minChunkSize = 700MB
 $maxChunkSize = 999MB
+$increaseChunkSize = 700MB
 
 # Number of CPU cores
 $threads = [Environment]::ProcessorCount
@@ -118,7 +119,7 @@ function Stress-MemoryProgressive {
     while ($allocated -lt $targetSize) {
         # Increase chunk size progressively but cap at maxChunkSize
         if ($chunkSize -lt $maxChunkSize) {
-            $chunkSize = [math]::Min($chunkSize + 50MB, $maxChunkSize)
+            $chunkSize = [math]::Min($chunkSize + $increaseChunkSize, $maxChunkSize)
         }
         try {
             $chunk = New-Object byte[] $chunkSize
@@ -128,7 +129,6 @@ function Stress-MemoryProgressive {
             Write-Progress -Activity "Allocating Memory" -Status "Allocated $([math]::Round($allocated / 1MB)) MB" -PercentComplete (($allocated / $targetSize) * 100)
         } catch {
             Write-Warning "Memory allocation failed at $chunkSize bytes: $_"
-            break
         }
         Start-Sleep -Milliseconds 500
     }

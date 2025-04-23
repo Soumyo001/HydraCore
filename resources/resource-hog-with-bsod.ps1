@@ -26,7 +26,7 @@ Invoke-Expression "bcdedit /set disabledynamictick yes"
 Invoke-Expression "bcdedit /set nointegritychecks yes"
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Value 1 -Force
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "CrashDumpEnabled" -Value 0 -Force
-Remove-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Force 
+Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Value "" -Force
 
 # Disable thermal throttling (admin required)
 powercfg /setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMAX 100
@@ -34,7 +34,7 @@ powercfg /setactive SCHEME_CURRENT
 
 # --- Calculate RAM parameters ---
 $physicalMem = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
-$targetSize = [math]::Floor($physicalMem * 0.9) # 90% of physical RAM
+$targetSize = [math]::Floor($physicalMem * 1) # 100% of physical RAM
 
 # Chunk size between 700MB and 999MB (start at 700MB)
 $minChunkSize = 4GB
@@ -164,25 +164,24 @@ $jobScript = {
         $memChunks = [System.Collections.Generic.List[byte[]]]::new()
         $chunkSize = $minChunkSize
 
-        while ($true) {
-            if ($allocated -ge $targetSize) {
-                # Hold memory indefinitely
-                Start-Sleep -Seconds 60
-                continue
-            }
+        while ($allocated -lt $targetSize) {
+            # Increase chunk size progressively but cap at maxChunkSize
             if ($chunkSize -lt $maxChunkSize) {
-                $chunkSize = [math]::Min($chunkSize + 1GB, $maxChunkSize)
+                $chunkSize = [math]::Min($chunkSize + $increaseChunkSize, $maxChunkSize)
             }
             try {
                 $chunk = New-Object byte[] $chunkSize
                 [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($chunk)
                 $memChunks.Add($chunk)
                 $allocated += $chunkSize
+                Write-Progress -Activity "Allocating Memory" -Status "Allocated $([math]::Round($allocated / 1MB)) MB" -PercentComplete (($allocated / $targetSize) * 100)
             } catch {
-                # Allocation failed, hold memory and retry after short pause
-                Start-Sleep -Seconds 5
+                Write-Warning "Memory allocation failed at $chunkSize bytes: $_"
             }
+            Start-Sleep -Milliseconds 500
         }
+        # Keep $memChunks alive to prevent GC
+        while ($true) { Start-Sleep -Seconds 10 }
     }
 
     # Start memory stress in background thread
