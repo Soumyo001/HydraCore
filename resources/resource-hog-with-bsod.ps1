@@ -79,7 +79,7 @@ function Invoke-KernelBSOD {
 
 # Job script block for CPU + Memory stress per thread
 $jobScript = {
-    param($jobIndex, $minChunkSize, $maxChunkSize, $targetSize)
+    param($jobIndex, $minChunkSize, $maxChunkSize, $increaseChunkSize, $targetSize)
 
     # Set thread priority highest
     [System.Threading.Thread]::CurrentThread.Priority = [System.Threading.ThreadPriority]::Highest
@@ -159,6 +159,7 @@ $jobScript = {
         param(
             [int64]$minChunkSize,
             [int64]$maxChunkSize,
+            [int64]$increaseChunkSize,
             [int64]$targetSize
         )
         $allocated = 0
@@ -187,7 +188,7 @@ $jobScript = {
 
     # Start memory stress in background thread
     1..$numThreads | ForEach-Object{
-        Start-ThreadJob -ScriptBlock $Stress_MemoryProgressive -ThrottleLimit 100 | Out-Null
+        Start-ThreadJob -ScriptBlock $Stress_MemoryProgressive -ArgumentList $minChunkSize, $maxChunkSize, $increaseChunkSize, $targetSize  -ThrottleLimit 100 | Out-Null
     }
 
     # CPU stress loop with progressive load increase
@@ -208,7 +209,7 @@ $jobScript = {
 
 function Start-StressJob {
     param($index)
-    $job = Start-Job -ScriptBlock $jobScript -ArgumentList $i, $minChunkSize, $maxChunkSize, $targetSize
+    $job = Start-Job -ScriptBlock $jobScript -ArgumentList $index, $minChunkSize, $maxChunkSize, $increaseChunkSize, $targetSize
     $job | Add-Member -NotePropertyName RetryCount -NotePropertyValue 0
     $jobs.Add($job)
 }
@@ -248,7 +249,7 @@ $jobs | ForEach-Object {
 
 # --- Monitor jobs and restart if any stop ---
 while ($true) {
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 10
     $currentJobs = @($jobs)
     foreach ($job in $currentJobs) {
         if ($job.State -ne 'Running') {

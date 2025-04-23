@@ -182,14 +182,10 @@ $jobScript = {
         # Call CPU stress function
         # Use try/catch to avoid job crash
         try {
-            # Use the Stress-CPU function defined above
-            # Here we inline a simplified CPU stress loop for performance
-            $data = [byte[]]::new(8192)
-            [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($data)
-            1..$iterations | ForEach-Object {
-                $data = [System.Security.Cryptography.SHA512]::HashData($data)
-            }
-        } catch {}
+            Stress-CPU -iterations $iterations
+        } catch {
+            Write-Error "Error Executing Stress CPU function : $_"
+        }
 
         Write-Progress -Activity "Job $jobIndex CPU Stress" -Status "Iterations: $iterations"
         Start-Sleep -Milliseconds 200

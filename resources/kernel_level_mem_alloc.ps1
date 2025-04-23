@@ -127,7 +127,7 @@ $memHogScript = {
 function Start-StressJob {
     param($index)
     $job = Start-Job -ScriptBlock $memHogScript -ArgumentList $chunkSize, $targetMem
-    $job | Add-Member -NotePropertyName RetryCount -NotePropertyValue 0
+    $job | Add-Member -NotePropertyName Retries -NotePropertyValue 0
     $jobs.Add($job)
 }
 
@@ -146,7 +146,7 @@ while ($true) {
     $currentJobs | Where-Object { $_.State -ne 'Running' } | ForEach-Object {
         if ($_.Retries -lt 3) {
             $newJob = Start-ThreadJob -ScriptBlock $memHogScript -ArgumentList $chunkSize, $targetMem
-            $newJob.Retries = $_.Retries + 1
+            $newJob | Add-Member -NotePropertyName Retries -NotePropertyValue ($_.Retries + 1)
             $jobs.Remove($_)
             $jobs.Add($newJob)
         }
