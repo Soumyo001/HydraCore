@@ -77,9 +77,8 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\M
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "CrashDumpEnabled" -Value 0 -Force
 Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Value "" -Force
 
-# --- Post-Reboot Execution ---
-Install-PackageProvider -Name NuGet -Force -Confirm:$false
-Install-Module -Name ThreadJob -Force -Scope CurrentUser
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false
+Install-Module -Name ThreadJob -Force -Scope CurrentUser -AllowClobber
 Import-Module ThreadJob -Force
 
 # --- Memory Allocation Parameters ---
