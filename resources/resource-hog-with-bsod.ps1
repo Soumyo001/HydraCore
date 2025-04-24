@@ -85,10 +85,12 @@ $jobScript = {
     [System.Threading.Thread]::CurrentThread.Priority = [System.Threading.ThreadPriority]::Highest
 
     # Set process priority to Realtime (aggressive) and Set process affinity to all cores
-    $proc = Get-Process -Id $PID
     try {
+        $proc = Get-Process -Id $PID
         $proc.PriorityClass = [System.Diagnostics.ProcessPriorityClass]::RealTime
-        $proc.ProcessorAffinity = -1
+        $numCores = [Environment]::ProcessorCount
+        $affinityMask = (1L -shl $numCores) - 1
+        $proc.ProcessorAffinity = [IntPtr]$affinityMask
         [System.Runtime.GCSettings]::LatencyMode = [System.Runtime.GCLatencyMode]::LowLatency
         [System.GC]::Collect()
         Write-Host "Job ${jobIndex}: Process priority set to Realtime."
@@ -149,8 +151,8 @@ $jobScript = {
 
         1..$numThreads | ForEach-Object {
             Start-ThreadJob -ScriptBlock $hashJob -ThrottleLimit 100 | Out-Null
-            Start-ThreadJob -ScriptBlock $primeJob -ThrottleLimit 100 | Out-Null
-            Start-ThreadJob -ScriptBlock $matrixJob -ThrottleLimit 100 | Out-Null
+            Start-ThreadJob -ScriptBlock $primeFactorJob -ThrottleLimit 100 | Out-Null
+            Start-ThreadJob -ScriptBlock $matrixMultiplicationJob -ThrottleLimit 100 | Out-Null
         }
     }
 
@@ -263,7 +265,10 @@ while ($true) {
             $jobs.Remove($job) | Out-Null
             Start-StressJob -index $job.Id
             $newJob = $jobs | Where-Object { $_.Id -eq $job.Id }
-            if ($newJob) { $newJob.RetryCount = $job.RetryCount + 1 }
+            if ($newJob) {
+                $newJob.RetryCount = $job.RetryCount + 1 
+                $jobs.Add($newJob)
+            }
         }
     }
 }

