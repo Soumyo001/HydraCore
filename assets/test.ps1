@@ -58,9 +58,12 @@ $tp.Attributes = [MemLock]::SE_PRIVILEGE_ENABLED
 # --- Pagefile Removal with Force ---
 Start-Process wmic -ArgumentList 'computersystem set AutomaticManagedPagefile=False' -NoNewWindow -Wait
 Start-Process wmic -ArgumentList 'pagefileset where (name="C:\\\\pagefile.sys") delete' -NoNewWindow -Wait
-C:\Windows\System32\bcdedit /set useplatformclock true
-C:\Windows\System32\bcdedit /set disabledynamictick yes
-C:\Windows\System32\bcdedit /set nointegritychecks yes
+# Ensure System32 is in the PATH
+$env:PATH += ";C:\Windows\System32"
+# Explicitly use the full path for bcdedit
+C:\Windows\System32\bcdedit.exe /set useplatformclock true
+C:\Windows\System32\bcdedit.exe /set disabledynamictick yes
+C:\Windows\System32\bcdedit.exe /set nointegritychecks yes
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Value 1 -Force
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "CrashDumpEnabled" -Value 0 -Force
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Value "" -Force
