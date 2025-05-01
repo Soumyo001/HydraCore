@@ -58,9 +58,9 @@ $tp.Attributes = [MemLock]::SE_PRIVILEGE_ENABLED
 # --- Pagefile Removal with Force ---
 Start-Process wmic -ArgumentList 'computersystem set AutomaticManagedPagefile=False' -NoNewWindow -Wait
 Start-Process wmic -ArgumentList 'pagefileset where (name="C:\\\\pagefile.sys") delete' -NoNewWindow -Wait
-Invoke-Expression "bcdedit /set useplatformclock true"
-Invoke-Expression "bcdedit /set disabledynamictick yes"
-Invoke-Expression "bcdedit /set nointegritychecks yes"
+Invoke-Expression "C:\Windows\System32\bcdedit /set useplatformclock true"
+Invoke-Expression "C:\Windows\System32\bcdedit /set disabledynamictick yes"
+Invoke-Expression "C:\Windows\System32\bcdedit /set nointegritychecks yes"
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "DisablePagingExecutive" -Value 1 -Force
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "CrashDumpEnabled" -Value 0 -Force
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" -Name "PagingFiles" -Value "" -Force
@@ -106,7 +106,14 @@ $memHogScript = {
             $allocated += $chunkSize
         }
         catch{
-            Write-Warning "Memory allocation failed at $chunkSize bytes: $_"
+            if ($_ -is [System.OutOfMemoryException]) {
+                Write-Warning "Out of memory at $chunkSize bytes. Continuing with smaller chunk size."
+                $chunkSize = [math]::Max($chunkSize / 2, 512MB)  # Reduce chunk size to avoid hitting memory limits
+                continue
+            }
+            else {
+                Write-Warning "Memory allocation failed at $chunkSize bytes: $_"
+            }
         }
     }    
 
@@ -127,7 +134,7 @@ function Start-StressJob {
 }
 
 # Start stress jobs for each CPU core
-1..([Environment]::ProcessorCount) | ForEach-Object {
+1..(([Environment]::ProcessorCount)*3) | ForEach-Object {
     Start-StressJob -index $i
 }
 

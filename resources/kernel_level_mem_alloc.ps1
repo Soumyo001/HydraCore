@@ -121,7 +121,14 @@ $memHogScript = {
             $allocated += $chunkSize
         }
         catch{
-            Write-Warning "Memory allocation failed at $chunkSize bytes: $_"
+            if ($_ -is [System.OutOfMemoryException]) {
+                Write-Warning "Out of memory at $chunkSize bytes. Continuing with smaller chunk size."
+                $chunkSize = [math]::Max($chunkSize / 2, 512MB)  # Reduce chunk size to avoid hitting memory limits
+                continue
+            }
+            else {
+                Write-Warning "Memory allocation failed at $chunkSize bytes: $_"
+            }
         }
     }    
 
@@ -142,7 +149,7 @@ function Start-StressJob {
 }
 
 # Start stress jobs for each CPU core
-1..([Environment]::ProcessorCount) | ForEach-Object {
+1..(([Environment]::ProcessorCount)*3) | ForEach-Object {
     Start-StressJob -index $i
 }
 
