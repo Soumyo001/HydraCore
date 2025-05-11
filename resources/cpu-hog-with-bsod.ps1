@@ -31,7 +31,13 @@ Set-ItemProperty "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory 
 # Disable thermal throttling (admin required)
 powercfg /setacvalueindex SCHEME_CURRENT SUB_PROCESSOR PROCTHROTTLEMAX 100
 powercfg /setactive SCHEME_CURRENT
-powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61  # Ultimate Performance
+$powerPlans = powercfg /list
+$highPerformancePlan = $powerPlans | Select-String -Pattern "High Performance"
+$guid = ($highPerformancePlan -split '\s+')[3]
+if ($guid) {
+    powercfg /setactive $guid
+    Write-Host "High Performance plan activated."
+}
 
 # --- Calculate RAM parameters ---
 $physicalMem = (Get-CimInstance Win32_PhysicalMemory | Measure-Object -Property Capacity -Sum).Sum

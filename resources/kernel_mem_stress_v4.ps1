@@ -55,7 +55,7 @@ Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\M
 
 # Disable driver signing
 Invoke-Expression "bcdedit /set nointegritychecks on"
-Invoke-Expression "bcdedit /set testsigning on"
+# Invoke-Expression "bcdedit /set testsigning on"
 
 # Kill Windows Error Reporting
 Stop-Service "WerSvc" -Force

