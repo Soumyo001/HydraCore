@@ -12,7 +12,7 @@ $downloadPath = "$nssmFolder\nssm.zip"
 if(-not(Test-Path -Path $downloadPath)){
     Invoke-WebRequest -Uri $nssmUrl -OutFile $downloadPath
 }
-if(-not(Test-Path -Path $nssmFolder -PathType Container)){
+if(-not(Test-Path -Path "$nssmFolder\nssm-2.24" -PathType Container)){
     Expand-Archive -Path $downloadPath -DestinationPath $nssmFolder
 }
 
