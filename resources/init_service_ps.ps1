@@ -31,8 +31,13 @@ if(Get-Service $ServiceName -ErrorAction SilentlyContinue){
 
 & $nssmexe set $serviceName Start SERVICE_AUTO_START
 & $nssmexe set $serviceName ObjectName "LocalSystem"
+# key to making the service run only once
 & $nssmexe set $serviceName AppExit Default Exit
 & $nssmexe set $serviceName AppExit 0 Exit 
+
+# Set up stdout/stderr logging
+# & $NSSMPath set $ServiceName AppStdout "C:\Scripts\$ServiceName-output.log"
+# & $NSSMPath set $ServiceName AppStderr "C:\Scripts\$ServiceName-error.log"
 
 & $nssmexe start $serviceName
 
