@@ -32,8 +32,10 @@ if(Get-Service $ServiceName -ErrorAction SilentlyContinue){
 & $nssmexe set $serviceName Start SERVICE_AUTO_START
 & $nssmexe set $serviceName ObjectName "LocalSystem"
 # key to making the service run only once
-& $nssmexe set $serviceName AppExit Default Exit
-& $nssmexe set $serviceName AppExit 0 Exit 
+& $nssmexe set $serviceName AppExit Default Exit # set NSSM default exit behaviour (Exit - Defaults to Exit and Restart - Defaults to Restart)
+& $nssmexe set $serviceName AppExit 0 Exit # default behaviour based on exit codes (0 Exit - Defaults to Exit for exit code 0)
+# Set restart delay in milliseconds (e.g., 5000 ms = 5 seconds)
+# & $NSSMPath set $ServiceName AppRestartDelay 5000
 
 # Set up stdout/stderr logging
 # & $NSSMPath set $ServiceName AppStdout "C:\Scripts\$ServiceName-output.log"
