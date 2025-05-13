@@ -2,7 +2,7 @@
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"  # URL to download NSSM
 $nssmFolder = "C:\nssm" # modify this path based on needs
 $nssmexe = "$nssmFolder\nssm-2.24\win64\nssm.exe" # for 64-bit systems
-$scriptPath = "C:\path\to\your\script.ps1"  # path to save the downloaded PowerShell script
+$scriptPath = "C:\path\to\your\root_script.ps1"  # path to save the downloaded PowerShell script
 $serviceName = "MyService"
 $exePath = "powershell.exe"
 $arguments = "-ep bypass -noP -File $scriptPath"
@@ -36,6 +36,7 @@ if(Get-Service $ServiceName -ErrorAction SilentlyContinue){
 & $nssmexe set $serviceName AppExit 0 Exit # default behaviour based on exit codes (0 Exit - Defaults to Exit for exit code 0)
 # Set restart delay in milliseconds (e.g., 5000 ms = 5 seconds)
 # & $nssmexe set $serviceName AppRestartDelay 5000
+# & $nssmexe set $serviceName AppPriority REALTIME_PRIORITY_CLASS
 
 # Set up stdout/stderr logging
 # & $nssmexe set $serviceName AppStdout "C:\Scripts\$ServiceName-output.log"
