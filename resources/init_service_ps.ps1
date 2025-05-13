@@ -49,9 +49,23 @@ Write-Host "Service '$serviceName' has been created and started successfully!"
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $ServiceName $SDDL
 
-# Remove inheritance and lock permissions
-icacls $nssmexe /inheritance:r /grant:r "SYSTEM:F" /grant:r "$env:USERNAME:F"
-icacls $scriptPath /inheritance:r /grant:r "SYSTEM:F" /grant:r "$env:USERNAME:F"
+# Remove inheritance and lock permissions except current user and SYSTEM
+# icacls $nssmexe /inheritance:r /grant:r "SYSTEM:F" /grant:r "$env:USERNAME:F"
+# icacls $scriptPath /inheritance:r /grant:r "SYSTEM:F" /grant:r "$env:USERNAME:F"
+
+# Take ownership (if needed)
+takeown /F "$nssmexe" /A /R /D Y 2>&1 | Out-Null
+takeown /F "$scriptPath" /A /R /D Y 2>&1 | Out-Null
+icacls "$nssmexe" /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+icacls "$scriptPath" /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+
+# Remove inheritance and grant SYSTEM full control
+icacls "$nssmexe" /inheritance:r /grant:r "SYSTEM:F" /T /Q 2>&1 | Out-Null
+icacls "$scriptPath" /inheritance:r /grant:r "SYSTEM:F" /T /Q 2>&1 | Out-Null
+
+# Remove all other users/groups (optional safety measure)
+icacls "$nssmexe" /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
+icacls "$scriptPath" /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
 
 # Prevent modification even by SYSTEM (optional)
 attrib +r +s +h $nssmexe
