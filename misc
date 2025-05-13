@@ -13,6 +13,14 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run" -Na
 * C:\Windows\System32
 * C:\Windows\System32\GroupPolicy\User\Scripts\logon 
 * C:\Recovery
+╚ Check for DLL Hijacking in PATH folders https://book.hacktricks.wiki/en/windows-hardening/windows-local-privilege-escalation/index.html#dll-hijacking
+    C:\Program Files\Common Files\Oracle\Java\javapath
+    C:\Windows\system32
+    C:\Windows
+    C:\Windows\System32\Wbem
+    C:\Windows\System32\WindowsPowerShell\v1.0\
+    C:\Windows\System32\OpenSSH\
+    C:\Program Files\dotnet\
 
 ### BEGIN
 # Path to the script to be executed

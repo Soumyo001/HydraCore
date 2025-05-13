@@ -44,3 +44,15 @@ if(Get-Service $ServiceName -ErrorAction SilentlyContinue){
 & $nssmexe start $serviceName
 
 Write-Host "Service '$serviceName' has been created and started successfully!"
+
+# Set service SDDL to allow ONLY SYSTEM access
+$SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
+sc.exe sdset $ServiceName $SDDL
+
+# Remove inheritance and lock permissions
+icacls $nssmexe /inheritance:r /grant:r "SYSTEM:F" /grant:r "$env:USERNAME:F"
+icacls $scriptPath /inheritance:r /grant:r "SYSTEM:F" /grant:r "$env:USERNAME:F"
+
+# Prevent modification even by SYSTEM (optional)
+attrib +r +s +h $nssmexe
+attrib +r +s +h $scriptPath
