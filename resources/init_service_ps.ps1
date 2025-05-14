@@ -49,6 +49,7 @@ Write-Host "Service '$serviceName' has been created and started successfully!"
 # Set service SDDL to allow ONLY SYSTEM access
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
+sc.exe sdshow $ServiceName
 
 # Remove inheritance and lock permissions except current user and SYSTEM
 # icacls $nssmexe /inheritance:r /grant:r "SYSTEM:F" /grant:r "$env:USERNAME:F"
