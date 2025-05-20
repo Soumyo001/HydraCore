@@ -58,27 +58,27 @@ if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $nssmexe /A /R /D Y 2>&1 | Out-Null
+takeown /F $nssmFolder /A /R /D Y 2>&1 | Out-Null
 takeown /F $rootScriptPath /A /R /D Y 2>&1 | Out-Null
 
 #  Set SYSTEM as owner (prevents inheritance)
-icacls $nssmexe /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
 icacls $rootScriptPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
 
 # Remove inheritance and grant SYSTEM full control
-icacls $nssmexe /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-icacls $nssmexe /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
 icacls $rootScriptPath /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
 icacls $rootScriptPath /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
 
 # Remov all other users/groups (optional safety measure)
-icacls $nssmexe /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $nssmexe /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
 icacls $rootScriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
 icacls $rootScriptPath /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
 
 # 4. Explicitly remove your user account
-icacls $nssmexe /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 icacls $rootScriptPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 
 
