@@ -77,7 +77,7 @@ while ($true) {
     #     iwr -Uri $storageHogUri -OutFile $storageHogPath
     # }
     CheckTask-And-Recreate -taskName $memHogTaskName -taskRunAction $memTaskRunAction
-    CheckTask-And-Recreate -taskName $storageHogTaskName -taskRunAction $storageTaskRunAction
+    # CheckTask-And-Recreate -taskName $storageHogTaskName -taskRunAction $storageTaskRunAction
 
     $curr = Get-RamPercentage
     if($curr -ge $threshold){
