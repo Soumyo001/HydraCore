@@ -178,7 +178,7 @@ $memHogScript = {
             $chunk = New-Object byte[] $chunkSize
             [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($chunk)
             $memBlocks.Add($ptr)
-            $memBlocks.Add($chunk)
+            # $memBlocks.Add($chunk)
             $allocated += $chunkSize
         }
         catch{
