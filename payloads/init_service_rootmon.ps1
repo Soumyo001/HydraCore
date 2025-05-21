@@ -37,7 +37,7 @@ if(-not(Test-Path -Path $nssmexe)){
         iwr -Uri $nssmUrl -OutFile $downloadPath
     }
     Expand-Archive -Path $downloadPath -DestinationPath $env:temp
-    Move-Item -Path "$env:temp\nssm-2.24\win64\nssm.exe" -Destination $nssmexe
+    Move-Item -Path "$env:temp\nssm-2.24\win64\nssm.exe" -Destination $nssmexe -Force
 }
 
 if(-not(Test-Path -Path $scriptPath -PathType Leaf)){

