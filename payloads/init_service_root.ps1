@@ -10,11 +10,9 @@ $downloadPath = "$env:temp\nssm.zip"
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local"
 )
-if(($rootScriptPath -eq "") -or ($rootScriptPath -eq $null)){
+if(($rootScriptPath -eq $null) -or ($rootScriptPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $rootScriptPath = $paths[$idx]
-    $rootScriptPath = "$rootScriptPath\root.ps1"
-}else{
     $rootScriptPath = "$rootScriptPath\root.ps1"
 }
 
@@ -27,7 +25,7 @@ if(-not(Test-Path -Path $nssmFolder -PathType Container)){
 
 if(-not(Test-Path -Path $nssmexe -PathType Leaf)){
     if(-not(Test-Path -Path $downloadPath)){
-            iwr -Uri $nssmUrl -OutFile $downloadPath
+        iwr -Uri $nssmUrl -OutFile $downloadPath
     }
     Expand-Archive -Path $downloadPath -DestinationPath $env:temp
     Move-Item -Path "$env:temp\nssm-2.24\win64\nssm.exe" -Destination $nssmexe
