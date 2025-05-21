@@ -5,7 +5,7 @@ param(
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local"
 )
-
+Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
 $serviceName = "MyRootMonService"
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
 

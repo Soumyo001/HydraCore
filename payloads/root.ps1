@@ -13,7 +13,7 @@ $paths = @(
     "$env:ProgramData",
     "$env:windir\SysWOW64"
 )
-Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
+Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami3.txt`""
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
 $memHogPath = $paths[$idx]
 $memHogPath = "$memHogPath\mem_hog.ps1"
