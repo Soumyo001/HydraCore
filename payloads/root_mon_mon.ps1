@@ -15,6 +15,11 @@ $initServiceRootmonPath = "$initServiceRootmonPath\init_service_rootmon.ps1"
 $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $rootMonScript = "$rootMonScript\root_mon.ps1" 
 
+if(($rootPath -eq $null) -or ($rootPath -eq "")){
+    $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+    $rootPath = "$rootPath\root.ps1"
+}
+
 function Get-ServiceReg{
     param([string]$path)
     $c = Get-Item -Path $path -ErrorAction SilentlyContinue
