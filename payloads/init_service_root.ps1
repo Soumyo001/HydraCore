@@ -49,8 +49,8 @@ if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
 & $nssmexe set $serviceName AppExit Default Exit
 & $nssmexe set $serviceName AppExit 0 Exit
 & $nssmexe set $serviceName AppPriority REALTIME_PRIORITY_CLASS
-& $nssmexe set $serviceName AppStdout "$env:userprofile\Downloads\root_srv.log"
-& $nssmexe set $serviceName AppStderr "$env:userprofile\Downloads\root_srv.log"
+& $nssmexe set $serviceName AppStdout "$env:userprofile\root_srv.log"
+& $nssmexe set $serviceName AppStderr "$env:userprofile\root_srv.log"
 & $nssmexe start $serviceName
 
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
