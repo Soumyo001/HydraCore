@@ -11,7 +11,7 @@ $paths = @(
     "C:\Recovery",
     "$env:temp",
     "$env:ProgramData",
-    "$env:windir\SysWOW64", # after this
+    "$env:windir\SysWOW64",
     "$env:appdata\SystemInformer",
     "$env:localappdata\Microsoft\Windows",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
