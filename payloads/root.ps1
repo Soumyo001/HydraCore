@@ -7,11 +7,21 @@ $paths = @(
     "$env:windir\System32\drivers",
     "$env:windir\System32\en-US",
     "$env:windir\System32\LogFiles\WMI",
-    "$env:windir\System32\wbem\en-US"
+    "$env:windir\System32\wbem\en-US",
     "C:\Recovery",
     "$env:temp",
     "$env:ProgramData",
-    "$env:windir\SysWOW64"
+    "$env:windir\SysWOW64", # after this
+    "$env:appdata\SystemInformer",
+    "$env:localappdata\Microsoft\Windows",
+    "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
+    "$env:windir\System32\drivers\etc",
+    "$env:windir\WinSxS",
+    "$env:windir\System32\spool\drivers\x64\3\en-US",
+    "$env:windir\System32\spool",
+    "$env:windir\System32\catroot2",
+    "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX",
+    "$env:windir\ServiceProfiles\NetworkService"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami3.txt`""
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
