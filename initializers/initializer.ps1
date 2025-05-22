@@ -91,6 +91,6 @@ Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\s
 Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name ConsentPromptBehaviorAdmin -Type DWord -Value 0 -Force
 Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name PromptOnSecureDesktop -Type DWord -Value 0 -Force
 
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath'"
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath'"
 
 Remove-Item -Path $currLoc -Force
