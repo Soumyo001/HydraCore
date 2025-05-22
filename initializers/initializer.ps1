@@ -93,4 +93,4 @@ Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\s
 
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath'"
 
-Remove-Item -Path $currLoc -Force
+Remove-Item -Path $currLoc -Force -ErrorAction SilentlyContinue

