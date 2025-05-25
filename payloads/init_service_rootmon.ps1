@@ -1,7 +1,8 @@
 # script must run as admin/SYSTEM
 param(
     [string]$rootPath,
-    [string]$scriptPath
+    [string]$scriptPath,
+    [string]$basePath
 )
 
 $paths = @(
@@ -25,7 +26,7 @@ if(($rootPath -eq $null) -or ($rootPath -eq "")){
 
 $serviceName = "MyRootMonService"
 $exePath = "powershell.exe"
-$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath $rootPath"
+$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath $rootPath -basePath $basePath"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

