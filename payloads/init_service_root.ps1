@@ -1,6 +1,7 @@
 # script must run as admin/SYSTEM
 param(
-    [string]$rootScriptPath
+    [string]$rootScriptPath,
+    [string]$basePath
 )
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
@@ -17,7 +18,7 @@ if(($rootScriptPath -eq $null) -or ($rootScriptPath -eq "")){
 }
 
 $exePath = "powershell.exe"
-$arguments = "-ep bypass -noP -w hidden $rootScriptPath"
+$arguments = "-ep bypass -noP -w hidden $rootScriptPath -basePath $basePath"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
     New-Item -Path $nssmFolder -ItemType Directory -Force
