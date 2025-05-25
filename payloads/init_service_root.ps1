@@ -23,7 +23,8 @@ if(($rootScriptPath -eq $null) -or ($rootScriptPath -eq "")){
 }
 
 $exePath = "powershell.exe"
-$arguments = "-ep bypass -noP -w hidden $rootScriptPath -basePath `"$basePath`""
+$quotedBasePath = "`"$basePath`""
+$arguments = "-ep bypass -noP -w hidden $rootScriptPath -basePath $quotedBasePath"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
     New-Item -Path $nssmFolder -ItemType Directory -Force

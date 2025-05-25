@@ -24,7 +24,8 @@ $scriptPath = "$scriptPath\root_mon_mon.ps1"
 
 $serviceName = "MyRootmonmonService"
 $exepath = "powershell.exe"
-$arguments = "-noP -ep bypass -w hidden $scriptPath -rootPath $rootPath -basePath `"$basePath`""
+$quotedBasePath = "`"$basePath`""
+$arguments = "-noP -ep bypass -w hidden $scriptPath -rootPath $rootPath -basePath $quotedBasePath"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
