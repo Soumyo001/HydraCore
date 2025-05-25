@@ -10,15 +10,19 @@ $paths = @(
 
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
-$propertyName = "rootPath"
+$propertyName = "root"
 $item = Get-ItemProperty -Path $basePath -Name $propertyName -ErrorAction SilentlyContinue
 $canUpdateRootPath = $false
 
 if((($rootPath -eq $null) -or ($rootPath -eq "")) -and -not($item)){
+    $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+    $rootPath = "$rootPath\root.ps1"
+    Set-ItemProperty -Path $basePath -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $true
 }
 
 if (-not($item)) {
+    Set-ItemProperty -Path $basePath -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $false
 }
 

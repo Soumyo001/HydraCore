@@ -8,7 +8,7 @@ $paths = @(
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
 $serviceName = "MyRootMonService"
-$propertyName = "rootMonPath"
+$propertyName = "rootMon"
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
 $issetup = $false
 
