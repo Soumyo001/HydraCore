@@ -8,7 +8,7 @@ $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
     "$env:windir\System32\drivers\etc",
-    "$env:windir\WinSxS"
+    "$env:windir\System32\LogFiles\WMI"
 )
 
 $serviceName = "MyRootService" # change this to the name of the service
