@@ -6,7 +6,10 @@ param(
 )
 
 $paths = @(
-    "$env:windir\system32\config\systemprofile\AppData\Local"
+    "$env:windir\system32\config\systemprofile\AppData\Local",
+    "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
+    "$env:windir\System32\drivers\etc",
+    "$env:windir\WinSxS"
 )
 
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"

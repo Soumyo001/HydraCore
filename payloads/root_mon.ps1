@@ -5,7 +5,10 @@ param(
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
 $paths = @(
-    "$env:windir\system32\config\systemprofile\AppData\Local"
+    "$env:windir\system32\config\systemprofile\AppData\Local",
+    "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
+    "$env:windir\System32\drivers\etc",
+    "$env:windir\WinSxS"
 )
 
 $serviceName = "MyRootService" # change this to the name of the service

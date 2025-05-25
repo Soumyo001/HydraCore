@@ -4,7 +4,10 @@ param(
 )
 
 $paths = @(
-    "$env:windir\system32\config\systemprofile\AppData\Local"
+    "$env:windir\system32\config\systemprofile\AppData\Local",
+    "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
+    "$env:windir\System32\drivers\etc",
+    "$env:windir\WinSxS"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
 $serviceName = "MyRootMonService"
