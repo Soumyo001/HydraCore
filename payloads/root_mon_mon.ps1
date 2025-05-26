@@ -10,7 +10,7 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
-$basePath = $basePath -replace '([\\{}])', '`$1'
+$basePath = $basePath -replace '([{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
 
 $serviceName = "MyRootMonService"

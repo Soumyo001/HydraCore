@@ -4,7 +4,7 @@ param(
     [string]$basePath
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
-$basePath = $basePath -replace '([\\{}])', '`$1'
+$basePath = $basePath -replace '([{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\root_mon.txt"
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
