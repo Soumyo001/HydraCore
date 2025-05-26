@@ -3,7 +3,7 @@ param(
     [string]$rootScriptPath,
     [string]$basePath
 )
-Start-Process powershell.exe -ArgumentList "-Command `"$basePath >> C:\initroot.txt`""
+
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"

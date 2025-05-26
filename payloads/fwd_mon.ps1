@@ -2,7 +2,7 @@ param(
     [string]$basePath
 )
 
-Start-Process powershell.exe -ArgumentList "-Command `"$basePath >> C:\whoami_fwd.txt`""
+Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami_fwd.txt`""
 
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
