@@ -18,7 +18,7 @@ $basePath = $basePath -replace '([\\{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\init_fwd_mon.txt"
 $serviceName = "MyfwdmonService"
 $exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath '$basePath'"
+$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath $basePath"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

