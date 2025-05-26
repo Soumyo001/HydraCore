@@ -4,7 +4,7 @@ param(
     [string]$basePath
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
-$b = $basePath -replace '([{}])', '`$1'
+$b = $basePath -replace '([\\{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\root_mon.txt"
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
@@ -16,9 +16,9 @@ $paths = @(
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
 $propertyName = "root"
-if(-not(Test-Path -Path $basePath)){
-    New-Item -Path $basePath -Force
-}
+
+
+
 $item = Get-ItemProperty -Path "$basePath" -Name $propertyName
 $canUpdateRootPath = $false
 
