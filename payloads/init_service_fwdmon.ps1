@@ -8,7 +8,7 @@ $paths = @(
     "$env:windir\System32\drivers\etc",
     "$env:windir\System32\LogFiles\WMI"
 )
-
+Start-Process powershell.exe -ArgumentList "-Command `"$basePath >> C:\initfwdmon.txt`""
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"

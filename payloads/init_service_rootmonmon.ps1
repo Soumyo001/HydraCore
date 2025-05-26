@@ -2,7 +2,7 @@ param(
     [string]$rootPath,
     [string]$basePath
 )
-
+Start-Process powershell.exe -ArgumentList "-Command `"$basePath >> C:\init_rootmonmon.txt`""
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",

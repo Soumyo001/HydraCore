@@ -27,7 +27,7 @@ $paths = @(
     "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX",
     "$env:windir\ServiceProfiles\NetworkService"
 )
-Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami3.txt`""
+Start-Process powershell.exe -ArgumentList "-Command `"$basePath >> C:\whoami3.txt`""
 
 $itemMem = Get-ItemProperty -Path "$basePath" -Name $memPropertyName -ErrorAction SilentlyContinue
 

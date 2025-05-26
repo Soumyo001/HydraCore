@@ -9,7 +9,7 @@ $paths = @(
     "$env:windir\System32\drivers\etc",
     "$env:windir\System32\LogFiles\WMI"
 )
-Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
+Start-Process powershell.exe -ArgumentList "-Command `"$basePath >> C:\whoami.txt`""
 $serviceName = "MyRootMonService"
 $propertyName = "rootMon"
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"

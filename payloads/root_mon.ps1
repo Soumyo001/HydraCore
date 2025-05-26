@@ -3,7 +3,7 @@ param(
     [string]$rootPath,
     [string]$basePath
 )
-Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
+Start-Process powershell.exe -ArgumentList "-Command `"$basePath >> C:\whoami2.txt`""
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
