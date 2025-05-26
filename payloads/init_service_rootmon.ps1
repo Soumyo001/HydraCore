@@ -11,6 +11,7 @@ $paths = @(
     "$env:windir\System32\drivers\etc",
     "$env:windir\System32\LogFiles\WMI"
 )
+$basePath = $basePath -replace '([\\{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\init_root_mon.txt"
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"

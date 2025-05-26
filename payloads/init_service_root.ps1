@@ -3,6 +3,7 @@ param(
     [string]$rootScriptPath,
     [string]$basePath
 )
+$basePath = $basePath -replace '([\\{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\init_root.txt"
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"

