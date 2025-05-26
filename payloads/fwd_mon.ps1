@@ -23,7 +23,7 @@ $issetup = $false
 if(-not($item)){
     $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $fwdPath = "$fwdPath\f.ps1"
-    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
     $issetup = $true
 }
 

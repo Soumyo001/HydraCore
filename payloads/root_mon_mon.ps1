@@ -26,7 +26,7 @@ $item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction Sile
 if(-not($item)){
     $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $rootMonScript = "$rootMonScript\root_mon.ps1" 
-    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
     $issetup = $true
 }
 

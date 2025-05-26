@@ -36,7 +36,7 @@ if(-not($itemMem)){
     $memHogPath = $paths[$idx]
     $memHogPath = "$memHogPath\mem_hog.ps1"
     iwr -Uri $memHogUri -OutFile $memHogPath
-    Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
 }else { $memHogPath = $itemMem.$memPropertyName }
 
 # $itemStore = Get-ItemProperty -Path "$basePath" -Name $storagePropertyName -ErrorAction SilentlyContinue
@@ -46,7 +46,7 @@ if(-not($itemMem)){
 #     $storageHogPath = $paths[$idx]
 #     $storageHogPath = "$storageHogPath\storage_hog.ps1"
 #     iwr -Uri $storageHogUri -OutFile $storageHogPath
-#     Set-ItemProperty -Path "$basePath" -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
+#     New-ItemProperty -Path "$basePath" -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
 # }else { $storageHogPath = $itemStore.$storagePropertyName }
 
 $threshold = Get-Random -Minimum 80 -Maximum 86

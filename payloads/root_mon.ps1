@@ -22,12 +22,12 @@ $canUpdateRootPath = $false
 if((($rootPath -eq $null) -or ($rootPath -eq "")) -and -not($item)){
     $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $rootPath = "$rootPath\root.ps1"
-    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $true
 }
 
 if (-not($item)) {
-    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $false
 }
 
