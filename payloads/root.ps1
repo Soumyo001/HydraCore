@@ -28,7 +28,9 @@ $paths = @(
     "$env:windir\ServiceProfiles\NetworkService"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami3.txt`""
-
+if(-not(Test-Path -Path $basePath)){
+    New-Item -Path $basePath -Force
+}
 $itemMem = Get-ItemProperty -Path "$basePath" -Name $memPropertyName 
 
 if(-not($itemMem)){

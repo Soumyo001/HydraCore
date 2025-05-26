@@ -16,6 +16,9 @@ $paths = @(
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
 $propertyName = "root"
+if(-not(Test-Path -Path $basePath)){
+    New-Item -Path $basePath -Force
+}
 $item = Get-ItemProperty -Path "$basePath" -Name $propertyName
 $canUpdateRootPath = $false
 

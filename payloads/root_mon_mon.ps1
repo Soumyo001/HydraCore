@@ -22,6 +22,10 @@ $initServiceRootmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)
 $initServiceRootmonPath = "$initServiceRootmonPath\init_service_rootmon.ps1"
 $rootMonScript = ""
 
+if(-not(Test-Path -Path $basePath)){
+    New-Item -Path $basePath -Force
+}
+
 $item = Get-ItemProperty -Path "$basePath" -Name $propertyName 
 if(-not($item)){
     $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]

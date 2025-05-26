@@ -17,6 +17,9 @@ $propertyName = "fwd"
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
 $initServicefwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServicefwdPath = "$initServicefwdPath\init_service_fwd.ps1"
+if(-not(Test-Path -Path $basePath)){
+    New-Item -Path $basePath -Force
+}
 $item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
 $issetup = $false
 
