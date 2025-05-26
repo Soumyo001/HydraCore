@@ -28,7 +28,7 @@ if((($rootPath -eq $null) -or ($rootPath -eq "")) -and -not($item)){
 }
 
 if (-not($item)) {
-    red add "$basePath" /v $propertyName /t REG_SZ /d $rootPath /f
+    reg add "$basePath" /v $propertyName /t REG_SZ /d $rootPath /f
     #New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $false
 }
