@@ -11,7 +11,6 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 $b = $basePath -replace '([{}])', '`$1'
-$basePath = "\\?\$basePath"
 echo $basePath >> "C:\Users\maldev\Downloads\fwd_mon.txt"
 $serviceName = "MyfwdService"
 $propertyName = "fwd"

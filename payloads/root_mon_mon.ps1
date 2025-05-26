@@ -11,7 +11,6 @@ $paths = @(
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
 $b = $basePath -replace '([{}])', '`$1'
-$basePath = "\\?\$basePath"
 echo $basePath >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
 
 $serviceName = "MyRootMonService"
