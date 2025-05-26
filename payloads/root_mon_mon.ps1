@@ -23,10 +23,6 @@ $initServiceRootmonPath = "$initServiceRootmonPath\init_service_rootmon.ps1"
 $rootMonScript = ""
 
 
-echo "Current user: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)" >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
-echo "Running in: $($PSVersionTable.PSEdition) and is 64-bit? : $([Environment]::Is64BitProcess)" >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
-echo "Base path: $basePath" >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
-echo "Test-Path: $(Test-Path $basePath)" >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
 
 
 $item = Get-ItemProperty -Path "$basePath" -Name $propertyName 
@@ -42,6 +38,10 @@ else{
     $issetup = $false
 }
 
+echo "Current user: $([System.Security.Principal.WindowsIdentity]::GetCurrent().Name)" >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
+echo "Running in: $($PSVersionTable.PSEdition) and is 64-bit? : $([Environment]::Is64BitProcess)" >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
+echo "Base path: $basePath" >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
+echo "Test-Path: $(Test-Path $basePath)" >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
 
 if(($rootPath -eq $null) -or ($rootPath -eq "")){
     $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
