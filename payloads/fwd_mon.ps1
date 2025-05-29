@@ -1,5 +1,7 @@
 param(
-    [string]$basePath
+    [string]$basePath,
+    [string]$exe,
+    [string]$name
 )
 
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami_fwd.txt`""
@@ -71,6 +73,7 @@ while ($true) {
     $y = Get-ServiceName -name $serviceName
     if(Test-Path -Path "$env:temp\jMEmdVuJAtNea.txt" -PathType Leaf){
         $stop = $true
+        & $exe stop $name
         Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force
     }
     if(-not(Test-Path -Path $fwdPath -PathType Leaf) -and -not($stop)){
