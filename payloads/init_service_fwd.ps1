@@ -22,7 +22,7 @@ if(($fwdPath -eq $null) -or ($fwdPath -eq "")){
     Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
 }
 $exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden '$fwdPath'"
+$arguments = "-ep bypass -nop -w hidden $fwdPath"
 $downloadPath = "$env:temp\nssm.zip"
 
 

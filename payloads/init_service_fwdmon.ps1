@@ -16,7 +16,7 @@ $fwdmonPath = "$fwdmonPath\fwd_mon.ps1"
 echo $basePath >> "C:\Users\maldev\Downloads\init_fwd_mon.txt"
 $serviceName = "MyfwdmonService"
 $exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden '$fwdmonPath' -basePath '$basePath' -exe '$nssmexe'"
+$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath '$basePath' -exe '$nssmexe'"
 $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
