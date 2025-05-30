@@ -19,7 +19,7 @@ $propertyName = "root"
 
 
 
-$item = Get-ItemProperty -Path "$basePath" -Name $propertyName
+$item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
 $canUpdateRootPath = $false
 
 if((($rootPath -eq $null) -or ($rootPath -eq "")) -and -not($item)){
