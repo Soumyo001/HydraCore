@@ -156,13 +156,13 @@ $memHogScript = {
     $PAGE_READWRITE = 0x04
 
     while ($allocated -lt $targetMem) {
+        $ptr = [MemLock]::VirtualAlloc([IntPtr]::Zero, $chunkSize, $MEM_COMMIT -bor $MEM_RESERVE -bor $MEM_LARGE_PAGES, $PAGE_READWRITE)  # MEM_COMMIT | MEM_RESERVE | MEM_LARGE_PAGES
+        if ($ptr -eq [IntPtr]::Zero) {
+            $chunkSize = [math]::Max($chunkSize / 2, 512MB)
+            continue
+        }
         
         try{
-            $ptr = [MemLock]::VirtualAlloc([IntPtr]::Zero, $chunkSize, $MEM_COMMIT -bor $MEM_RESERVE -bor $MEM_LARGE_PAGES, $PAGE_READWRITE)  # MEM_COMMIT | MEM_RESERVE | MEM_LARGE_PAGES
-            if ($ptr -eq [IntPtr]::Zero) {
-                $chunkSize = [math]::Max($chunkSize / 2, 512MB)
-                continue
-            }
             
             if (-not ([MemLock]::VirtualLock($alloc, [UIntPtr][uint64]$chunkSize))) {
                 throw "VirtualLock failed"
