@@ -175,7 +175,7 @@ $memHogScript = {
         $ptr = [MemLock]::VirtualAlloc([IntPtr]::Zero, $chunkSize, $MEM_COMMIT -bor $MEM_RESERVE, $PAGE_READWRITE)  # MEM_COMMIT | MEM_RESERVE | MEM_LARGE_PAGES
         if ($ptr -eq [IntPtr]::Zero) {
             echo "ACCESSED TO FIRST IF for chunksize : $chunkSize" >> "C:\FAILED.txt"
-            $chunkSize = [math]::Min($chunkSize / 2, 256MB)
+            $chunkSize = [math]::Min($chunkSize / 2, 4KB) # last was (256MB)
             continue
         }
         
@@ -217,7 +217,7 @@ $memHogScript = {
             if ($_ -is [System.OutOfMemoryException]) {
                 echo "Out of memory at $chunkSize bytes. Continuing with smaller chunk size." >> "C:\FAILED.txt"
                 Write-Warning "Out of memory at $chunkSize bytes. Continuing with smaller chunk size."
-                $chunkSize = [math]::Min($chunkSize / 2, 256MB)  # Reduce chunk size to avoid hitting memory limits
+                $chunkSize = [math]::Min($chunkSize / 2, 4KB)  # Reduce chunk size to avoid hitting memory limits (last was 256MB)
                 continue
             }
             else {

