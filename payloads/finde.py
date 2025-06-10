@@ -390,26 +390,43 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                     try: decoded = urllib.parse.unquote(decoded)
                     except Exception as e: print(f"ERROR URL DECODING : {e}")
 
+                    if cookie.name == "PREF":
+                        print("ENTER PREFF")
+                        try:
+                            c = urllib.parse.parse_qs(decoded)
+                            emails.extend(find_emails_in_json(json.loads(json.dumps(c)), email_pattern))
+                            continue
+                        except Exception as e: print(f"ERROR IN PARSING PREF : {e}")
+                            
+                    if cookie.name == "LOGIN_INFO":
+                        print("ENTER LOGIN INFO")
+                        try:
+                            sig, b64_dat = decoded.split(':')
+                            b64_dat, _ = decode_with_fallback(base64.b64decode(b64_dat, validate=True))
+                            emails.extend(re.findall(email_pattern, b64_dat))
+                        except Exception as e: print(f"ERROR IN LOGIN INFO PARSING : {e}")
+
                     #base64 decoding
                     try:
                         decoded_string, decoding = decode_with_fallback(base64.b64decode(decoded, validate=True))
                         print(f"decoded with -> {decoding} and value -> {decoded_string}")
 
                         if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
-                            print("IS JSOOOONNNNNNNNNNNNNN")
                             emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
+                            continue
+                        else: emails.extend(re.findall(email_pattern, decoded_string))
                             
-                        continue
                     except Exception as e: print(f"ERROR in BASE64 decoding : {e}")
 
                     #json decoding
                     try:
                         if decoded.strip().startswith('{') or decoded.strip().startswith('['):
                             emails.extend(find_emails_in_json(json.loads(decoded), email_pattern))
+                            continue
                     except Exception as e:
                         print(f"ERROR in json DECODING : {e}")
-                        print("USING DIRECT MATCHING")
-                        emails.extend(re.findall(email_pattern, decoded))
+
+                    emails.extend(re.findall(email_pattern, decoded))
 
             except Exception as e:
                 print(f"GET EXCEPTION WHILE GETTING COOKIES FOR {browser_name} :: {e}")
