@@ -8,6 +8,7 @@ import base64
 import getpass
 import browser_cookie3
 import requests, win32cred, win32com.client, socket, subprocess
+from win32com.client import Dispatch
 from win32.win32crypt import CryptUnprotectData
 from Crypto.Cipher.AES import new, MODE_GCM
 from smb.SMBConnection import SMBConnection
