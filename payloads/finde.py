@@ -757,7 +757,7 @@ emails.extend(opera_mails)
 def fetch_out():
     emails = []
     try:
-        pythoncom.CoInitialize()
+        #pythoncom.CoInitialize()
         outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
         folders = ["Inbox", "Sent Items", "Drafts", "Deleted Items", "Archive", "Junk Email", "Outbox", "Conversation History"]
 
@@ -782,7 +782,7 @@ def fetch_out():
                     except Exception as e: print(f"Failed Iterating Folder Items: {e}")
 
     except Exception as e: print(f"Outlook COM API error: {e}") 
-    finally: pythoncom.CoUninitialize()
+    #finally: pythoncom.CoUninitialize()
     return emails
 
 emails.extend(fetch_out())
