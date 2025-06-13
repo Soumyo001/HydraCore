@@ -739,6 +739,7 @@ emails.extend(opera_mails)
 def set_registry_key(hive, subkey, name, value, office_version='16.0', wow64_32=False, x86os=False):
     try:
         if not x86os: access = winreg.KEY_WOW64_64KEY if not wow64_32 else winreg.KEY_WOW64_32KEY
+        else: access = 0
         if hive == winreg.HKEY_LOCAL_MACHINE and wow64_32: 
             key_path = f"SOFTWARE\\WOW6432Node\\Microsoft\\Office\\{office_version}\\Outlook\\Security"
         else: 
