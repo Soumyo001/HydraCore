@@ -261,7 +261,14 @@ def find_emails_in_json(data, email_pattern):
         for item in data:
             emails.extend(find_emails_in_json(item, email_pattern))
     elif isinstance(data, str):
-        emails.extend(re.findall(email_pattern, data))
+        try: 
+            decoded = urllib.parse.unquote(data)
+            emails.extend(re.findall(email_pattern, decoded))
+            decoded2 = urllib.parse.unquote(decoded)
+            if decoded != decoded2:
+                emails.extend(re.findall(email_pattern, decoded2))
+
+        except: emails.extend(re.findall(email_pattern, data))
     return emails
 
 def extract_json(value_str):
@@ -572,7 +579,6 @@ def firefox(firefox_path, email_pattern, browser_name):
                     data = f.read()
                 decompressed = lz4.block.decompress(data[8:])
                 s_data = json.loads(decompressed)
-                s_data = urllib.parse.unquote(json.dumps(s_data))
                 emails.extend(find_emails_in_json(s_data, email_pattern))
         
         if os.path.exists(ck):
