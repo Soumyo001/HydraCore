@@ -1,4 +1,3 @@
-import random
 SUBJECT = "sub"
 FILENAME = "filename"
 BODY = "body"
