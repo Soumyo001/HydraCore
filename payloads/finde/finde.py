@@ -997,10 +997,17 @@ except Exception as e:
 emails = list(set(emails))
 final_emails = []
 for email in emails:
-    decoded_email = urllib.parse.unquote(email)
-    found_emails = re.findall(email_pattern, decoded_email)
-    final_emails.extend(found_emails)
-emails = final_emails
+    try:
+        decoded_email = urllib.parse.unquote(email)
+        final_emails.extend(re.findall(email_pattern, decoded_email))
+        for delim in ['.', '-', '~', '=']:
+            if delim in decoded_email:
+                chunks = decoded_email.split(delim)
+                for chunk in chunks:
+                    decoded_email2 = urllib.parse.unquote(chunk)
+                    final_emails.extend(re.findall(email_pattern, decoded_email2))
+    except: final_emails.extend(re.findall(email_pattern, email))
+emails = list(set(final_emails))
 
 bat_path = generate()
 
