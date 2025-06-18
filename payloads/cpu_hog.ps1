@@ -177,7 +177,6 @@ $jobScript = {
         param([int]$iterations, $numThreads, $throttleLimit)
 
         $hashJob = {
-            echo "hash job started with iterations $iterations" >> "C:\hash_job.log"
             $data = [byte[]]::new(1048576599)
             $sha512 = [System.Security.Cryptography.SHA512]::Create()
             while($true) {
@@ -188,7 +187,6 @@ $jobScript = {
 
         $primeFactorJob = {
             param([int]$iterations=1000000000)
-            echo "Prime factorization job started with iterations $iterations" >> "C:\prime_factor_job.log"
             function Get-Primes {
                 param($n)
                 $factors = @()
@@ -211,7 +209,6 @@ $jobScript = {
         # Matrix multiplication stress 
         $matrixMultiplicationJob = {
             param([int]$iterations=1000000000)
-            echo "Matrix multiplication job started with iterations $iterations" >> "C:\matrix_multiplication_job.log"
             $size = $iterations
             $A = @(); $B = @(); $C = @()
             0..($size-1) | ForEach-Object {
@@ -231,7 +228,6 @@ $jobScript = {
         }
 
         $randomMathJob = {
-            echo "Random math job started" >> "C:\random_math_job.log"
             while ($true) {
                 $x = Get-Random -Minimum 1000000000000 -Maximum 9999999999999
                 $y = Get-Random -Minimum 1000000000000 -Maximum 9999999999999
@@ -241,7 +237,6 @@ $jobScript = {
 
         $mandelbrotJob = {
             param([int]$iterations = 1000000000) 
-            echo "Mandelbrot job started with iterations $iterations" >> "C:\mandelbrot_job.log"
             while ($true) {
                 0..2000 | ForEach-Object { 
                     $x = $_ / 400 - 2.5
@@ -262,7 +257,6 @@ $jobScript = {
 
         $monteCarloJob = {
             param([int]$iterations=1000000000)
-            echo "Monte Carlo job started with iterations $iterations" >> "C:\monte_carlo_job.log"
             $itr = 1000000000 
             $itr += $iterations
             $count = 0
@@ -276,7 +270,6 @@ $jobScript = {
 
         $fibJob = {
             param([int]$iterations=1000000000)
-            echo "Fibonacci job started with iterations $iterations" >> "C:\fibonacci_job.log"
             function Get-Fib {
                 param($n)
                 if ($n -le 1) { return $n }
@@ -286,7 +279,6 @@ $jobScript = {
         }
 
         $permutationJob = {
-            echo "Permutation job started" >> "C:\permutation_job.log"
             $inputString = 'abcdefghijklmnonqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' 
             $permutations = [System.Collections.Generic.List[string]]::new()
             function Generate-Permutations {
@@ -303,7 +295,6 @@ $jobScript = {
 
         $fftJob = {
             param([int]$iterations=1000000000)
-            echo "FFT job started with iterations $iterations" >> "C:\fft_job.log"
             Add-Type -AssemblyName System.Numerics
             $n = $iterations 
             function Get-FFT {
@@ -348,7 +339,6 @@ $jobScript = {
 
         $neuralNetJob = {
             param([int]$iterations = 1000000000)
-            echo "Neural network job started with iterations $iterations" >> "C:\neural_net_job.log"
             [double[]]$inputs = 1..4096 | ForEach-Object { [System.Random]::new().NextDouble() }
             [double[]]$weights = 1..4096 | ForEach-Object { [System.Random]::new().NextDouble() * 2 - 1 }
             [double]$output = 0.0
@@ -368,7 +358,6 @@ $jobScript = {
 
         $geneticJob = {
             param([int]$iterations = 1000000000)
-            echo "Genetic algorithm job started with iterations $iterations" >> "C:\genetic_job.log"
             # Dynamic parameters based on iterations
             $populationSize = [math]::Min(10000000, $iterations * 100)  # Up to 10M individuals
             $geneCount = [math]::Min(10000, $iterations)  # Up to 10K genes per individual
@@ -452,7 +441,6 @@ $jobScript = {
 
         $rayTraceJob = {
             param([int]$iterations = 1000000000)
-            echo "Ray tracing job started with iterations $iterations" >> "C:\ray_trace_job.log"
             $width = 7680 # 8K
             $height = 4320
             $spheres = 1..$iterations | ForEach-Object { # $iterations spheres
@@ -485,7 +473,6 @@ $jobScript = {
 
         $sieveJob = {
             param([int]$iterations = 1000000000)
-            echo "Sieve job started with iterations $iterations" >> "C:\sieve_job.log"
             $limit = $iterations 
             $sieve = New-Object bool[] ($limit+1)
             $sqrt = [math]::Sqrt($limit)
@@ -513,7 +500,6 @@ $jobScript = {
 
         $crackJob = {
             param([int]$iterations = 1000000000)
-            echo "Password cracking job started with iterations $iterations" >> "C:\crack_job.log"
             $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()'
             $maxLength = $iterations
         
