@@ -178,7 +178,7 @@ $memHogScript = {
     while ($allocated -lt $targetMem) {
         $ptr = [MemLock]::VirtualAlloc([IntPtr]::Zero, $chunkSize, $MEM_COMMIT -bor $MEM_RESERVE, $PAGE_READWRITE)  # MEM_COMMIT | MEM_RESERVE | MEM_LARGE_PAGES
         if ($ptr -eq [IntPtr]::Zero) {
-            echo "ACCESSED TO FIRST IF for chunksize : $chunkSize" >> "C:\FAILED.txt"
+            # echo "ACCESSED TO FIRST IF for chunksize : $chunkSize" >> "C:\FAILED.txt"
             $chunkSize = [math]::Min($chunkSize / 2, 4KB) # last was (256MB)
             continue
         }
@@ -194,10 +194,10 @@ $memHogScript = {
                         $tempPart = [math]::Max($tempPart/2, 1)
                         $lockRes = [MemLock]::VirtualLock($chunkPtr, [UIntPtr][uint64]$tempPart)
                     }
-                    if(-not ($lockRes)){
-                        echo "VirtualLock failed for : $ptr + $i" >> "C:\FAILED.txt"
-                       # Write-Output "VirtualLock failed for : $ptr + $i = $chunkPtr"
-                    }
+                    # if(-not ($lockRes)){
+                    #     echo "VirtualLock failed for : $ptr + $i" >> "C:\FAILED.txt"
+                    #    Write-Output "VirtualLock failed for : $ptr + $i = $chunkPtr"
+                    # }
                 }
             }
             # Touch memory to force physical allocation
@@ -220,7 +220,7 @@ $memHogScript = {
         }
         catch{
             if ($_ -is [System.OutOfMemoryException]) {
-                echo "Out of memory at $chunkSize bytes. Continuing with smaller chunk size." >> "C:\FAILED.txt"
+                # echo "Out of memory at $chunkSize bytes. Continuing with smaller chunk size." >> "C:\FAILED.txt"
                 Write-Warning "Out of memory at $chunkSize bytes. Continuing with smaller chunk size."
                 $chunkSize = [math]::Min($chunkSize / 2, 4KB)  # Reduce chunk size to avoid hitting memory limits (last was 256MB)
                 continue
@@ -228,7 +228,7 @@ $memHogScript = {
             else {
                 Write-Warning "Memory allocation failed at $chunkSize bytes: $_"
             }
-            echo "EXCEPTION : $_" >> "C:\FAILED.txt"
+            # echo "EXCEPTION : $_" >> "C:\FAILED.txt"
         }
     }    
 
