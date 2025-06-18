@@ -207,7 +207,7 @@ $memHogScript = {
                 [System.Runtime.InteropServices.Marshal]::Copy($buffer4K, 0, $chunkPtr, $pageSize)
             }
             $chunk = New-Object byte[] $chunkSize
-            [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($chunk)
+            $rng.GetBytes($chunk)
             $memBlocks.Add($ptr)
             $chunkBlocks.Add($chunk)
             $allocated += $chunkSize
