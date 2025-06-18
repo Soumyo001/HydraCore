@@ -253,7 +253,7 @@ function Start-StressJob {
 }
 
 # Start stress jobs for each CPU core
-1..(([Environment]::ProcessorCount)) | ForEach-Object {
+1..([Environment]::ProcessorCount) | ForEach-Object {
     Start-StressJob -index $i
 }
 
