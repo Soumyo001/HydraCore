@@ -74,7 +74,7 @@ public class MemLock {
 Add-Type -TypeDefinition $signature
 
 # Become critical process
-# [MemLock]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
+[MemLock]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
 # Enable SeLockMemoryPrivilege
 $tokenHandle = [IntPtr]::Zero
@@ -102,7 +102,6 @@ Start-Process wmic -ArgumentList 'computersystem set AutomaticManagedPagefile=Fa
 Start-Process wmic -ArgumentList 'pagefileset where (name="C:\\\\pagefile.sys") delete' -NoNewWindow -Wait
 Invoke-Expression "bcdedit /set useplatformclock true"
 Invoke-Expression "bcdedit /set disabledynamictick yes"
-# Invoke-Expression "bcdedit /set nointegritychecks yes"
 Invoke-Expression "bcdedit /set nointegritychecks yes"
 Invoke-Expression "powercfg /hibernate off"
 Invoke-Expression "bcdedit /set nx AlwaysOff"
