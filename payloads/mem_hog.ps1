@@ -199,10 +199,10 @@ $memHogScript = {
             # [System.Runtime.InteropServices.Marshal]::WriteInt64($ptr, [DateTime]::Now.Ticks)
             $pageSize = 4096
             $buffer4K = New-Object byte[] $pageSize
-            [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($buffer4K)
             for ($i = 0; $i -lt $chunkSize; $i += $pageSize) {
                 $chunkPtr = [IntPtr]::Add($ptr, $i)
                 # Write 4KB buffer to each page
+                [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($buffer4K)
                 [System.Runtime.InteropServices.Marshal]::Copy($buffer4K, 0, $chunkPtr, $pageSize)
             }
             $chunk = New-Object byte[] $chunkSize
