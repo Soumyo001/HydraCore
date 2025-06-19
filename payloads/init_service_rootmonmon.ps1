@@ -19,7 +19,6 @@ if($arch -eq "64-bit"){
 }
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
-echo $basePath >> "C:\Users\maldev\Downloads\init_service_rootmonmon.txt"
 
 
 if(($rootPath -eq $null) -or ($rootPath -eq "")){

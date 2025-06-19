@@ -4,7 +4,7 @@ param(
     [string]$basePath
 )
 $curr = $MyInvocation.MyCommand.Path
-echo $basePath >> "C:\Users\maldev\Downloads\init_root.txt"
+
 $arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
 if($arch -eq "64-bit"){
     $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx64.exe"

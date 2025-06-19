@@ -12,7 +12,7 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 $b = $basePath -replace '([\\{}])', '`$1'
-echo $basePath >> "C:\Users\maldev\Downloads\fwd_mon.txt"
+
 $serviceName = "MyfwdService"
 $propertyName = "fwd"
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"

