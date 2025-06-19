@@ -51,6 +51,8 @@ if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
 & $nssmexe set $serviceName AppStderr "$env:userprofile\fwdmon_srv.log.error"
 & $nssmexe start $serviceName
 
+Start-Sleep -Seconds 3
+
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
