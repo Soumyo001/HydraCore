@@ -212,281 +212,41 @@ $deepPaths+= $customHell#+Add+to+your+damn+array
 
 # by default "C:\Windows\WinSxS" can't be accessed as admin, neither any files can be downloaded. how to bypass and download payloads there? I want specifically this path : C:\Windows\WinSxS\Temp\PendingRenames to download my payloads
 
-// advanced_minifilter_driver.c
-// Full skeleton for an advanced KMDF file system minifilter driver
+// === FileMonFilter.inf ===
+[Version]
+Signature="$WINDOWS NT$"
+Class=ActivityMonitor
+ClassGuid={f3d654aa-fda0-11d3-bd28-000000000000}
+Provider=%ManufacturerName%
+DriverVer=06/21/2025,1.0.0.0
+CatalogFile=FileMonFilter.cat
 
-#include <fltKernel.h>
-#include <dontuse.h>
-#include <suppress.h>
-#include <ntstrsafe.h>
-#include <bcrypt.h>
-#include <TraceLoggingProvider.h>
+[DestinationDirs]
+DefaultDestDir = 12
 
-PFLT_FILTER gFilterHandle = NULL;
-PFLT_PORT gServerPort = NULL;
-PFLT_PORT gClientPort = NULL;
+[DefaultInstall]
+CopyFiles=FilesToCopy
+AddReg=AddService
 
-#define TAG 'filt'
-#define POOL_TAG 'drv1'
+[FilesToCopy]
+FileMonFilter.sys
 
-// === ETW Logging ===
-TRACELOGGING_DEFINE_PROVIDER(
-    g_Provider,
-    "FileMonFilter",
-    (0x9bc7a5b1, 0x36c1, 0x4d82, 0xa7, 0x6a, 0xf0, 0x7e, 0x94, 0x03, 0x67, 0x3a));
+[AddService]
+HKR,"System\CurrentControlSet\Services\FileMonFilter","Type",0x10001,2
+HKR,"System\CurrentControlSet\Services\FileMonFilter","Start",0x10001,3
+HKR,"System\CurrentControlSet\Services\FileMonFilter","ErrorControl",0x10001,1
+HKR,"System\CurrentControlSet\Services\FileMonFilter","ImagePath",0x20000,"\SystemRoot\System32\drivers\FileMonFilter.sys"
+HKR,"System\CurrentControlSet\Services\FileMonFilter\Instances","DefaultInstance",0x00000000,"FileMon Instance"
+HKR,"System\CurrentControlSet\Services\FileMonFilter\Instances\FileMon Instance","Altitude",0x00000000,"370030"
+HKR,"System\CurrentControlSet\Services\FileMonFilter\Instances\FileMon Instance","Flags",0x00010001,0
 
-// === Communication ===
-#define MESSAGE_SIZE 512
-UCHAR gMessageBuffer[MESSAGE_SIZE];
+[SourceDisksFiles]
+FileMonFilter.sys=1
 
-// === Forward declarations ===
-DRIVER_INITIALIZE DriverEntry;
-NTSTATUS
-DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath);
+[SourceDisksNames]
+1=%DiskName%,,,
 
-NTSTATUS
-UnloadCallback(_In_ FLT_FILTER_UNLOAD_FLAGS Flags);
-
-NTSTATUS
-InstanceSetupCallback(
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _In_ FLT_INSTANCE_SETUP_FLAGS Flags,
-    _In_ DEVICE_TYPE VolumeDeviceType,
-    _In_ FLT_FILESYSTEM_TYPE VolumeFilesystemType);
-
-FLT_PREOP_CALLBACK_STATUS
-PreCreateCallback(
-    _Inout_ PFLT_CALLBACK_DATA Data,
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _Out_ PVOID *CompletionContext);
-
-FLT_PREOP_CALLBACK_STATUS
-PreReadCallback(
-    _Inout_ PFLT_CALLBACK_DATA Data,
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _Out_ PVOID *CompletionContext);
-
-FLT_PREOP_CALLBACK_STATUS
-PreWriteCallback(
-    _Inout_ PFLT_CALLBACK_DATA Data,
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _Out_ PVOID *CompletionContext);
-
-FLT_PREOP_CALLBACK_STATUS
-PreSetInfoCallback(
-    _Inout_ PFLT_CALLBACK_DATA Data,
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _Out_ PVOID *CompletionContext);
-
-NTSTATUS
-ConnectNotifyCallback(
-    PFLT_PORT ClientPort,
-    PVOID ServerPortCookie,
-    PVOID ConnectionContext,
-    ULONG SizeOfContext,
-    PVOID *ConnectionCookie);
-
-VOID
-DisconnectNotifyCallback(
-    PVOID ConnectionCookie);
-
-NTSTATUS
-MessageNotifyCallback(
-    PVOID PortCookie,
-    PVOID InputBuffer,
-    ULONG InputBufferLength,
-    PVOID OutputBuffer,
-    ULONG OutputBufferLength,
-    PULONG ReturnOutputBufferLength);
-
-// === Operation registration ===
-CONST FLT_OPERATION_REGISTRATION Callbacks[] = {
-    { IRP_MJ_CREATE, 0, PreCreateCallback, NULL },
-    { IRP_MJ_READ, 0, PreReadCallback, NULL },
-    { IRP_MJ_WRITE, 0, PreWriteCallback, NULL },
-    { IRP_MJ_SET_INFORMATION, 0, PreSetInfoCallback, NULL },
-    { IRP_MJ_OPERATION_END }
-};
-
-// === Filter registration ===
-const FLT_REGISTRATION FilterRegistration = {
-    sizeof(FLT_REGISTRATION),
-    FLT_REGISTRATION_VERSION,
-    0,
-    NULL,
-    Callbacks,
-    UnloadCallback,
-    InstanceSetupCallback,
-    NULL, NULL, NULL, NULL, NULL, NULL
-};
-
-// === Communication callbacks ===
-NTSTATUS
-ConnectNotifyCallback(
-    PFLT_PORT ClientPort,
-    PVOID ServerPortCookie,
-    PVOID ConnectionContext,
-    ULONG SizeOfContext,
-    PVOID *ConnectionCookie)
-{
-    UNREFERENCED_PARAMETER(ServerPortCookie);
-    UNREFERENCED_PARAMETER(ConnectionContext);
-    UNREFERENCED_PARAMETER(SizeOfContext);
-    UNREFERENCED_PARAMETER(ConnectionCookie);
-
-    gClientPort = ClientPort;
-    return STATUS_SUCCESS;
-}
-
-VOID
-DisconnectNotifyCallback(PVOID ConnectionCookie)
-{
-    UNREFERENCED_PARAMETER(ConnectionCookie);
-    FltCloseClientPort(gFilterHandle, &gClientPort);
-}
-
-NTSTATUS
-MessageNotifyCallback(
-    PVOID PortCookie,
-    PVOID InputBuffer,
-    ULONG InputBufferLength,
-    PVOID OutputBuffer,
-    ULONG OutputBufferLength,
-    PULONG ReturnOutputBufferLength)
-{
-    UNREFERENCED_PARAMETER(PortCookie);
-    UNREFERENCED_PARAMETER(InputBufferLength);
-    UNREFERENCED_PARAMETER(OutputBufferLength);
-
-    RtlCopyMemory(OutputBuffer, "Ack", 4);
-    *ReturnOutputBufferLength = 4;
-
-    return STATUS_SUCCESS;
-}
-
-// === Driver Entry ===
-NTSTATUS
-DriverEntry(_In_ PDRIVER_OBJECT DriverObject, _In_ PUNICODE_STRING RegistryPath)
-{
-    UNREFERENCED_PARAMETER(RegistryPath);
-    OBJECT_ATTRIBUTES oa;
-    UNICODE_STRING portName = RTL_CONSTANT_STRING(L"\\FileMonPort");
-    NTSTATUS status;
-
-    TraceLoggingRegister(g_Provider);
-
-    status = FltRegisterFilter(DriverObject, &FilterRegistration, &gFilterHandle);
-    if (!NT_SUCCESS(status)) return status;
-
-    InitializeObjectAttributes(&oa, &portName, OBJ_CASE_INSENSITIVE | OBJ_KERNEL_HANDLE, NULL, NULL);
-    status = FltCreateCommunicationPort(
-        gFilterHandle,
-        &gServerPort,
-        &oa,
-        NULL,
-        ConnectNotifyCallback,
-        DisconnectNotifyCallback,
-        MessageNotifyCallback,
-        1);
-
-    if (NT_SUCCESS(status)) {
-        status = FltStartFiltering(gFilterHandle);
-    } else {
-        FltUnregisterFilter(gFilterHandle);
-    }
-
-    return status;
-}
-
-// === Unload ===
-NTSTATUS
-UnloadCallback(_In_ FLT_FILTER_UNLOAD_FLAGS Flags)
-{
-    UNREFERENCED_PARAMETER(Flags);
-    if (gClientPort) FltCloseClientPort(gFilterHandle, &gClientPort);
-    if (gServerPort) FltCloseCommunicationPort(gServerPort);
-    FltUnregisterFilter(gFilterHandle);
-    TraceLoggingUnregister(g_Provider);
-    return STATUS_SUCCESS;
-}
-
-NTSTATUS
-InstanceSetupCallback(
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _In_ FLT_INSTANCE_SETUP_FLAGS Flags,
-    _In_ DEVICE_TYPE VolumeDeviceType,
-    _In_ FLT_FILESYSTEM_TYPE VolumeFilesystemType)
-{
-    UNREFERENCED_PARAMETER(FltObjects);
-    UNREFERENCED_PARAMETER(Flags);
-    UNREFERENCED_PARAMETER(VolumeDeviceType);
-    UNREFERENCED_PARAMETER(VolumeFilesystemType);
-    return STATUS_SUCCESS;
-}
-
-// === Pre-operation hooks ===
-FLT_PREOP_CALLBACK_STATUS
-PreCreateCallback(
-    _Inout_ PFLT_CALLBACK_DATA Data,
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _Out_ PVOID *CompletionContext)
-{
-    UNREFERENCED_PARAMETER(CompletionContext);
-
-    PFLT_FILE_NAME_INFORMATION nameInfo;
-    if (NT_SUCCESS(FltGetFileNameInformation(Data, FLT_FILE_NAME_NORMALIZED | FLT_FILE_NAME_QUERY_ALWAYS_ALLOW_CACHE_LOOKUP, &nameInfo))) {
-        FltParseFileNameInformation(nameInfo);
-        if (RtlSuffixUnicodeString(&nameInfo->Extension, L".exe", TRUE) ||
-            RtlSuffixUnicodeString(&nameInfo->Extension, L".ps1", TRUE)) {
-            Data->IoStatus.Status = STATUS_ACCESS_DENIED;
-            Data->IoStatus.Information = 0;
-            TraceLoggingWrite(g_Provider, "BlockedExecutable", TraceLoggingUnicodeString(nameInfo->Name.Buffer, "File"));
-            FltReleaseFileNameInformation(nameInfo);
-            return FLT_PREOP_COMPLETE;
-        }
-        FltReleaseFileNameInformation(nameInfo);
-    }
-    return FLT_PREOP_SUCCESS_NO_CALLBACK;
-}
-
-FLT_PREOP_CALLBACK_STATUS
-PreReadCallback(
-    _Inout_ PFLT_CALLBACK_DATA Data,
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _Out_ PVOID *CompletionContext)
-{
-    UNREFERENCED_PARAMETER(FltObjects);
-    UNREFERENCED_PARAMETER(CompletionContext);
-    // Decryption logic placeholder
-    TraceLoggingWrite(g_Provider, "FileRead", TraceLoggingUInt32(Data->Iopb->Parameters.Read.Length, "Bytes"));
-    return FLT_PREOP_SUCCESS_NO_CALLBACK;
-}
-
-FLT_PREOP_CALLBACK_STATUS
-PreWriteCallback(
-    _Inout_ PFLT_CALLBACK_DATA Data,
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _Out_ PVOID *CompletionContext)
-{
-    UNREFERENCED_PARAMETER(FltObjects);
-    UNREFERENCED_PARAMETER(CompletionContext);
-    // Encryption logic placeholder
-    TraceLoggingWrite(g_Provider, "FileWrite", TraceLoggingUInt32(Data->Iopb->Parameters.Write.Length, "Bytes"));
-    return FLT_PREOP_SUCCESS_NO_CALLBACK;
-}
-
-FLT_PREOP_CALLBACK_STATUS
-PreSetInfoCallback(
-    _Inout_ PFLT_CALLBACK_DATA Data,
-    _In_ PCFLT_RELATED_OBJECTS FltObjects,
-    _Out_ PVOID *CompletionContext)
-{
-    UNREFERENCED_PARAMETER(FltObjects);
-    UNREFERENCED_PARAMETER(CompletionContext);
-    if (Data->Iopb->Parameters.SetFileInformation.FileInformationClass == FileRenameInformation ||
-        Data->Iopb->Parameters.SetFileInformation.FileInformationClass == FileDispositionInformation) {
-        TraceLoggingWrite(g_Provider, "FileDeleteOrRename", TraceLoggingUInt32(Data->Iopb->Parameters.SetFileInformation.Length, "Length"));
-    }
-    return FLT_PREOP_SUCCESS_NO_CALLBACK;
-}
+[Strings]
+ManufacturerName="YourCompany"
+DiskName="FileMonFilter Install Disk"
 ### END
