@@ -89,5 +89,5 @@ icacls $nssmFolder /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-
 #attrib +h +s +r $nssmFolder
 #attrib +h +s +r $scriptPath
 
-Pause
+
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue
