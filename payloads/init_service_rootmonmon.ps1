@@ -31,7 +31,7 @@ $scriptPath = "$scriptPath\root_mon_mon.ps1"
 
 $serviceName = "MyRootmonmonService"
 $exepath = "powershell.exe"
-$arguments = "-noP -ep bypass -w hidden $scriptPath -rootPath $rootPath -basePath '$basePath'"
+$arguments = "-noP -ep bypass -w hidden $scriptPath -rootPath '$rootPath' -basePath '$basePath'"
 # $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
@@ -69,22 +69,22 @@ Start-Sleep -Seconds 3
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $scriptPath /A /R /D Y 2>&1 | Out-Null
-icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+takeown /F $scriptPath /R /D Y 2>&1 | Out-Null
+icacls $scriptPath /inheritance:r /T /Q 2>&1 | Out-Null
+icacls $scriptPath /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
 icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
+icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+icacls $scriptPath /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 
 
-takeown /F $nssmFolder /A /R /D Y 2>&1 | Out-Null
-icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+takeown /F $nssmFolder /R /D Y 2>&1 | Out-Null
+icacls $nssmFolder /inheritance:r /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
 icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 
 #attrib +h +s +r $nssmFolder
 #attrib +h +s +r $scriptPath

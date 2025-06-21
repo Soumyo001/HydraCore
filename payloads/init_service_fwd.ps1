@@ -63,23 +63,23 @@ Start-Sleep -Seconds 3
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $fwdPath /A /R /D Y 2>&1 | Out-Null
-icacls $fwdPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $fwdPath /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-icacls $fwdPath /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+takeown /F $fwdPath /R /D Y 2>&1 | Out-Null
+icacls $fwdPath /inheritance:r /T /Q 2>&1 | Out-Null
+icacls $fwdPath /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
 icacls $fwdPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $fwdPath /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $fwdPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+icacls $fwdPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
+icacls $fwdPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+icacls $fwdPath /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 
 
 
-takeown /F $nssmFolder /A /R /D Y 2>&1 | Out-Null
-icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+takeown /F $nssmFolder /R /D Y 2>&1 | Out-Null
+icacls $nssmFolder /inheritance:r /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
 icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 
 #attrib +h +s +r $nssmFolder
 #attrib +h +s +r $fwdPath

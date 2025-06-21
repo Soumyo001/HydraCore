@@ -56,22 +56,13 @@ Start-Sleep -Seconds 3
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $fwdmonPath /A /R /D Y 2>&1 | Out-Null
-
-#  Set SYSTEM as owner (prevents inheritance)
-icacls $fwdmonPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-
-# Remove inheritance and grant SYSTEM full control
-icacls $fwdmonPath /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-icacls $fwdmonPath /inheritance:r /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-
-# Remov all other users/groups (optional safety measure)
+takeown /F $fwdmonPath /R /D Y 2>&1 | Out-Null
+icacls $fwdmonPath /inheritance:r /T /Q 2>&1 | Out-Null
+icacls $fwdmonPath /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
 icacls $fwdmonPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $fwdmonPath /remove:g "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-
-# 4. Explicitly remove your user account
-icacls $fwdmonPath /remove:g "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
-
+icacls $fwdmonPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
+icacls $fwdmonPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
+icacls $fwdmonPath /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
 
 #attrib +h +s +r $nssmFolder
 #attrib +h +s +r $fwdmonPath
