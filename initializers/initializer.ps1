@@ -59,6 +59,7 @@ $ownership = @(
     "$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft",
     "$env:windir\system32\LogFiles\WMI\RtBackup",
     "$env:windir\System32\DriverStore\FileRepository",
+    "$env:windir\Logs\CBS",
     "$env:ProgramData\Microsoft\Windows\AppRepository"
 )
 Disable-ComputerRestore -Drive "$env:systemdrive\"

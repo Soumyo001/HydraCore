@@ -52,17 +52,17 @@ if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
 & $nssmexe start $serviceName
 
 Start-Sleep -Seconds 3
-
+$user = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $fwdmonPath /R /D Y 2>&1 | Out-Null
-icacls $fwdmonPath /inheritance:r /T /Q 2>&1 | Out-Null
-icacls $fwdmonPath /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
-icacls $fwdmonPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $fwdmonPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $fwdmonPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $fwdmonPath /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+takeown /F $fwdmonPath /A 2>&1 | Out-Null
+icacls $fwdmonPath /inheritance:r /Q 2>&1 | Out-Null
+icacls $fwdmonPath /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /Q 2>&1 | Out-Null
+icacls $fwdmonPath /setowner "NT AUTHORITY\SYSTEM" /Q 2>&1 | Out-Null
+icacls $fwdmonPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 2>&1 | Out-Null
+icacls $fwdmonPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 2>&1 | Out-Null
+icacls $fwdmonPath /remove "$user" /Q 2>&1 | Out-Null
 
 #attrib +h +s +r $nssmFolder
 #attrib +h +s +r $fwdmonPath

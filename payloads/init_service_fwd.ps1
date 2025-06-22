@@ -59,27 +59,27 @@ if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
 & $nssmexe start $serviceName
 
 Start-Sleep -Seconds 3
-
+$user = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $fwdPath /R /D Y 2>&1 | Out-Null
-icacls $fwdPath /inheritance:r /T /Q 2>&1 | Out-Null
-icacls $fwdPath /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
-icacls $fwdPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $fwdPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $fwdPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $fwdPath /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+takeown /F $fwdPath 2>&1 | Out-Null
+icacls $fwdPath /setowner "NT AUTHORITY\SYSTEM" /Q 2>&1 | Out-Null
+icacls $fwdPath /inheritance:r /Q 2>&1 | Out-Null
+icacls $fwdPath /grant:r "NT AUTHORITY\SYSTEM:F" /Q 2>&1 | Out-Null
+icacls $fwdPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 2>&1 | Out-Null
+icacls $fwdPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 2>&1 | Out-Null
+icacls $fwdPath /remove "$user" /Q 2>&1 | Out-Null
 
 
 
 takeown /F $nssmFolder /R /D Y 2>&1 | Out-Null
+icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
 icacls $nssmFolder /inheritance:r /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
 icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
 icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove "$user" /T /Q 2>&1 | Out-Null
 
 #attrib +h +s +r $nssmFolder
 #attrib +h +s +r $fwdPath

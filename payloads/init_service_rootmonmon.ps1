@@ -65,26 +65,26 @@ if(Get-Service -Name $serviceName -ErrorAction SilentlyContinue){
 & $nssmexe start $serviceName
 
 Start-Sleep -Seconds 3
-
+$user = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $scriptPath /R /D Y 2>&1 | Out-Null
-icacls $scriptPath /inheritance:r /T /Q 2>&1 | Out-Null
-icacls $scriptPath /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $scriptPath /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+takeown /F $scriptPath /A 2>&1 | Out-Null
+icacls $scriptPath /inheritance:r /Q 2>&1 | Out-Null
+icacls $scriptPath /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /Q 2>&1 | Out-Null
+icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /Q 2>&1 | Out-Null
+icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 2>&1 | Out-Null
+icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 2>&1 | Out-Null
+icacls $scriptPath /remove "$user" /Q 2>&1 | Out-Null
 
 
-takeown /F $nssmFolder /R /D Y 2>&1 | Out-Null
+takeown /F $nssmFolder /A /R /D Y 2>&1 | Out-Null
 icacls $nssmFolder /inheritance:r /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /grant:r "$($user):(OI)(CI)F" "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
 icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
 icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove "$env:computername\$env:username" /T /Q 2>&1 | Out-Null
+icacls $nssmFolder /remove "$user" /T /Q 2>&1 | Out-Null
 
 #attrib +h +s +r $nssmFolder
 #attrib +h +s +r $scriptPath
