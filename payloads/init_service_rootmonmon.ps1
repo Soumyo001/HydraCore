@@ -69,7 +69,7 @@ $user = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $scriptPath /A 
+takeown /F $scriptPath
 icacls $scriptPath /inheritance:r /Q 
 icacls $scriptPath /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /Q 
 icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /Q 
@@ -78,9 +78,9 @@ icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "
 icacls $scriptPath /remove "$user" /Q 
 
 
-takeown /F $nssmFolder /A /R /D Y
+takeown /F $nssmFolder /R /D Y
+icacls $nssmFolder /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /T /Q
 icacls $nssmFolder /inheritance:r /T /Q
-icacls $nssmFolder /grant:r "$($user):(OI)(CI)F" "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 
 icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 
 icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 
 icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 
