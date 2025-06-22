@@ -72,26 +72,26 @@ $user = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $scriptPath 2>&1 | Out-Null
-icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /Q 2>&1 | Out-Null
-icacls $scriptPath /inheritance:r /Q 2>&1 | Out-Null
-icacls $scriptPath /grant:r "NT AUTHORITY\SYSTEM:F" /Q 2>&1 | Out-Null
-icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 2>&1 | Out-Null
-icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 2>&1 | Out-Null
-icacls $scriptPath /remove "$user" /Q 2>&1 | Out-Null
+takeown /F $scriptPath 
+icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /Q 
+icacls $scriptPath /inheritance:r /Q 
+icacls $scriptPath /grant:r "NT AUTHORITY\SYSTEM:F" /Q 
+icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 
+icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 
+icacls $scriptPath /remove "$user" /Q 
 
 
-takeown /F $nssmFolder /R /D Y 2>&1 | Out-Null
-icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /inheritance:r /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
-icacls $nssmFolder /remove "$user" /T /Q 2>&1 | Out-Null
+takeown /F $nssmFolder /R /D Y 
+icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 
+icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 
+icacls $nssmFolder /inheritance:r /T /Q 
+icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 
+icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 
+icacls $nssmFolder /remove "$user" /T /Q 
 
 
 
-#attrib +h +s +r $nssmFolder
+#attrib +h +s +r $nssmFolder 2>&1 | Out-Null
 #attrib +h +s +r $scriptPath
 
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue
