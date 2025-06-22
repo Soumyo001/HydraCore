@@ -140,13 +140,8 @@ foreach($path in $paths){
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/random1.txt" -OutFile "$path\text.txt"
     }catch{
         Write-Output "ERROR: $_"
-        # takeown /f "$path"
-        # icacls "$path" /grant:r "$($user):(OI)(CI)F" "SYSTEM:(OI)(CI)F" /inheritance:r /q
-        # try{
-        #     iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/random1.txt" -OutFile "$path\text.txt"
-        # }catch{
-        #     $paths = $paths | Where-Object{$_ -ne $path}
-        # }
+    }finally {
+        if(Test-Path -Path "$path\text.txt" -PathType Leaf){ Remove-Item -Path "$path\text.txt" -Force }
     }
 }
 
