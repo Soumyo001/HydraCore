@@ -56,7 +56,7 @@ $user = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $fwdmonPath /A 
+takeown /F $fwdmonPath
 icacls $fwdmonPath /inheritance:r /Q 
 icacls $fwdmonPath /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /Q 
 icacls $fwdmonPath /setowner "NT AUTHORITY\SYSTEM" /Q 
