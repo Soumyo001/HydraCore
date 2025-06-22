@@ -112,7 +112,7 @@ Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidde
     New-ItemProperty -Path "$basePath\$subName" -Name "ThreadingModel" -Value "Apartment" -Force | Out-Null
 }
 
-$loggedInUser = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
+
 
 
 foreach ($path in $ownership) {
