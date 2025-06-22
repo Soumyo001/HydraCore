@@ -56,15 +56,15 @@ $user = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $fwdmonPath /A 2>&1 | Out-Null
-icacls $fwdmonPath /inheritance:r /Q 2>&1 | Out-Null
-icacls $fwdmonPath /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /Q 2>&1 | Out-Null
-icacls $fwdmonPath /setowner "NT AUTHORITY\SYSTEM" /Q 2>&1 | Out-Null
-icacls $fwdmonPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 2>&1 | Out-Null
-icacls $fwdmonPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 2>&1 | Out-Null
-icacls $fwdmonPath /remove "$user" /Q 2>&1 | Out-Null
+takeown /F $fwdmonPath /A 
+icacls $fwdmonPath /inheritance:r /Q 
+icacls $fwdmonPath /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /Q 
+icacls $fwdmonPath /setowner "NT AUTHORITY\SYSTEM" /Q 
+icacls $fwdmonPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 
+icacls $fwdmonPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 
+icacls $fwdmonPath /remove "$user" /Q 
 
-#attrib +h +s +r $nssmFolder
+#attrib +h +s +r $nssmFolder 2>&1 | Out-Null
 #attrib +h +s +r $fwdmonPath
 
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue
