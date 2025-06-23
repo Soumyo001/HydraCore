@@ -66,5 +66,5 @@ icacls $fwdmonPath /remove "$user" /Q
 
 #attrib +h +s +r $nssmFolder 2>&1 | Out-Null
 #attrib +h +s +r $fwdmonPath
-
+pause
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue
