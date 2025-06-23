@@ -4,6 +4,7 @@ param(
 )
 
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami_fwd.txt`""
+$user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
 
 $paths = @(
     ($env:systemdrive+"\Users\$user\AppData\Roaming\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump"),

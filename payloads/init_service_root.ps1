@@ -4,6 +4,7 @@ param(
     [string]$basePath
 )
 $curr = $MyInvocation.MyCommand.Path
+$user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
 
 $arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
 if($arch -eq "64-bit"){

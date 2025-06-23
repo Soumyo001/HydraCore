@@ -4,7 +4,9 @@ param(
     [string]$basePath
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
+$user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
 $b = $basePath -replace '([\\{}])', '`$1'
+
 $paths = @(
     ($env:systemdrive+"\Users\$user\AppData\Roaming\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump"),
     ($env:systemdrive + "\Recovery"),

