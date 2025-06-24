@@ -88,6 +88,8 @@ while($true){
 
     if(-not(Test-Path -Path $rootMonScript -PathType Leaf)){
         if(-not($issetup)){
+            $initServiceRootmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+            $initServiceRootmonPath = "$initServiceRootmonPath\init_service_rootmon.ps1"
             $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $rootMonScript = "$rootMonScript\root_mon.ps1"
             Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null

