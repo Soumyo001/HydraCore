@@ -117,5 +117,4 @@ while ($true) {
         powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$b" -fwdPath $fwdPath
     }
     $issetup = $false
-    Start-Sleep -Seconds 2
 }
