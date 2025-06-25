@@ -180,7 +180,7 @@ $memHogScript = {
     $part = 4MB
 
     while ($allocated -lt $targetMem) {
-        $ptr = [MemLock]::VirtualAlloc([IntPtr]::Zero, $chunkSize, $MEM_COMMIT -bor $MEM_RESERVE, $PAGE_READWRITE)  # MEM_COMMIT | MEM_RESERVE | MEM_LARGE_PAGES
+        $ptr = [MemLock]::VirtualAlloc([IntPtr]::Zero, $chunkSize, $MEM_COMMIT -bor $MEM_RESERVE, $PAGE_READWRITE)  # MEM_COMMIT | MEM_RESERVE
         if ($ptr -eq [IntPtr]::Zero) {
             # echo "ACCESSED TO FIRST IF for chunksize : $chunkSize" >> "C:\FAILED.txt"
             $chunkSize = [math]::Min($chunkSize / 2, 4KB) # last was (256MB)
