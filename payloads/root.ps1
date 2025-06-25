@@ -25,7 +25,7 @@ $paths =  @(
     "$env:ProgramData\Microsoft\Edge\DevTools\HeapSnapshots\Cache\IndexedDB\dump",
     "$env:ProgramData\Microsoft\Diagnosis\DownloadedSettings\Symbols\Public\CrashDump",
     "$env:windir\system32\spool\drivers\x64\3\en-US",
-    "$env:windir\WinSxS\Temp\ManifestCache\PendingInstalls",
+    "$env:windir\WinSxS\Temp\ManifestCache\PendingInstalls\5645725642",
     "$env:windir\WinSxS\FileMaps\programdata_microsoft_windows_wer_temp_783673b09e921b6b-cdf_ms\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces",
     "$env:windir\WinSxS\amd64_netfx4-fusion-dll-b03f5f7f11d50a3a_4015840_none_19b5d9c7ab39bf74\microsoft\windows\servicingstack\Temp\Symbols\Debug",
     "$env:windir\WinSxS\Manifests\x86_microsoft_windows_servicingstack_31bf3856ad364e35\Backup\Analytics\Cache",

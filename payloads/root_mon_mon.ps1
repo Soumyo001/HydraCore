@@ -8,7 +8,7 @@ $paths = @(
     ($env:systemdrive+"\Users\$user\AppData\Roaming\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump"),
     ($env:systemdrive + "\Recovery"),
     "$env:windir\WinSxS\FileMaps\programdata_microsoft_windows_wer_temp_783673b09e921b6b-cdf_ms\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces",
-    "$env:windir\WinSxS\Temp\ManifestCache\PendingInstalls"
+    "$env:windir\WinSxS\Temp\ManifestCache\PendingInstalls\5645725642"
 )
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
 $b = $basePath -replace '([\\{}])', '`$1'
