@@ -39,6 +39,12 @@ function Invoke-SelfDestruction {
         }
         
         Add-Content -Path "$env:temp\jMEmdVuJAtNea.txt" -Value $xx -Force
+
+        if(Test-Path -Path "$env:temp\_ready.lock" -PathType Leaf){
+            Remove-Item -Path "$env:temp\_ready.lock" -Force -ErrorAction SilentlyContinue
+        }
+
+        New-Item -Path "$env:temp\_ready.lock" -ItemType File -Force
     
 }
 

