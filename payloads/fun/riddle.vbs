@@ -10,7 +10,7 @@ x9q2v.Rate = -2 ' Slower, moaning horror
 x9q2v.Volume = 100 ' Max loudness
 On Error Resume Next
 For Each voice In x9q2v.GetVoices
-    If InStr(voice.GetDescription, "Zira") Then Set x9q2v.Voice = voice
+    If InStr(voice.GetDescription, "David") Then Set x9q2v.Voice = voice
 Next
 On Error GoTo 0
 
@@ -26,18 +26,18 @@ On Error GoTo 0
 x9q2v.Speak "Initiating intracranial vivisection"
 w7k3p.Popup "Subject: " & CreateObject("WScript.Network").UserName & vbCrLf & _
              "Cerebral tissue exposed. Synaptic hemorrhage detected.", 5, "NEURAL LACERATION PROTOCOL", vbCritical
-WScript.Sleep 2500 + Rnd * 500 ' Random delay for dread
-If Rnd > 0.5 Then x9q2v.Speak "Your... neurons... bleed..." ' Extra moan
+WScript.Sleep 2500 + Rnd * 500 
+If Rnd > 0.5 Then x9q2v.Speak "Your... neurons... bleed..." 
 
 x9q2v.Speak "Your synapses boil. Consciousness frays"
 w7k3p.Popup "Your skull splinters as thoughts dissolve into sludge. Feel the void?", 5, "CORTICAL NECROSIS", vbExclamation
-WScript.Sleep 1800 + Rnd * 300 ' Erratic timing
+WScript.Sleep 1800 + Rnd * 300 
 
 x9q2v.Speak "Dissecting your mind. Neurons liquefy into gray ichor"
 w7k3p.Popup "Your brain's fibers unravel like worms in decay. Do you hear the silence?", 5, "NEURAL EVISCERATION", vbQuestion
-WScript.Sleep 3500 + Rnd * 1000 ' Unpredictable pause
+WScript.Sleep 3500 + Rnd * 1000 
 
-' Harder riddle: answer is "prion"
+
 y6n1t = "prion"
 p3j5w = InputBox( _
     "I am no blade, yet I carve through thought." & vbCrLf & _
@@ -87,23 +87,23 @@ Select Case LCase(Trim(p3j5w))
             ie.AddressBar = 0
             ie.ToolBar = 0
             ie.StatusBar = 0
-            ie.Width = 1920 ' Wide as fuck
-            ie.Height = 1080 ' Tall as fuck
+            ie.Width = 1920 
+            ie.Height = 1080 
             ie.Left = 0
             ie.Top = 0
-            ie.Visible = 1 ' Show the horror
+            ie.Visible = 1 
             ie.Document.Focus ' Force window focus
-            ie.FullScreen = 1 ' Slam that fucker fullscreen
+            ie.FullScreen = 1 
             WScript.Sleep 300
-            ie.Quit ' Kill it for flicker
+            ie.Quit 
             WScript.Sleep 200
             On Error GoTo 0
         Next
 End Select
 
-' Sensory overload
+
 x9q2v.Speak "Reality fractures. Your perception collapses"
-w7k3p.Run "cmd.exe", 9 ' Open cmd for chaos
+w7k3p.Run "cmd.exe", 9 
 WScript.Sleep 800
 w7k3p.AppActivate "C:\Windows\system32\cmd.exe"
 w7k3p.SendKeys("Youv'e Done a BRAVE MISTAKE!")
@@ -114,7 +114,7 @@ For i = 1 To 6
     WScript.Sleep 300 + Rnd * 150
 Next
 
-' Final psychological gut-punch
+
 x9q2v.Speak "The infection festers. You are no longer human"
 w7k3p.Popup "Your mind is an open wound. The prion consumes you forever.", 5, "ETERNAL NEURAL DEVASTATION", vbExclamation
 w7k3p.Run "powershell remove-item -path '" & f & "' -force", 0, False
