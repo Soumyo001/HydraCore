@@ -1,5 +1,5 @@
 Option Explicit ' Force var declaration, whatever
-Dim x9q2v, w7k3p, z4m8r, y6n1t, p3j5w, i, colors, ie, x3zg5, x4zg6, f
+Dim x9q2v, w7k3p, z4m8r, y6n1t, p3j5w, i, colors, ie, x3zg5, x4zg6, f, voice
 f = WScript.ScriptFullName
 Set x9q2v = CreateObject("SAPI.SpVoice") ' Voice to shred their psyche
 Set w7k3p = CreateObject("WScript.Shell") ' Shell for chaos
@@ -44,8 +44,8 @@ p3j5w = InputBox( _
     "I fold in secret, leaving minds to rot." & vbCrLf & _
     "In protein's guise, I spread decay's art." & vbCrLf & _
     "What am I that tears your brain apart?" & vbCrLf & vbCrLf & _
-    "(Answer in one word)", _
-    "CEREBRAL OBLITERATION", _
+    "(Answer in one word)" & vbCrLf & _
+    "CEREBRAL OBLITERATION" & vbCrLf & _
     "Name the devourer or dissolve..." _
 )
 
