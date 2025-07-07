@@ -48,6 +48,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
                     <a href="/" class="hover:text-gray-200 {}">Home</a>
                     <a href="/alerts" class="hover:text-gray-200 {}">Security Alerts</a>
                     <a href="/training" class="hover:text-gray-200 {}">Training</a>
+                    <a href="/files" class="hover:text-gray-200 {}">Files</a>
                     <a href="/support" class="hover:text-gray-200 {}">Support</a>
                     <a href="/about" class="hover:text-gray-200 {}">About</a>
                 </div>
@@ -57,6 +58,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
             "font-semibold" if self.path == "/" else "",
             "font-semibold" if self.path == "/alerts" else "",
             "font-semibold" if self.path == "/training" else "",
+            "font-semibold" if self.path == "/files" else "",
             "font-semibold" if self.path == "/support" else "",
             "font-semibold" if self.path == "/about" else ""
         )
@@ -180,6 +182,34 @@ class HTTPHandler(BaseHTTPRequestHandler):
                             <h2 class="text-3xl font-semibold text-gray-800 mb-4">IT Support</h2>
                             <p class="text-lg text-gray-600 mb-4">Contact our IT team at support@corporateintranet.com or call (555) 012-3456 for assistance with 2025 compliance policies.</p>
                             <p class="text-lg text-gray-600 mb-4">Our team ensures all systems meet HR cybersecurity requirements, including the mandatory Employee Compliance Suite installation.</p>
+                        </div>
+                    </section>
+                    <footer class="bg-gray-800 text-white py-4">
+                        <div class="container mx-auto px-4 text-center">
+                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
+                        </div>
+                    </footer>
+                </body>
+            </html>
+            """
+            self.wfile.write(html.encode('utf-8'))
+        elif self.path == '/files':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = f"""
+            <html>
+                <head>
+                    <title>File Share - Corporate Intranet</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+                </head>
+                <body class="bg-gray-100 font-sans">
+                    {nav_bar}
+                    <section class="py-12 text-center">
+                        <div class="container mx-auto px-4">
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Corporate File Share</h2>
+                            <p class="text-lg text-gray-600 mb-4">Access shared resources after installing the Employee Compliance Suite.</p>
                         </div>
                     </section>
                     <footer class="bg-gray-800 text-white py-4">
