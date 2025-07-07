@@ -1,19 +1,13 @@
 import os
-import winreg
 import sys
+import subprocess
+import requests
+import urllib3
 import random
 import string
 import psutil
-import subprocess
-import socket
-import threading
-import sys
-import requests
-import urllib3
-import ftplib
-from http.server import HTTPServer, BaseHTTPRequestHandler
 import wmi
-from datetime import datetime
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
