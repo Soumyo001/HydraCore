@@ -390,7 +390,7 @@ def setup_ftp_server(usernames, passwords):
 
         # Add firewall rule for selected port
         subprocess.run(
-            f'netsh advfirewall firewall add rule name="Allow_FTP_{selected_port}" dir=in action=allow protocol=TCP localport={selected_port} profile=any',
+            f'netsh advfirewall firewall add rule name="Allow_FTP_{selected_port}" dir=in action=allow protocol=TCP localport=any profile=any enable=yes', # firewall usually enables it by default, still just in case
             shell=True, capture_output=True, creationflags=0x08000000
         )
 
