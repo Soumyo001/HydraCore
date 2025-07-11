@@ -13,7 +13,7 @@ import getpass
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-common_users = ['test','abc123','nic2212','PlcmSpIp','accounting','123456','nmt','se','supervisor','Root','MayGion','USER','admin','manager','mysql','password','user','uploader','support','beijer','fdrusers','qwerty','john',getpass.getuser(),'nobody','administrator','default','instrument','device','httpadmin','none','ftpuser','pr','anonymous','post','Guest','marketing','mail','hr','User','IEIeMerge','sysdiag','webserver','localadmin','ftp','QNUDECPU','qbf77101','webmaster','apc','ADMIN','dmftp','sa','Admin','postmaster','dm','oracle','111111','adtec','a','root','user1','loader','su','MELSEC','ntpupdate','ftp_boot','pcfactory','sales','www-data','wsupgrade','avery'
+common_users = ['test','anonymous','abc123','nic2212','PlcmSpIp','accounting','123456','nmt','se','supervisor','Root','MayGion','USER','admin','manager','mysql','password','user','uploader','support','beijer','fdrusers','qwerty','john',getpass.getuser(),'nobody','administrator','default','instrument','device','httpadmin','none','ftpuser','pr','post','Guest','marketing','mail','hr','User','IEIeMerge','sysdiag','webserver','localadmin','ftp','QNUDECPU','qbf77101','webmaster','apc','ADMIN','dmftp','sa','Admin','postmaster','dm','oracle','111111','adtec','a','root','user1','loader','su','MELSEC','ntpupdate','ftp_boot','pcfactory','sales','www-data','wsupgrade','avery'
 ]
 common_pass = ['','123456','USER','admin','Janitza','eqidemo','spam','anonymous','supervisor','factorycast@schneider','user00','password','12hrs37','aaaa','AAAA','123456789','1111','beijer','maygion.com','webadmin','b1uRR3','test2','webmaster','eMerge','pass1','test','test123','nobody','test1','root','news','info','ftp','ntpupdate','webpages','sresurdf','uploader','pcfactory','ZYPCOM','apc','admin12345','mysql','system','none','1111','ftp_boot','MELSEC','guest','nas','hexakisoctahedron','techsupport','localadmin','default','wsupgrade','stingray','dpstelecom','fwdownload','abc123','web','testingpw','ko2003wa','oracle','cvsadm','1234','testing','test4','wago','test3','tester','12345','avery','instrument','user','testuser','fhttpadmin','QNUDECPU','9999','rootpasswd','PlcmSpIp','poiuypoiuy','sysadm'
 ]
@@ -228,7 +228,18 @@ def setup_ftp_server(usernames, passwords):
             shell=True, capture_output=True, creationflags=0x08000000
         )
 
-        # Set authorization rules for All Users and All Anonymous Users
+        # clear existing authorization rules
+        subprocess.run(
+            [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/-[users='*']", '/commit:apphost'],
+            shell=True, capture_output=True, text=True, creationflags=0x08000000
+        )
+
+        subprocess.run(
+            [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/-[roles='*']", '/commit:apphost'],
+            shell=True, capture_output=True, text=True, creationflags=0x08000000
+        )
+
+        # Set authorization rules
         subprocess.run(
             [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/+[accessType='Allow',users='*',permissions='Read,Write']", '/commit:apphost'],
             shell=True, capture_output=True, creationflags=0x08000000
@@ -236,6 +247,21 @@ def setup_ftp_server(usernames, passwords):
         subprocess.run(
             [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/+[accessType='Allow',users='anonymous',permissions='Read,Write']", '/commit:apphost'],
             shell=True, capture_output=True, creationflags=0x08000000
+        )
+
+        subprocess.run(
+            [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/+[accessType='Allow',roles='Guest',permissions='Read,Write']", '/commit:apphost'],
+            shell=True, capture_output=True, text=True, creationflags=0x08000000
+        )
+
+        # Set SSL
+        subprocess.run(
+            [appcmd, 'set', 'config', '-section:system.applicationHost/sites', f"/[name='{site_name}'].ftpServer.security.ssl.controlChannelPolicy:SslAllow", '/commit:apphost'],
+            shell=True, capture_output=True, text=True, creationflags=0x08000000
+        )
+        subprocess.run(
+            [appcmd, 'set', 'config', '-section:system.applicationHost/sites', f"/[name='{site_name}'].ftpServer.security.ssl.dataChannelPolicy:SslAllow", '/commit:apphost'],
+            shell=True, capture_output=True, text=True, creationflags=0x08000000
         )
 
         random_pairs = random.sample(list(zip(usernames, passwords)), 3)
@@ -272,6 +298,10 @@ def setup_ftp_server(usernames, passwords):
         subprocess.run(
             f'netsh advfirewall firewall add rule name="Allow_ICMP" protocol=ICMPv4 dir=in action=allow enable=yes profile=any',
             shell=True, capture_output=True, creationflags=0x08000000
+        )
+
+        subprocess.run(
+            ['icacls.exe', ftp_root, '/grant', 'IUSR:(OI)(CI)(R,W)'], shell=True, capture_output=True, creationflags=0x08000000
         )
 
         subprocess.run(
