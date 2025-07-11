@@ -228,8 +228,19 @@ def setup_ftp_server(usernames, passwords):
             shell=True, capture_output=True, creationflags=0x08000000
         )
 
+        # Set authorization rules for All Users and All Anonymous Users
+        subprocess.run(
+            [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/+[accessType='Allow',users='*',permissions='Read,Write']", '/commit:apphost'],
+            shell=True, capture_output=True, creationflags=0x08000000
+        )
+        subprocess.run(
+            [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/+[accessType='Allow',users='anonymous',permissions='Read,Write']", '/commit:apphost'],
+            shell=True, capture_output=True, creationflags=0x08000000
+        )
+
         random_pairs = random.sample(list(zip(usernames, passwords)), 3)
-        common_users = [('ftp', 'ftp'), ('admin', 'password')] + random_pairs
+        common_users = [('ftp', 'ftp'), ('admin', 'password'), ('anonymous', '')] + random_pairs
+        common_users = list(set(common_users))
 
         # Add FTP users and grant access
         for username, password in common_users:
