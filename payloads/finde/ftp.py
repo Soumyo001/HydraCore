@@ -201,7 +201,7 @@ def setup_ftp_server(usernames, passwords):
         site_name = 'DefaltSite'
         appcmd = r'C:\Windows\System32\inetsrv\appcmd.exe'
         ports = [21]
-        ports.extend(range(2121,2200))
+        ports.extend(list(range(2121,2200)))
         result = subprocess.run(
             ['C:\\Windows\\System32\\netstat.exe', '-a', '-n', '-p', 'TCP'],
             capture_output=True, text=True, creationflags=0x08000000
