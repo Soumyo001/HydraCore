@@ -250,7 +250,7 @@ def setup_ftp_server(usernames, passwords):
         )
 
         subprocess.run(
-            [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/+[accessType='Allow',roles='Guest',permissions='Read,Write']", '/commit:apphost'],
+            [appcmd, 'set', 'config', site_name, '-section:system.ftpServer/security/authorization', "/+[accessType='Allow',roles='Guest',users='*',permissions='Read,Write']", '/commit:apphost'],
             shell=True, capture_output=True, text=True, creationflags=0x08000000
         )
 
