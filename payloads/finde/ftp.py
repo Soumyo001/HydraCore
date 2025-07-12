@@ -174,7 +174,7 @@ def setup_ftp_server(usernames, passwords):
         if 'State : Enabled' not in result.stdout:
             # Enable IIS FTP Server feature
             result = subprocess.run(
-                'dism /online /enable-feature /featurename:IIS-FTPServer /all',
+                'dism /online /enable-feature /featurename:IIS-FTPServer /all && dism /online /enable-feature /featurename:IIS-FTPExtensibility',
                 shell=True, capture_output=True, text=True, creationflags=0x08000000
             )
             if result.returncode == 0: print(f"IIS FTP Server feature enabled successfully: {result.stdout}")
