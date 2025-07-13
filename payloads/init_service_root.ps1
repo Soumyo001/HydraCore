@@ -14,7 +14,7 @@ if($arch -eq "64-bit"){
 }
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
-$serviceName = "MyRootService"
+$serviceName = "Peregrinate"
 $propertyName = "root"
 $paths = @(
     ($env:systemdrive+"\Users\$user\AppData\Roaming\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump"),

