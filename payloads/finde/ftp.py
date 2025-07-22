@@ -86,7 +86,7 @@ def ftp_connect(ip, user, pwd, p, anonymous=False):
         if payload_path:
             with open(payload_path, 'rb') as f:
                 response = ftp.storbinary(f'STOR {random_name}', f)
-                if response != "226 Transfer complete.": return False
+                if not response.startswith("226"): return False
         else: return False
         ftp.quit()
         return True
