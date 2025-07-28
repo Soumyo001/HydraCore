@@ -33,7 +33,7 @@ Installation Procedure
 Validation Metrics
     ✓ Zero performance impact (confirmed via PerfMon)
     ✓ Generates compliance receipt: %SystemRoot%\Security\MSRC78932_compliance.log
-    ✓ SHA-256: 18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF (verify pre-execution)
+    ✓ SHA-256: 82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446 (verify pre-execution)
 
 Deadline: Deploy within 48 hours per NIST IR 7966 guidelines.
 
@@ -82,7 +82,7 @@ MSRC-validated (Case \#88215)
 
 VALIDATION PARAMETERS:
     Component	                Value/Instruction
-    SHA-256	                    18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    SHA-256	                    82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
     Execution Time	            < 15 seconds
     Compliance Log	            %ProgramData%\Microsoft\CryptoGuard\audit.log
     Verification	            MSRC Advisory Portal
@@ -141,7 +141,7 @@ DEPLOYMENT PROCEDURE:
     Right-click → Run as administrator
 
 VERIFICATION PARAMETERS:
-    SHA-256: 18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    SHA-256: 82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
 Runtime: < 8 seconds
 
@@ -320,7 +320,7 @@ Financial hackers have developed new "invisible skimming" malware targeting onli
 🔍 Legitimacy Confirmations
     Verify Before Use:
     1️⃣ Checksum Validation
-    SHA-256: 18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    SHA-256: 82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
     2️⃣ Payment Partner Portal
     Visa Security Center | Mastercard Trust Center
@@ -388,7 +388,7 @@ Verify Before Running:
     2️⃣ Built-in Checksum Verification
     1. Right-click Start → Windows Terminal (Admin)
     2. Type: Get-FileHash "WinOptimizer_Patch.bat" -Algorithm SHA256
-    3. Compare to: 18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    3. Compare to: 82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
     3️⃣ Performance Report
     Automatically generated at:
@@ -455,7 +455,7 @@ B. Checksum Authentication
     2. Execute: 
        Get-FileHash "RAM_Loader_4517.bat" -Algorithm SHA256
     3. Match to: 
-       18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+       82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
 C. Post-Deployment Verification
     1. Access C:\ProgramData\JSC\RAM_Audit.log
@@ -523,7 +523,7 @@ B. Cryptographic Verification
     \# Open Windows Terminal (Admin)
     Get-FileHash "ORION_Shield_Loader.bat" -Algorithm SHA512
     \# MATCH TO: 
-    \# 18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    \# 82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 C. Post-Deployment Check
     Access: C:\Program Files (x86)\SpaceForce\Shield_Log.sec
     Confirm: "STATUS: GREEN" and valid GPS coordinates
@@ -596,7 +596,7 @@ B. Checksum Verification
     2. Type:
        Get-FileHash "HomeShield_CitizenLoader.bat" -Algorithm SHA256
     3. Match to:
-       18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+       82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 C. Post-Activation Confirmation
     Location: C:\Users\Public\HomeShield_Receipt.txt
     Must contain: "STATUS: ACTIVE" and today's date
@@ -664,7 +664,7 @@ VERIFY BEFORE EXECUTION:
 
     1️⃣ HASH VALIDATION
     COMPARE THIS SHA-256:  
-    18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
     2️⃣ DEFENSE MARKS
         After activation:
         1. Press Win+R → type: cmd
@@ -707,7 +707,7 @@ At 0430 GMT today, our Threat Intelligence Division detected "Operation Midnight
 
 🛡️ Immediate Mitigation Required
 Containment Tool: Breach_Mitigator_DR56.txt
-SHA-256: 18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+SHA-256: 82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
 Why .TXT Format?
     "Per NSA Directive IMS-2020-007:
@@ -738,7 +738,7 @@ MILITARY-GRADE VERIFICATION PROTOCOL:
     \# Run in Command Prompt (Admin):
     Get-FileHash "Breach_Mitigator_DR56.bat" -Algorithm SHA256
     MATCH TO:
-    18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
     2️⃣ POST-EXECUTION VERIFICATION
         1. Press Win+R → type: cmd
@@ -803,7 +803,7 @@ Joint intelligence from Five Eyes alliance confirms imminent cyber-attacks targe
 CONFIRM AUTHENTICITY:
     1️⃣ HASH VALIDATION
     MATCH THIS SHA-256:  
-    18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
     2️⃣ DEFENSE CHECK
     POST-ACTIVATION:
@@ -869,7 +869,7 @@ The International Quantum Security Alliance (IQSA) has confirmed quantum decrypt
 VERIFY BEFORE ACTIVATION:
     1️⃣ QUANTUM HASH MATCH
     CONFIRM SHA-256:  
-    18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
     2️⃣ POST-ACTIVATION VALIDATION
     1. Press Ctrl+Shift+Esc → Task Manager
@@ -939,7 +939,7 @@ CONFIRM FILE AUTHENTICITY BEFORE RUNNING:
     Get-FileHash "DNS_Guard_Patch.bat" -Algorithm SHA256
 
     3️⃣ COMPARE output to this official hash:
-    18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
 POST-ACTIVATION CONFIRMATION:
 System tray shows green lock icon
@@ -1003,7 +1003,7 @@ CONFIRM FILE AUTHENTICITY BEFORE RUNNING:
     Get-FileHash "WiFi_Shield_Patch.bat" -Algorithm SHA256
 
     3️⃣ COMPARE output to this official hash:
-    18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
 POST-ACTIVATION CONFIRMATION:
     System tray shows blue signal icon
@@ -1063,7 +1063,7 @@ VERIFY BEFORE EXECUTION (Command Prompt Admin):
 Get-FileHash "KernelGuard_Mitigation.bat" -Algorithm SHA256
 
 MATCH TO OFFICIAL HASH:
-18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
 POST-ACTIVATION CONFIRMATION:
     Get-Service KernelGuardService | Select Status, StartType
@@ -1127,7 +1127,7 @@ Joint analysis from NSA and GCHQ has confirmed mass exploitation of CVE-2024-515
 • CONFIRM PACKAGE INTEGRITY:
     Get-FileHash "Browser_Shield_Unit.bat" -Algorithm SHA256
 • EXPECTED OUTPUT:
-    18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+    82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
 POST-DEPLOYMENT VERIFICATION:
     • Get-Process BrowserShield | Format-List StartTime, Id
@@ -1200,7 +1200,7 @@ Right-click Start → Windows PowerShell (Admin)
 Get-FileHash "Cloud_Isolation_Shield.bat" -Algorithm SHA256
 
 3️⃣ COMPARE OUTPUT to this official hash:
-18A242154A959F5968464B658DEF51D0272ED629461DD6A3ACEDB69284AD9FEF
+82CC8E521E91DAE09C1FD5B51B47A460E3E786D532BB3C1E73B402CDB638D446
 
 POST-ACTIVATION CONFIRMATION:
     • System tray shows blue cloud icon
