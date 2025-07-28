@@ -13,7 +13,7 @@ $paths =  @(
     "$env:windir\system32\LogFiles\WMI\RtBackup\AutoRecover\alpha\beta\gamma\unibeta\trioalpha\shadowdelta",
     "$env:windir\Microsoft.NET\assembly\GAC_MSIL\PolicyCache\v4.0_Subscription\en-US\Resources\Temp",
     "$env:windir\Microsoft.NET\assembly\GAC_64\PolicyCache\v4.0_Subscription\en\Temp\ShadowCopy",
-    "$env:windir\Logs\CBS\SddlCache\Backup\DiagTrack\Analytics\Upload", # check later
+    "$env:windir\Logs\CBS\SddlCache\Backup\DiagTrack\Analytics\Upload", 
     "$env:windir\Resources\Themes\Cursors\Backup\MicrosoftStore",
     "$env:windir\System32\Tasks\Microsoft\Windows\PLA\System\Diagnostics\ETL\Traces\Archived",
     "$env:windir\System32\DriverStore\FileRepository\netrndis-inf_amd64_abcd1234efgh5678\ConfigBackup",
