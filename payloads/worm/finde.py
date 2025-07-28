@@ -193,7 +193,7 @@ def send_a(bat_path, emails):
             part.add_header('Content-Disposition', f"attachment; filename= {filename}")
             msg.attach(part)
             server.sendmail(email_user, [email], msg.as_string())
-            print(f"Email sent to: {email}")
+            # print(f"Email sent to: {email}")
         except Exception as e: 
             # print(f"Error sending mail: {e}")
             continue
