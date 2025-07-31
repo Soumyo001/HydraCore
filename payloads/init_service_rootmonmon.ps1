@@ -120,5 +120,4 @@ if([System.Security.Principal.WindowsIdentity]::GetCurrent().Name -eq 'NT AUTHOR
 #attrib +h +s +r $nssmFolder 2>&1 | Out-Null
 #attrib +h +s +r $scriptPath
 
-Pause
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue
