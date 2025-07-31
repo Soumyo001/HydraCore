@@ -26,7 +26,7 @@
 	- **trojan (shellcode embedding)**
 	- **dll-hijacking(make the installer a dll...maybe?)**
 
-### Process Tree
+### Process Flow
 
 ```mermaid
 graph TD
