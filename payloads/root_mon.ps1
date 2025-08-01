@@ -28,7 +28,10 @@ public class CS {
 Add-Type -TypeDefinition $signature
 [CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
-if($basePath -eq "" -or $childServiceName -eq "" -or $childServicePropertyName -eq "" -or $parentServicePropertyName -eq ""){
+if([string]::IsNullOrEmpty($basePath) -or 
+    [string]::IsNullOrEmpty($childServiceName) -or 
+    [string]::IsNullOrEmpty($childServicePropertyName) -or 
+    [string]::IsNullOrEmpty($parentServicePropertyName)){
     $mutex.WaitOne()
     try {
         if(-not(Test-Path -Path "$env:temp\598600304.txt" -PathType Leaf)){
