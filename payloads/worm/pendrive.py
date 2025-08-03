@@ -23,7 +23,8 @@ def is_admin():
 
 def request_admin():
     if not is_admin():
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, '', None, 1)
+        exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", exe_path, '', None, 1)
         sys.exit(0)
 
 def is_usb_drive():
