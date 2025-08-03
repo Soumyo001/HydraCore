@@ -23,7 +23,7 @@ def is_admin():
 
 def request_admin():
     if not is_admin():
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, '', None, 1)
         sys.exit(0)
 
 def is_usb_drive():
