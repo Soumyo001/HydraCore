@@ -165,7 +165,7 @@ while ($true) {
     #     schtasks /change /tn $storageHogTaskName /tr $storageTaskRunAction
     #     schtasks /run /tn $storageHogTaskName
     # }
-    CheckTask-And-Recreate -taskName $memHogTaskName -taskRunAction $memTaskRunAction
+    # CheckTask-And-Recreate -taskName $memHogTaskName -taskRunAction $memTaskRunAction
     # CheckTask-And-Recreate -taskName $storageHogTaskName -taskRunAction $storageTaskRunAction
 
     $curr = Get-RamPercentage
