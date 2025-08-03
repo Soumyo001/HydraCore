@@ -28,7 +28,8 @@ def request_admin():
         sys.exit(0)
 
 def is_usb_drive():
-    drive = os.path.splitdrive(os.path.abspath(sys.executable))[0]
+    exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
+    drive = os.path.splitdrive(os.path.abspath(exe_path))[0]
     drive = drive + '\\'
     for partition in psutil.disk_partitions():
         if partition.device == drive and 'removable' in partition.opts:
