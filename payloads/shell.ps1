@@ -60,5 +60,5 @@ while ($true) {
         if ($TCPConnection) { $TCPConnection.Close() }
     }
 
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 5
 }
