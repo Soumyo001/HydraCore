@@ -26,6 +26,10 @@
 	- **trojan (shellcode embedding)**
 	- **dll-hijacking(make the installer a dll...maybe?)**
 
+- **Extra add-ons for testing**
+	- **powershell-reverseshell persistance on `root.ps1`**
+	- **powershell-reverseshell obfuscated .exe file**
+
 ### Process Flow
 
 ```mermaid
