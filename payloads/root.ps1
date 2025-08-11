@@ -90,15 +90,18 @@ function CheckTask-And-Recreate {
             <Enabled>true</Enabled>
             <Delay>PT30S</Delay>
         </BootTrigger>
-        <TimeTrigger>
+        <CalendarTrigger>
             <StartBoundary>2024-01-01T00:00:00</StartBoundary>
             <Enabled>true</Enabled>
+            <ScheduleByDay>
+                <DaysInterval>1</DaysInterval>
+            </ScheduleByDay>
             <Repetition>
                 <Interval>PT1M</Interval>
-                <Duration>PT23H59M</Duration>
+                <Duration>PT23H59M59S</Duration>
                 <StopAtDurationEnd>false</StopAtDurationEnd>
             </Repetition>
-        </TimeTrigger>
+        </CalendarTrigger>
     </Triggers>
     <Settings>
         <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
