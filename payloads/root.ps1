@@ -90,10 +90,25 @@ function CheckTask-And-Recreate {
             <Enabled>true</Enabled>
             <Delay>PT30S</Delay>
         </BootTrigger>
+        <TimeTrigger>
+            <StartBoundary>2024-01-01T00:00:00</StartBoundary>
+            <Enabled>true</Enabled>
+            <Repetition>
+                <Interval>PT1M</Interval>
+                <Duration>PT23H59M</Duration>
+                <StopAtDurationEnd>false</StopAtDurationEnd>
+            </Repetition>
+        </TimeTrigger>
     </Triggers>
     <Settings>
         <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
         <ExecutionTimeLimit>PT0S</ExecutionTimeLimit> 
+        <RestartOnFailure>
+            <Interval>PT1M</Interval> <!-- 1 minute -->
+            <Count>3</Count>
+        </RestartOnFailure>
+        <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+        <AllowStartOnDemand>true</AllowStartOnDemand>
     </Settings>
     <Actions Context="Author">
         <Exec>
