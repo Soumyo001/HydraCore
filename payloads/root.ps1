@@ -10,8 +10,8 @@ $paths =  @(
 )
 
 
-$mutexName = "Global\MyUniquePrion"
-$mutex = New-Object System.Threading.Mutex($false, $mutexName)
+# $mutexName = "Global\MyUniquePrion"
+# $mutex = New-Object System.Threading.Mutex($false, $mutexName)
 
 $signature = @"
 using System;
