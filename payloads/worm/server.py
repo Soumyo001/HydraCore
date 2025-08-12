@@ -383,7 +383,7 @@ def start_http_server_on_port(port):
     try:
         subprocess.run(
         f'netsh advfirewall firewall add rule name="Allow_HTTP_{port}" dir=in action=allow protocol=TCP localport={port} profile=any enable=yes',
-        shell=True, capture_output=True, text=True, creationflags=0x08000000)
+        shell=True, creationflags=0x08000000)
         server = HTTPServer(('0.0.0.0', port), HTTPHandler)
         server.serve_forever()
     except:
