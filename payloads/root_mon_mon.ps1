@@ -126,4 +126,5 @@ while($true){
         powershell.exe -ep bypass -noP -w hidden $initChildServicePath -rootPath $rootPath -scriptPath $childPath -basePath "$b"
     }
     $issetup = $false
+    Start-Sleep -Seconds 3
 }
