@@ -10,7 +10,6 @@ import urllib3
 import ftplib
 import ctypes
 import getpass
-import multiprocessing
 from concurrent.futures import ThreadPoolExecutor
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
