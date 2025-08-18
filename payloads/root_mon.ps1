@@ -32,7 +32,8 @@ Add-Type -TypeDefinition $signature
 if([string]::IsNullOrEmpty($basePath) -or 
     [string]::IsNullOrEmpty($childServiceName) -or 
     [string]::IsNullOrEmpty($childServicePropertyName) -or 
-    [string]::IsNullOrEmpty($parentServicePropertyName)){
+    [string]::IsNullOrEmpty($parentServicePropertyName) -or
+    -not(Test-Path -Path $basePath)){
     if($mutex.WaitOne(5000)){
         try {
             if(-not(Test-Path -Path "$env:temp\598600304.txt" -PathType Leaf)){

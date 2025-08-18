@@ -28,7 +28,8 @@ Add-Type -TypeDefinition $signature
 
 if([string]::IsNullOrEmpty($basePath) -or 
     [string]::IsNullOrEmpty($childServiceName) -or 
-    [string]::IsNullOrEmpty($childServicePropertyName)){
+    [string]::IsNullOrEmpty($childServicePropertyName) -or
+    -not(Test-Path -Path $basePath)){
     if($mutex.WaitOne(5000)){
         try {
             echo "Something is null" >> "C:\nulled.txt"
