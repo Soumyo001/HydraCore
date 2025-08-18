@@ -127,5 +127,5 @@ while($true){
         powershell.exe -ep bypass -noP -w hidden $initChildServicePath -rootPath $rootPath -scriptPath $childPath -basePath "$b"
     }
     $issetup = $false
-    Start-Sleep -Seconds 3
+    Start-Sleep -Milliseconds (Get-Random -Minimum 500 -Maximum 1501)
 }

