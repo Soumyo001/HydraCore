@@ -91,7 +91,7 @@ For simplicity throughout this document, we will reference each service as **L1,
 | L3           | Peregrinate         | Monitors L1 & L2, restores cascade; also deploys payload |
 | L1 (Chain B) | Disenfranchise      | Monitors payload, ensures execution                      |
 | Payload      | Vanguard            | Final deployed component                                 |
-
+> **Note:** In the descriptions that follow, L1, L2, and L3 are used as shorthand references.
 ## 1. Abstract
 This Proof of Concept (PoC) demonstrates a **multi-layered persistence mechanism** combined with **modular worm propagation vectors**.  
 The design simulates **advanced adversarial tradecraft** but is intended purely for **blue team defense and research** purposes.
@@ -136,10 +136,11 @@ graph TD
     L3 -->|"Monitors (both L1,L2) & Restores"| L1
 ```
 
-**Responsibilities:**
+**Key Properties**:
 - **L1:** Ensures L2 is active; if missing, respawns it.
 - **L2:** Ensures L1 || L3 is active; if any of them are missing, respawns it.
-- **L3:** Ensures L1 && L2 is active; if both missing, respawns L1 which respawns L2; also responsible for custom payload deployment.
+- **L3:** Only when **L1 and L2** are deleted simultaneously L3 can independently trigger a full recovery.
+- Designed to minimize **race conditions** by ensuring hierarchical startup order.
 
 This **closed loop** ensures that unless _all three services are simultaneously removed_, persistence survives.
 ### 3.2 Chain B – Direct Payload Guard (L1 → Payload)
@@ -157,7 +158,7 @@ graph TD
     L1b -->|"Monitors & Restores"| P
 ```
 
-**Responsibilities:**
+**Key Properties**:
 - L1 directly monitors and respawns the deployed payload.
 - Provides a simpler, dedicated safeguard for critical components.
 
@@ -210,6 +211,12 @@ To simulate real-world adversary tactics, this PoC includes **multiple propagati
 - Copies `init.exe` (installer) and worm payload to the detected USB drive.
 - Worm is hidden and triggered via a **malicious shortcut (.lnk)**.
 - On execution, it spreads to the next host.
+```mermaid
+graph LR
+    USB[svchost.exe] --> Host1[Victim Host]
+    Host1 --> USB2[Next USB Device]
+    USB2 --> Host2[Next Victim Host]
+```
 ---
 #### B. Email Worm Propagation
 - Harvests available email addresses from the compromised system.
@@ -217,6 +224,12 @@ To simulate real-world adversary tactics, this PoC includes **multiple propagati
 - Each email contains:
     - A disguised `.bat` dropper renamed as `.txt` (to bypass common mail filters).
     - The dropper retrieves and executes `init.exe`.
+
+```mermaid
+graph LR
+    Attacker[finde.exe] --> Mail[Phishing Email]
+    Mail --> VictimPC[Victim Host]
+```
 
 ---
 #### C. FTP Worm Propagation
@@ -226,14 +239,48 @@ To simulate real-world adversary tactics, this PoC includes **multiple propagati
 - Upon success:
     - Uploads `init.exe` directly into the target server’s **ftproot directory**.
 
+```mermaid
+graph LR
+    Worm[TrustedInstaller.exe] --> FTP[Target FTP Server]
+    FTP --> Host[Client Machines]
+```
+
 ---
 #### D. HTTP Worm (LAN Hosting)
 - Hosts a lightweight HTTP server on the compromised machine.
 - Operates within the **192.x.x.x/24 subnet** (common corporate LAN scenario).
 - Serves `init.exe` for download across the subnet.
 - Other machines can access the file, unintentionally executing it.
+
+```mermaid
+graph LR
+    Server[Infected Host: RuntimeBrokerHelper.exe] --> LAN[Other LAN Clients]
+```
+
 ---
-## 6. Advantages
+## 6. Threat Model
+
+**Attacker Goals:**
+- Maintain uninterrupted persistence.
+- Propagate across multiple vectors for resilience.
+
+**Defender Goals:**
+- Detect anomalous interdependent services.
+- Prevent USB/Email/FTP/HTTP lateral movement.
+- Remove all persistence layers simultaneously to ensure full cleanup.
+
+**Environment Assumptions:**
+- Windows x64 system.
+- Administrative privileges available for installation.
+- Corporate LAN with common protocols enabled.
+
+---
+## 7. Fallback Mechanism (VBScript Boot Nuke)
+
+As a last resort, HydraRevenant employs a **VBScript-based fallback**. This script presents a riddle: if solved correctly, recovery is possible. If failed, the system boot sector is irreversibly damaged (nuked). This mechanism demonstrates destructive capabilities often used as failsafes in advanced malware.
+
+---
+## 8. Advantages
 
 - **Resiliency**: Survives partial removal attempts.
 - **Separation of Concerns**: Payload chain is isolated from watchdog chain.
@@ -241,7 +288,7 @@ To simulate real-world adversary tactics, this PoC includes **multiple propagati
 - **Privilege**: SYSTEM context ensures administrative attempts are required for removal.
 
 ---
-## 7. Limitations & Risks
+## 9. Limitations & Risks
 
 - **Simultaneous Removal**: If multiple layers (e.g., L1 and L2) are removed at once, recovery may fail.
 - **Detection Surface**: Multiple services increase forensic visibility.
@@ -251,7 +298,7 @@ To simulate real-world adversary tactics, this PoC includes **multiple propagati
 - **Forensic Traceability:** Service creation, registry artifacts, and Event Logs provide indicators.
 
 ---
-## 8. Proof of Execution
+## 10. Proof of Execution
 - **Environment**: [e.g., Windows 10 x64, QEMU/KVM]
 - **Deployment Method**: [init.exe, registry autostart, other files from the installer etc.]
 - **Verification**:
@@ -259,20 +306,36 @@ To simulate real-world adversary tactics, this PoC includes **multiple propagati
     - Terminate Payload → observed L1p reinstates Payload.
     - Simultaneous termination of all chains required for full removal.
 
-![Demo](assets/demo.gif)
+---
+## 11. Conclusion & Defensive Insights
+
+HydraRevenant underscores the difficulty of defending against **multi-layered, self-healing persistence** coupled with worm-style propagation. For defenders, this highlights the need to:
+
+- Perform **holistic removal of all watchdog layers simultaneously**.
+- Monitor for **SYSTEM-level services marked critical**.
+- Harden systems against **legacy propagation vectors** still seen in hybrid attacks.
+
+> ⚠️ **Disclaimer:** HydraRevenant is a **research and training PoC only**. Unauthorized use in malicious environments is strictly prohibited.
 
 ---
-## 9. Conclusion
+## Security Implications & Defensive Takeaways
 
-The presented PoC demonstrates a resilient persistence architecture leveraging layered watchdogs. While effective in maintaining survivability under partial removal, it also increases detection opportunities for defenders.
-
-This design highlights the trade-off between **resilience** and **stealth** in persistence mechanisms.
-
+- **Layered Persistence**: Blue teams should monitor for anomalous **SYSTEM Critical processes**, unauthorized service installations, and **unexpected VBScript executions**.
+- **Propagation Vectors**:
+    - USB devices: Enforce **autorun restrictions** and deploy endpoint detection.
+    - Email vectors: Strengthen **anti-phishing filters** and sandbox attachments.
+    - FTP scans: Monitor unusual login attempts, brute-force behavior, and new file uploads in **ftproot directories**.
+    - HTTP hosting: Detect **unauthorized HTTP servers** operating inside corporate subnets.
+- **Holistic Defense**: Defenders must assume **multi-chain redundancy** in persistence strategies and adopt **multi-layer detection approaches**.
 ---
-## 10. Appendix
+## 12. Appendix
 
 - **Chain A Files**: `root_mon_mon.ps1`, `root_mon.ps1`, `root.ps1`
 - **Chain A Initialization Files**: `init_service_rootmonmon.ps1`, `init_service_rootmon.ps1`, `init_service_root.ps1`
 - **Chain B Files**: `fwd_mon.ps1`, `f.ps1`
 - **Chain B Initialization Files**: `init_service_fwdmon.ps1`, `init_service_fwd.ps1`
 - **Execution Context**: SYSTEM service
+## 13. Appendix: References
+
+- GitHub Project: [HydraRevenant](https://github.com/Soumyo001/HydraRevenant)
+- Related Topics: Windows Internals, Service Persistence, Malware Propagation, Privilege Escalation
