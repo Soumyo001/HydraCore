@@ -262,6 +262,7 @@ To simulate real-world adversary tactics, this PoC includes **multiple propagati
   <source src="assets/output.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
+
 ---
 ## 9. Conclusion
 
