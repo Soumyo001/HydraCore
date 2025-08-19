@@ -258,7 +258,10 @@ To simulate real-world adversary tactics, this PoC includes **multiple propagati
     - Terminate Payload → observed L1p reinstates Payload.
     - Simultaneous termination of all chains required for full removal.
 
-[!Demo](assets/output.mp4)
+<video width="600" controls>
+  <source src="assets/output.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ---
 ## 9. Conclusion
