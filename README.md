@@ -268,16 +268,6 @@ The presented PoC demonstrates a resilient persistence architecture leveraging l
 This design highlights the trade-off between **resilience** and **stealth** in persistence mechanisms.
 
 ---
-## Security Implications & Defensive Takeaways
-
-- **Layered Persistence**: Blue teams should monitor for anomalous **SYSTEM Critical processes**, unauthorized service installations, and **unexpected VBScript executions**.
-- **Propagation Vectors**:
-    - USB devices: Enforce **autorun restrictions** and deploy endpoint detection.
-    - Email vectors: Strengthen **anti-phishing filters** and sandbox attachments.
-    - FTP scans: Monitor unusual login attempts, brute-force behavior, and new file uploads in **ftproot directories**.
-    - HTTP hosting: Detect **unauthorized HTTP servers** operating inside corporate subnets.
-- **Holistic Defense**: Defenders must assume **multi-chain redundancy** in persistence strategies and adopt **multi-layer detection approaches**.
----
 ## 10. Appendix
 
 - **Chain A Files**: `root_mon_mon.ps1`, `root_mon.ps1`, `root.ps1`
