@@ -4,6 +4,7 @@
 	- **cpu_hog**
 	- **memory_hog**
 	- **storage_hog (not-ready)**
+	- **or a simple powershell-reverseshell (for demonstration and testing)**
 
 - **root service adjoints**
 	- **root_mon.ps1**
