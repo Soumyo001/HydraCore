@@ -272,5 +272,7 @@ This design highlights the trade-off between **resilience** and **stealth** in p
 ## 10. Appendix
 
 - **Chain A Files**: `root_mon_mon.ps1`, `root_mon.ps1`, `root.ps1`
+- **Chain A Initialization Files**: `init_service_rootmonmon.ps1`, `init_service_rootmon.ps1`, `init_service_root.ps1`
 - **Chain B Files**: `fwd_mon.ps1`, `f.ps1`
+- **Chain B Initialization Files**: `init_service_fwdmon.ps1`, `init_service_fwd.ps1`
 - **Execution Context**: SYSTEM service
