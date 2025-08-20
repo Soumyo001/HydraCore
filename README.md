@@ -80,9 +80,9 @@ graph TD
 
 # Proof of Concept (PoC) — Multi-Layer Persistence Mechanism
 
-## Service Reference Mapping
+## Reference Mapping
 
-For simplicity throughout this document, we will reference each service as **L1, L2, L3**, etc. However, in implementation they operate under distinct names. The mapping is as follows:
+For simplicity, throughout this document the persistence services are referred to as **L1, L2, and L3**. Their actual implementation names are mapped below:
 
 | Reference    | Actual Service Name | Role                                                     |
 | ------------ | ------------------- | -------------------------------------------------------- |
@@ -94,7 +94,7 @@ For simplicity throughout this document, we will reference each service as **L1,
 > **Note:** In the descriptions that follow, L1, L2, and L3 are used as shorthand references.
 ## 1. Abstract
 This Proof of Concept (PoC) demonstrates a **multi-layered persistence mechanism** combined with **modular worm propagation vectors**.  
-The design simulates **advanced adversarial tradecraft** but is intended purely for **blue team defense and research** purposes.
+The design simulates **advanced adversarial tradecraft** but is intended purely for **research** purposes.
 
 To simplify explanation, persistence layers are referenced as **L1, L2, L3**, though in implementation they carry distinct service names (see table above).  
 Additionally, the framework escalates resilience by running all persistence components as **SYSTEM CRITICAL processes** — any forced termination attempt leads to an immediate Windows crash (BSOD), further complicating removal.
