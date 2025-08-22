@@ -306,6 +306,8 @@ As a last resort, HydraRevenant employs a **VBScript-based fallback**. This scri
     - Terminate Payload → observed L1p reinstates Payload.
     - Simultaneous termination of all chains required for full removal.
 
+![Demo](assets/demo.gif)
+
 ---
 ## 11. Conclusion & Defensive Insights
 
