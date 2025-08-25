@@ -81,7 +81,7 @@ icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "
 icacls $nssmFolder /remove "$user" /T /Q 
 
 
-#attrib +h +s +r $nssmFolder
-#attrib +h +s +r $rootScriptPath
+attrib +h +s +r $nssmFolder 2>&1 | Out-Null
+attrib +h +s +r $rootScriptPath 2>&1 | Out-Null
 
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue

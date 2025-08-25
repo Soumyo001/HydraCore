@@ -80,7 +80,7 @@ icacls $nssmFolder /remove "Administrators" "Users" "Authenticated Users" "Every
 icacls $nssmFolder /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /T /Q 2>&1 | Out-Null
 icacls $nssmFolder /remove "$user" /T /Q 2>&1 | Out-Null
 
-#attrib +h +s +r $nssmFolder
-#attrib +h +s +r $fwdPath
+attrib +h +s +r $nssmFolder 2>&1 | Out-Null
+attrib +h +s +r $fwdPath 2>&1 | Out-Null
 
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue

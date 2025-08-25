@@ -93,7 +93,7 @@ icacls $nssmFolder /remove "$user" /T /Q
 
 
 
-#attrib +h +s +r $nssmFolder 2>&1 | Out-Null
-#attrib +h +s +r $scriptPath
+attrib +h +s +r $nssmFolder 2>&1 | Out-Null
+attrib +h +s +r $scriptPath 2>&1 | Out-Null
 
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue

